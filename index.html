@@ -37,7 +37,7 @@
             margin-top: 20px;
         }
 
-        /* 카드 헤더 (로고 및 기본 정보) */
+        /* 카드 헤더 (로고만 표시) */
         .card-header {
             background-color: #f7a7bb; 
             color: white;
@@ -45,11 +45,11 @@
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* 로고 중앙 정렬 */
             align-items: center;
         }
         .logo-text { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; }
-        .logo-text span { margin-right: 5px; font-size: 1.1em; } /* 데이지 이모지 */
+        .logo-text span { margin-right: 5px; font-size: 1.1em; } 
 
         /* 사진 영역 */
         .profile-photo-container {
@@ -76,19 +76,24 @@
         .card-body { padding: 20px; }
         .name-age { font-size: 2.2em; font-weight: 800; color: #333; margin-bottom: 5px; line-height: 1; }
         
-        /* 키/사이즈/직업 정보 레이아웃 */
+        /* 키/몸무게/사이즈/직업 정보 레이아웃 */
         .extra-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
+            gap: 10px 20px;
             margin-bottom: 20px;
             font-size: 1em;
             color: #555;
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
         }
+        .extra-info > div { /* 각 정보 항목에 스타일 적용 */
+            display: flex;
+            justify-content: space-between;
+        }
         .extra-info span {
             font-weight: 600;
+            color: #333;
         }
 
         /* 한 줄 소개 */
@@ -137,34 +142,33 @@
             </div>
             
             <div class="form-group">
-                <label for="bustSize">5. 가슴 사이즈</label>
+                <label for="weight">5. 몸무게 (kg)</label>
+                <input type="number" id="weight" value="50" min="30" max="150" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bustSize">6. 가슴 사이즈</label>
                 <select id="bustSize" required>
-                    <option value="A">A컵</option>                  
-                    <option value="A+">A+컵</option>
+                    <option value="A">A컵</option>
                     <option value="B">B컵</option>
-                    <option value="B+">B+컵</option>                    
                     <option value="C" selected>C컵</option>
-                    <option value="C+">C+컵</option>                    
                     <option value="D">D컵</option>
-                    <option value="D+">D+컵</option>
-                    <option value="E">E컵 </option>
-                    <option value="E">F컵 </option>
-                    <option value="E">G컵 </option>
+                    <option value="E">E컵 이상</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="occupation">6. 직업</label>
+                <label for="occupation">7. 직업</label>
                 <input type="text" id="occupation" value="마케터" required>
             </div>
             
             <div class="form-group">
-                <label for="tagline">7. 한 줄 소개</label>
+                <label for="tagline">8. 한 줄 소개</label>
                 <input type="text" id="tagline" value="따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요." required>
             </div>
 
             <div class="form-group">
-                <label for="interests">8. 취미 (쉼표(,)로 구분)</label>
+                <label for="interests">9. 취미 (쉼표(,)로 구분)</label>
                 <textarea id="interests" placeholder="예: 요가, 독서, 여행" required>영화 감상, 요리, 와인 테이스팅, 독서</textarea>
             </div>
 
@@ -176,7 +180,6 @@
         <div class="profile-card" id="profileCardToCapture">
             <div class="card-header">
                 <span class="logo-text">🌼 DAISY Hookups</span>
-                <span id="displayId">ID: DPR_XXXXX</span>
             </div>
             <div class="profile-photo-container" id="photoContainer">
                 사진을 드래그하거나 선택하여 업로드해주세요.
@@ -185,9 +188,10 @@
                 <div class="name-age"><span id="displayName">김데이지</span>, <span id="displayAge">28</span></div>
                 
                 <div class="extra-info">
-                    <span>키: <span id="displayHeight">165cm</span></span>
-                    <span>사이즈: <span id="displayBustSize">C컵</span></span>
-                    <span>직업: <span id="displayOccupation">마케터</span></span>
+                    <div>키: <span id="displayHeight">165cm</span></div>
+                    <div>몸무게: <span id="displayWeight">50kg</span></div>
+                    <div>사이즈: <span id="displayBustSize">C컵</span></div>
+                    <div>직업: <span id="displayOccupation">마케터</span></div>
                 </div>
                 
                 <div class="tagline" id="displayTagline">"따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요."</div>
@@ -211,9 +215,6 @@
 </div>
 
 <script>
-    const generateId = () => 'DPR_' + Math.floor(10000 + Math.random() * 90000);
-    let currentProfileId = generateId();
-
     const photoContainer = document.getElementById('photoContainer');
     const profilePhotoInput = document.getElementById('profilePhotoInput');
 
@@ -246,8 +247,9 @@
         // 입력 값 가져오기
         const name = document.getElementById('name').value;
         const age = document.getElementById('age').value;
-        const height = document.getElementById('height').value; // 키 추가
-        const bustSize = document.getElementById('bustSize').value; // 사이즈 추가
+        const height = document.getElementById('height').value;
+        const weight = document.getElementById('weight').value; // 몸무게 추가
+        const bustSize = document.getElementById('bustSize').value;
         const occupation = document.getElementById('occupation').value;
         const tagline = document.getElementById('tagline').value;
         const interestsInput = document.getElementById('interests').value;
@@ -255,12 +257,12 @@
         // 화면 업데이트
         document.getElementById('displayName').textContent = name;
         document.getElementById('displayAge').textContent = age;
-        document.getElementById('displayHeight').textContent = `${height}cm`; // 키 출력
-        document.getElementById('displayBustSize').textContent = `${bustSize}컵`; // 사이즈 출력
+        document.getElementById('displayHeight').textContent = `${height}cm`;
+        document.getElementById('displayWeight').textContent = `${weight}kg`; // 몸무게 출력
+        document.getElementById('displayBustSize').textContent = `${bustSize}컵`;
         document.getElementById('displayOccupation').textContent = occupation;
         document.getElementById('displayTagline').textContent = `"${tagline}"`;
-        document.getElementById('displayId').textContent = `ID: ${currentProfileId}`;
-
+        
         // 취미 태그 생성
         const interestsArray = interestsInput.split(',').map(item => item.trim()).filter(item => item !== '');
         const interestsContainer = document.getElementById('displayInterests');
