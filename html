@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 데이지 여성 프로필 생성 폼</title>
+    <style>
+        /* 기본적인 스타일링 */
+        body { font-family: Arial, sans-serif; background-color: #f0f8f0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        h2 { color: #5b995b; text-align: center; margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        textarea { resize: vertical; height: 80px; }
+        .btn-primary { 
+            background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s; 
+            margin-top: 20px;
+        }
+        .btn-primary:hover { background-color: #e696a9; }
+        
+        /* 다운로드 버튼 스타일 */
+        #downloadBtn {
+            background-color: #5b995b;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+            display: block; /* 블록 요소로 변경 */
+            margin: 15px auto 0; /* 중앙 정렬 */
+            transition: background-color 0.3s;
+        }
+        #downloadBtn:hover {
+            background-color: #4a804a;
+        }
+
+        #output { margin-top: 30px; padding: 15px; background-color: #e6f7e6; border-radius: 8px; border: 1px dashed #5b995b; }
+        #profileTextDisplay { white-space: pre-wrap; font-size: 14px; }
+        .success { color: #5b995b; font-weight: bold; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🌸 데이지 여성 프로필 정보 입력</h2>
+
+    <form id="profileForm">
+        <div class="form-group">
+            <label for="name">1. 이름</label>
+            <input type="text" id="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="age">2. 나이</label>
+            <input type="number" id="age" min="18" max="99" required>
+        </div>
+
+        <div class="form-group">
+            <label for="location">3. 현재 거주 지역</label>
+            <input type="text" id="location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="occupation">4. 직업/직종</label>
+            <input type="text" id="occupation" required>
+        </div>
+
+        <div class="form-group">
+            <label for="interests">5. 취미/관심사 (쉼표(,)로 구분)</label>
+            <textarea id="interests" placeholder="예: 요가, 독서, 여행" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="tagline">6. 한 줄 소개</label>
+            <input type="text" id="tagline" required>
+        </div>
+
+        <div class="form-group">
+            <label for="photoUrl">7. 프로필 사진 URL</label>
+            <input type="text" id="photoUrl" placeholder="예: http://example.com/photo.jpg">
+        </div>
+
+        <button type="submit" class="btn-primary">프로필 생성 및 확인</button>
+    </form>
+
+    <div id="output" style="display: none;">
+        <span class="success"></span>
+        <pre id="profileTextDisplay">여기에 생성된 프로필 정보가 나타납니다.</pre>
+        <button id="downloadBtn">프로필 정보 다운로드 (.txt)</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault(); 
+
+        // 폼 데이터 가져오기
+        const name = document.getElementById('name').value;
+        const age = document.getElementById('age').value;
+        const location = document.getElementById('location').value;
+        const occupation = document.getElementById('occupation').value;
+        const interestsInput = document.getElementById('interests').value;
+        const tagline = document.getElementById('tagline').value;
+        const photoUrl = document.getElementById('photoUrl').value;
+        
+        // 쉼표로 구분된 취미/관심사 처리
+        const interestsArray = interestsInput.split(',').map(item => item.trim()).filter(item => item !== '');
+
+        // 임시 ID 및 현재 시간 생성
+        const profileId = 'DPR_' + Math.floor(10000 + Math.random() * 90000);
+        const createdAt = new Date().toLocaleString('ko-KR');
+
+        // 다운로드와 출력에 사용할 순수 텍스트 생성
+        const rawProfileText = `
+--- 🌸 생성된 데이지 여성 프로필 🌸 ---
+ID: ${profileId}
+이름: ${name}
+나이: ${age}세
+지역: ${location}
+직업: ${occupation}
+✨ 한 줄 소개: "${tagline}"
+취미/관심사: ${interestsArray.join(', ')}
+사진 URL: ${photoUrl || 'URL 미입력'}
+등록일: ${createdAt}
+--------------------------------------
+        `.trim();
+
+        // 1. 화면 출력
+        document.querySelector('#output .success').textContent = '✅ 프로필 생성이 완료되었습니다!';
+        document.getElementById('profileTextDisplay').textContent = rawProfileText;
+        document.getElementById('output').style.display = 'block';
+
+        // 2. 다운로드 기능을 위해 데이터를 버튼에 연결
+        document.getElementById('downloadBtn').onclick = () => downloadProfile(rawProfileText, name);
+    });
+
+
+    /**
+     * 생성된 프로필 텍스트를 파일로 다운로드하는 함수
+     * @param {string} textToDownload - 다운로드할 텍스트 내용
+     * @param {string} profileName - 파일 이름에 사용할 이름
+     */
+    function downloadProfile(textToDownload, profileName) {
+        // 텍스트 데이터를 Blob 객체로 변환 (텍스트 파일 형식)
+        const blob = new Blob([textToDownload], { type: 'text/plain' });
+        
+        // 다운로드 링크 생성
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        // 파일 이름 설정
+        const fileName = `${profileName}_데이지_프로필_${new Date().getFullYear()}.txt`;
+        
+        a.href = url;
+        a.download = fileName;
+        
+        // 다운로드 실행
+        document.body.appendChild(a);
+        a.click();
+        
+        // 사용이 끝난 URL 객체 및 a 태그 제거
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>
