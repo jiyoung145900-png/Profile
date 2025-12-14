@@ -3,54 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 데이지 프로필 카드 생성기</title>
+    <title>🌸 데이지 프로필 카드 생성기 - 이미지 다운로드</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        /* 기본 스타일 */
-        body { font-family: 'Malgun Gothic', 'Arial', sans-serif; background-color: #f0f8f0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .wrapper { display: flex; gap: 40px; max-width: 1200px; margin: 0 auto; }
-        h2 { color: #5b995b; text-align: center; margin-bottom: 25px; }
+        /* 기본 설정 */
+        body { font-family: 'Malgun Gothic', 'Arial', sans-serif; background-color: #f5f5f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .wrapper { display: flex; gap: 40px; max-width: 1000px; margin: 0 auto; }
+        h2 { color: #f7a7bb; text-align: center; margin-bottom: 25px; }
 
         /* 입력 폼 스타일 */
-        .input-panel { width: 400px; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
-        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .input-panel { width: 400px; background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); height: fit-content; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; color: #444; }
+        input[type="text"], input[type="number"], textarea, input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s; }
+        input:focus, textarea:focus { border-color: #f7a7bb; outline: none; }
         textarea { resize: vertical; height: 60px; }
         
         /* 버튼 스타일 */
-        .btn-primary { background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s; margin-top: 20px;}
-        .btn-primary:hover { background-color: #e696a9; }
-        
-        /* 프로필 카드 스타일 (출력) */
+        .btn-primary { background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;}
+        .btn-primary:hover { background-color: #e696a9; transform: translateY(-1px); }
+        .btn-secondary { background-color: #5b995b; margin-top: 10px; }
+        .btn-secondary:hover { background-color: #4a804a; }
+
+        /* ------------------------------------------- */
+        /* 프로필 카드 스타일 (출력, 이미지화 대상) */
+        /* ------------------------------------------- */
         .profile-card { 
             width: 350px; 
-            background: linear-gradient(to top, #fffafc, #ffffff); 
-            border: 3px solid #ffdde8; /* 데이지 색상 테두리 */
-            border-radius: 15px; 
-            overflow: hidden; 
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            background: white; 
+            border: 1px solid #eee;
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
         }
 
-        /* 헤더 (데이지 로고 부분) */
+        /* 카드 헤더 (로고 및 기본 정보) */
         .card-header {
-            background-color: #f7a7bb; /* 데이지 핑크색 배경 */
+            background-color: #f7a7bb; 
             color: white;
             padding: 10px 15px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .logo-text { font-size: 1.2em; font-weight: bold; }
+        .logo-text { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; }
+        .logo-text span { margin-right: 5px; font-size: 1.1em; } /* 데이지 이모지 */
 
         /* 사진 영역 */
         .profile-photo-container {
             width: 100%;
-            height: 350px; /* 사진 크기 고정 */
-            background-color: #eee;
+            height: 350px; 
+            background-color: #f0f0f0;
             background-size: cover;
             background-position: center;
-            border-bottom: 2px solid #ffdde8;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -59,38 +66,25 @@
         }
         
         /* 정보 영역 */
-        .card-body { padding: 15px 20px; }
-        .name-age { font-size: 1.8em; font-weight: 800; color: #333; margin-bottom: 5px; }
-        .location-occupation { color: #888; margin-bottom: 15px; font-size: 0.9em; }
-        .tagline { font-style: italic; color: #f7a7bb; margin-bottom: 15px; border-left: 3px solid #f7a7bb; padding-left: 10px; }
+        .card-body { padding: 20px; }
+        .name-age { font-size: 2.2em; font-weight: 800; color: #333; margin-bottom: 5px; line-height: 1; }
+        .occupation-info { color: #888; margin-bottom: 20px; font-size: 1em; }
+        
+        /* 한 줄 소개 */
+        .tagline { font-style: italic; color: #f7a7bb; margin-bottom: 20px; border-left: 4px solid #f7a7bb; padding-left: 10px; line-height: 1.4; }
         
         /* 취미 영역 */
-        .interests-area { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
-        .interests-area h4 { color: #5b995b; margin-bottom: 8px; font-size: 1.1em; }
+        .interests-area { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
+        .interests-area h4 { color: #5b995b; margin-bottom: 10px; font-size: 1.1em; }
         .interest-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .interest-tag { 
-            background-color: #e6f7e6; 
+            background-color: #e8f5e9; 
             color: #5b995b; 
-            padding: 5px 10px; 
-            border-radius: 15px; 
-            font-size: 0.85em;
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 0.9em;
             font-weight: 600;
         }
-
-        /* 다운로드 영역 */
-        #downloadArea { margin-top: 20px; display: none; }
-        #downloadBtn {
-            background-color: #5b995b;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        #downloadBtn:hover { background-color: #4a804a; }
     </style>
 </head>
 <body>
@@ -117,23 +111,18 @@
             </div>
 
             <div class="form-group">
-                <label for="location">4. 지역</label>
-                <input type="text" id="location" value="서울 강남" required>
-            </div>
-
-            <div class="form-group">
-                <label for="occupation">5. 직업</label>
+                <label for="occupation">4. 직업</label>
                 <input type="text" id="occupation" value="마케터" required>
             </div>
             
             <div class="form-group">
-                <label for="tagline">6. 한 줄 소개</label>
-                <input type="text" id="tagline" value="긍정적인 에너지를 가진 사람을 찾아요!" required>
+                <label for="tagline">5. 한 줄 소개</label>
+                <input type="text" id="tagline" value="따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요." required>
             </div>
 
             <div class="form-group">
-                <label for="interests">7. 취미 (쉼표(,)로 구분)</label>
-                <textarea id="interests" placeholder="예: 요가, 독서, 여행" required>영화, 요리, 와인, 여행</textarea>
+                <label for="interests">6. 취미 (쉼표(,)로 구분)</label>
+                <textarea id="interests" placeholder="예: 요가, 독서, 여행" required>영화 감상, 요리, 와인 테이스팅, 독서</textarea>
             </div>
 
             <button type="submit" class="btn-primary">✨ 프로필 카드 생성/업데이트</button>
@@ -141,41 +130,40 @@
     </div>
 
     <div class="profile-output">
-        <div class="profile-card" id="profileCard">
+        <div class="profile-card" id="profileCardToCapture">
             <div class="card-header">
                 <span class="logo-text">🌼 DAISY Hookups</span>
-                <span>ID: DPR_XXXXX</span>
+                <span id="displayId">ID: DPR_XXXXX</span>
             </div>
             <div class="profile-photo-container" id="photoContainer">
-                사진을 업로드하거나 기본 이미지가 표시됩니다.
+                사진을 업로드해주세요.
             </div>
             <div class="card-body">
                 <div class="name-age"><span id="displayName">김데이지</span>, <span id="displayAge">28</span></div>
-                <div class="location-occupation">
-                    <span id="displayLocation">서울 강남</span> | <span id="displayOccupation">마케터</span>
+                <div class="occupation-info">
+                    <span id="displayOccupation">마케터</span>
                 </div>
-                <div class="tagline" id="displayTagline">"긍정적인 에너지를 가진 사람을 찾아요!"</div>
+                <div class="tagline" id="displayTagline">"따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요."</div>
                 
                 <div class="interests-area">
                     <h4># 나의 취미들</h4>
                     <div class="interest-list" id="displayInterests">
-                        <span class="interest-tag">영화</span>
+                        <span class="interest-tag">영화 감상</span>
                         <span class="interest-tag">요리</span>
-                        <span class="interest-tag">와인</span>
-                        <span class="interest-tag">여행</span>
+                        <span class="interest-tag">와인 테이스팅</span>
+                        <span class="interest-tag">독서</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="downloadArea">
-            <button id="downloadBtn">프로필 정보 텍스트 다운로드 (.txt)</button>
+            <button id="downloadImageBtn" class="btn-primary">🖼️ 프로필 카드 이미지 다운로드 (.png)</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 현재는 ID 생성을 위한 간단한 랜덤 함수 사용
     const generateId = () => 'DPR_' + Math.floor(10000 + Math.random() * 90000);
     let currentProfileId = generateId();
 
@@ -188,7 +176,6 @@
         // 입력 값 가져오기
         const name = document.getElementById('name').value;
         const age = document.getElementById('age').value;
-        const location = document.getElementById('location').value;
         const occupation = document.getElementById('occupation').value;
         const tagline = document.getElementById('tagline').value;
         const interestsInput = document.getElementById('interests').value;
@@ -196,16 +183,14 @@
         // 화면 업데이트
         document.getElementById('displayName').textContent = name;
         document.getElementById('displayAge').textContent = age;
-        document.getElementById('displayLocation').textContent = location;
         document.getElementById('displayOccupation').textContent = occupation;
         document.getElementById('displayTagline').textContent = `"${tagline}"`;
-        document.querySelector('.card-header span:last-child').textContent = `ID: ${currentProfileId}`;
-
+        document.getElementById('displayId').textContent = `ID: ${currentProfileId}`;
 
         // 취미 태그 생성
         const interestsArray = interestsInput.split(',').map(item => item.trim()).filter(item => item !== '');
         const interestsContainer = document.getElementById('displayInterests');
-        interestsContainer.innerHTML = ''; // 기존 태그 초기화
+        interestsContainer.innerHTML = ''; 
 
         interestsArray.forEach(interest => {
             const tag = document.createElement('span');
@@ -214,11 +199,8 @@
             interestsContainer.appendChild(tag);
         });
         
-        // 다운로드 버튼 활성화 및 데이터 연결
+        // 다운로드 버튼 표시
         document.getElementById('downloadArea').style.display = 'block';
-        document.getElementById('downloadBtn').onclick = () => downloadProfile(
-            name, age, location, occupation, tagline, interestsArray.join(', ')
-        );
     });
 
     // ----------------------------------------------------
@@ -241,37 +223,34 @@
     });
 
     // ----------------------------------------------------
-    // 3. 다운로드 기능 (이전 요청 기반)
+    // 3. 이미지 다운로드 기능 (html2canvas 사용)
     // ----------------------------------------------------
-    function downloadProfile(name, age, location, occupation, tagline, interestsText) {
-        const createdAt = new Date().toLocaleString('ko-KR');
+    document.getElementById('downloadImageBtn').addEventListener('click', function() {
+        const cardElement = document.getElementById('profileCardToCapture');
+        
+        html2canvas(cardElement, {
+            scale: 2, // 고해상도 이미지를 위해 스케일 증가 (선택 사항)
+            allowTaint: true,
+            useCORS: true 
+        }).then(function(canvas) {
+            // 캔버스 데이터를 이미지 URL로 변환
+            const imageURI = canvas.toDataURL("image/png");
+            
+            // 다운로드 링크 생성
+            const a = document.createElement('a');
+            const name = document.getElementById('name').value || '데이지';
+            const fileName = `${name}_데이지_프로필_카드.png`;
+            
+            a.href = imageURI;
+            a.download = fileName;
+            
+            // 다운로드 실행
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    });
 
-        const textToDownload = `
---- 🌸 데이지 여성 프로필 (ID: ${currentProfileId}) 🌸 ---
-이름: ${name}
-나이: ${age}세
-지역: ${location}
-직업: ${occupation}
-✨ 한 줄 소개: "${tagline}"
-취미/관심사: ${interestsText}
-등록일: ${createdAt}
---------------------------------------
-        `.trim();
-        
-        const blob = new Blob([textToDownload], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const fileName = `${name}_데이지_프로필.txt`;
-        
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-    
     // 초기 로드 시 기본 프로필 정보로 한 번 업데이트
     document.getElementById('profileForm').dispatchEvent(new Event('submit'));
 </script>
