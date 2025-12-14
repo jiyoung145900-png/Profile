@@ -15,8 +15,10 @@
         .input-panel { width: 400px; background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); height: fit-content; }
         .form-group { margin-bottom: 18px; }
         label { display: block; font-weight: bold; margin-bottom: 6px; color: #444; }
-        input[type="text"], input[type="number"], textarea, input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s; }
-        input:focus, textarea:focus { border-color: #f7a7bb; outline: none; }
+        input[type="text"], input[type="number"], textarea, input[type="file"], select { 
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s; 
+        }
+        input:focus, textarea:focus, select:focus { border-color: #f7a7bb; outline: none; }
         textarea { resize: vertical; height: 60px; }
         
         /* 버튼 스타일 */
@@ -61,20 +63,34 @@
             align-items: center;
             color: #aaa;
             font-style: italic;
-            cursor: pointer; /* 드래그 앤 드롭 가능함을 시각적으로 알림 */
-            border: 2px dashed transparent; /* 드래그 오버 피드백을 위한 투명 테두리 */
+            cursor: pointer; 
+            border: 2px dashed transparent; 
             transition: border-color 0.3s;
         }
         .profile-photo-container.drag-over {
-            border-color: #f7a7bb; /* 드래그 중일 때 테두리 색상 변경 */
+            border-color: #f7a7bb; 
             background-color: #fff0f5;
         }
         
         /* 정보 영역 */
         .card-body { padding: 20px; }
         .name-age { font-size: 2.2em; font-weight: 800; color: #333; margin-bottom: 5px; line-height: 1; }
-        .occupation-info { color: #888; margin-bottom: 20px; font-size: 1em; }
         
+        /* 키/사이즈/직업 정보 레이아웃 */
+        .extra-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1em;
+            color: #555;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .extra-info span {
+            font-weight: 600;
+        }
+
         /* 한 줄 소개 */
         .tagline { font-style: italic; color: #f7a7bb; margin-bottom: 20px; border-left: 4px solid #f7a7bb; padding-left: 10px; line-height: 1.4; }
         
@@ -101,7 +117,7 @@
     <div class="input-panel">
         <form id="profileForm">
             <div class="form-group">
-                <label for="profilePhoto">1. 프로필 사진 (파일 선택 또는 아래 영역에 드래그 앤 드롭)</label>
+                <label for="profilePhotoInput">1. 프로필 사진 (파일 선택 또는 드래그 & 드롭)</label>
                 <input type="file" id="profilePhotoInput" accept="image/*">
             </div>
             
@@ -116,17 +132,33 @@
             </div>
 
             <div class="form-group">
-                <label for="occupation">4. 직업</label>
+                <label for="height">4. 키 (cm)</label>
+                <input type="number" id="height" value="165" min="140" max="190" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bustSize">5. 가슴 사이즈</label>
+                <select id="bustSize" required>
+                    <option value="A">A컵</option>
+                    <option value="B">B컵</option>
+                    <option value="C" selected>C컵</option>
+                    <option value="D">D컵</option>
+                    <option value="E">E컵 이상</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="occupation">6. 직업</label>
                 <input type="text" id="occupation" value="마케터" required>
             </div>
             
             <div class="form-group">
-                <label for="tagline">5. 한 줄 소개</label>
+                <label for="tagline">7. 한 줄 소개</label>
                 <input type="text" id="tagline" value="따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요." required>
             </div>
 
             <div class="form-group">
-                <label for="interests">6. 취미 (쉼표(,)로 구분)</label>
+                <label for="interests">8. 취미 (쉼표(,)로 구분)</label>
                 <textarea id="interests" placeholder="예: 요가, 독서, 여행" required>영화 감상, 요리, 와인 테이스팅, 독서</textarea>
             </div>
 
@@ -145,9 +177,13 @@
             </div>
             <div class="card-body">
                 <div class="name-age"><span id="displayName">김데이지</span>, <span id="displayAge">28</span></div>
-                <div class="occupation-info">
-                    <span id="displayOccupation">마케터</span>
+                
+                <div class="extra-info">
+                    <span>키: <span id="displayHeight">165cm</span></span>
+                    <span>사이즈: <span id="displayBustSize">C컵</span></span>
+                    <span>직업: <span id="displayOccupation">마케터</span></span>
                 </div>
+                
                 <div class="tagline" id="displayTagline">"따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요."</div>
                 
                 <div class="interests-area">
@@ -187,12 +223,11 @@
         const reader = new FileReader();
         
         reader.onload = function(event) {
-            // 배경 이미지로 설정하여 카드에 사진을 표시
             photoContainer.style.backgroundImage = `url('${event.target.result}')`;
-            photoContainer.textContent = ''; // 안내 텍스트 제거
+            photoContainer.textContent = ''; 
         };
         
-        reader.readAsDataURL(file); // 파일을 Base64 데이터 URL로 읽기
+        reader.readAsDataURL(file);
     }
 
 
@@ -205,6 +240,8 @@
         // 입력 값 가져오기
         const name = document.getElementById('name').value;
         const age = document.getElementById('age').value;
+        const height = document.getElementById('height').value; // 키 추가
+        const bustSize = document.getElementById('bustSize').value; // 사이즈 추가
         const occupation = document.getElementById('occupation').value;
         const tagline = document.getElementById('tagline').value;
         const interestsInput = document.getElementById('interests').value;
@@ -212,6 +249,8 @@
         // 화면 업데이트
         document.getElementById('displayName').textContent = name;
         document.getElementById('displayAge').textContent = age;
+        document.getElementById('displayHeight').textContent = `${height}cm`; // 키 출력
+        document.getElementById('displayBustSize').textContent = `${bustSize}컵`; // 사이즈 출력
         document.getElementById('displayOccupation').textContent = occupation;
         document.getElementById('displayTagline').textContent = `"${tagline}"`;
         document.getElementById('displayId').textContent = `ID: ${currentProfileId}`;
@@ -228,7 +267,6 @@
             interestsContainer.appendChild(tag);
         });
         
-        // 다운로드 버튼 표시
         document.getElementById('downloadArea').style.display = 'block';
     });
 
@@ -278,7 +316,7 @@
         let files = dt.files;
 
         if (files.length > 0) {
-            handleFile(files[0]); // 파일 처리 함수 재사용
+            handleFile(files[0]);
         }
     }
 
@@ -294,10 +332,7 @@
             allowTaint: true,
             useCORS: true 
         }).then(function(canvas) {
-            // 캔버스 데이터를 이미지 URL로 변환
             const imageURI = canvas.toDataURL("image/png");
-            
-            // 다운로드 링크 생성
             const a = document.createElement('a');
             const name = document.getElementById('name').value || '데이지';
             const fileName = `${name}_데이지_프로필_카드.png`;
@@ -305,7 +340,6 @@
             a.href = imageURI;
             a.download = fileName;
             
-            // 다운로드 실행
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
