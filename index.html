@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 데이지 프로필 카드 생성기 - 이미지 다운로드</title>
+    <title>🌸 데이지 프로필 카드 생성기 - 최종 버전</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         /* 기본 설정 */
@@ -22,8 +22,6 @@
         /* 버튼 스타일 */
         .btn-primary { background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;}
         .btn-primary:hover { background-color: #e696a9; transform: translateY(-1px); }
-        .btn-secondary { background-color: #5b995b; margin-top: 10px; }
-        .btn-secondary:hover { background-color: #4a804a; }
 
         /* ------------------------------------------- */
         /* 프로필 카드 스타일 (출력, 이미지화 대상) */
@@ -63,6 +61,13 @@
             align-items: center;
             color: #aaa;
             font-style: italic;
+            cursor: pointer; /* 드래그 앤 드롭 가능함을 시각적으로 알림 */
+            border: 2px dashed transparent; /* 드래그 오버 피드백을 위한 투명 테두리 */
+            transition: border-color 0.3s;
+        }
+        .profile-photo-container.drag-over {
+            border-color: #f7a7bb; /* 드래그 중일 때 테두리 색상 변경 */
+            background-color: #fff0f5;
         }
         
         /* 정보 영역 */
@@ -96,8 +101,8 @@
     <div class="input-panel">
         <form id="profileForm">
             <div class="form-group">
-                <label for="profilePhoto">1. 프로필 사진 (업로드)</label>
-                <input type="file" id="profilePhoto" accept="image/*">
+                <label for="profilePhoto">1. 프로필 사진 (파일 선택 또는 아래 영역에 드래그 앤 드롭)</label>
+                <input type="file" id="profilePhotoInput" accept="image/*">
             </div>
             
             <div class="form-group">
@@ -136,7 +141,7 @@
                 <span id="displayId">ID: DPR_XXXXX</span>
             </div>
             <div class="profile-photo-container" id="photoContainer">
-                사진을 업로드해주세요.
+                사진을 드래그하거나 선택하여 업로드해주세요.
             </div>
             <div class="card-body">
                 <div class="name-age"><span id="displayName">김데이지</span>, <span id="displayAge">28</span></div>
@@ -166,6 +171,30 @@
 <script>
     const generateId = () => 'DPR_' + Math.floor(10000 + Math.random() * 90000);
     let currentProfileId = generateId();
+
+    const photoContainer = document.getElementById('photoContainer');
+    const profilePhotoInput = document.getElementById('profilePhotoInput');
+
+    // ----------------------------------------------------
+    // 공통 파일 처리 함수 (파일 선택, 드래그 앤 드롭 모두 사용)
+    // ----------------------------------------------------
+    function handleFile(file) {
+        if (!file.type.match('image.*')) {
+            alert("이미지 파일만 사용할 수 있습니다.");
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            // 배경 이미지로 설정하여 카드에 사진을 표시
+            photoContainer.style.backgroundImage = `url('${event.target.result}')`;
+            photoContainer.textContent = ''; // 안내 텍스트 제거
+        };
+        
+        reader.readAsDataURL(file); // 파일을 Base64 데이터 URL로 읽기
+    }
+
 
     // ----------------------------------------------------
     // 1. 프로필 카드 업데이트 (텍스트 정보)
@@ -204,32 +233,64 @@
     });
 
     // ----------------------------------------------------
-    // 2. 사진 미리보기 (파일 업로드 기능)
+    // 2. 사진 미리보기 (파일 선택 기능)
     // ----------------------------------------------------
-    document.getElementById('profilePhoto').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            
-            reader.onload = function(event) {
-                const photoContainer = document.getElementById('photoContainer');
-                // 배경 이미지로 설정하여 카드에 사진을 표시
-                photoContainer.style.backgroundImage = `url('${event.target.result}')`;
-                photoContainer.textContent = ''; // '사진을 업로드하세요' 텍스트 제거
-            };
-            
-            reader.readAsDataURL(file); // 파일을 Base64 데이터 URL로 읽기
+    profilePhotoInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
         }
     });
 
+
     // ----------------------------------------------------
-    // 3. 이미지 다운로드 기능 (html2canvas 사용)
+    // 3. 드래그 앤 드롭 기능 추가
+    // ----------------------------------------------------
+    
+    // 기본 브라우저 동작 방지
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        photoContainer.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // 드래그 오버(진입) 시 시각적 피드백 제공
+    photoContainer.addEventListener('dragenter', highlight, false);
+    photoContainer.addEventListener('dragover', highlight, false);
+    photoContainer.addEventListener('dragleave', unhighlight, false);
+    photoContainer.addEventListener('drop', unhighlight, false);
+
+    function highlight(e) {
+        photoContainer.classList.add('drag-over');
+    }
+
+    function unhighlight(e) {
+        photoContainer.classList.remove('drag-over');
+    }
+
+    // 드롭 이벤트 처리
+    photoContainer.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+
+        if (files.length > 0) {
+            handleFile(files[0]); // 파일 처리 함수 재사용
+        }
+    }
+
+
+    // ----------------------------------------------------
+    // 4. 이미지 다운로드 기능 (html2canvas 사용)
     // ----------------------------------------------------
     document.getElementById('downloadImageBtn').addEventListener('click', function() {
         const cardElement = document.getElementById('profileCardToCapture');
         
         html2canvas(cardElement, {
-            scale: 2, // 고해상도 이미지를 위해 스케일 증가 (선택 사항)
+            scale: 2, 
             allowTaint: true,
             useCORS: true 
         }).then(function(canvas) {
