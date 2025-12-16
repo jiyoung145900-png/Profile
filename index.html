@@ -45,13 +45,13 @@
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             display: flex;
-            justify-content: center; /* 로고 중앙 정렬 */
+            justify-content: center; 
             align-items: center;
         }
         .logo-text { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; }
         .logo-text span { margin-right: 5px; font-size: 1.1em; } 
 
-        /* 사진 영역 */
+        /* 사진/동영상 영역 */
         .profile-photo-container {
             width: 100%;
             height: 350px; 
@@ -66,10 +66,38 @@
             cursor: pointer; 
             border: 2px dashed transparent; 
             transition: border-color 0.3s;
+            position: relative; /* 자식 요소(video, icon) 배치를 위해 추가 */
         }
         .profile-photo-container.drag-over {
             border-color: #f7a7bb; 
             background-color: #fff0f5;
+        }
+        
+        /* 동영상 스타일 */
+        .profile-photo-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 영역에 맞게 꽉 채움 */
+            border-radius: 0;
+        }
+
+        /* 동영상 재생 아이콘 오버레이 (캡처 시 아이콘 포함을 위함) */
+        .play-icon-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3); /* 살짝 어두운 배경 */
+            pointer-events: none; /* 클릭 이벤트 무시 */
+        }
+        .play-icon {
+            font-size: 60px;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
         }
         
         /* 정보 영역 */
@@ -87,7 +115,7 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
         }
-        .extra-info > div { /* 각 정보 항목에 스타일 적용 */
+        .extra-info > div { 
             display: flex;
             justify-content: space-between;
         }
@@ -122,8 +150,8 @@
     <div class="input-panel">
         <form id="profileForm">
             <div class="form-group">
-                <label for="profilePhotoInput">1. 프로필 사진 (파일 선택 또는 드래그 & 드롭)</label>
-                <input type="file" id="profilePhotoInput" accept="image/*">
+                <label for="profilePhotoInput">1. 프로필 사진/동영상 (파일 선택 또는 드래그 & 드롭)</label>
+                <input type="file" id="profilePhotoInput" accept="image/*,video/*">
             </div>
             
             <div class="form-group">
@@ -147,9 +175,9 @@
             </div>
             
             <div class="form-group">
-                <label for="bustSize">5. 가슴 사이즈</label>
+                <label for="bustSize">6. 가슴 사이즈</label>
                 <select id="bustSize" required>
-                    <option value="A">A컵</option>                  
+                    <option value="A">A컵</option>                
                     <option value="A+">A+컵</option>
                     <option value="B">B컵</option>
                     <option value="B+">B+컵</option>                    
@@ -158,8 +186,8 @@
                     <option value="D">D컵</option>
                     <option value="D+">D+컵</option>
                     <option value="E">E컵 </option>
-                    <option value="E">F컵 </option>
-                    <option value="E">G컵 </option>
+                    <option value="F">F컵 </option>
+                    <option value="G">G컵 </option>
                 </select>
             </div>
 
@@ -188,7 +216,7 @@
                 <span class="logo-text">🌼 DAISY Hookups</span>
             </div>
             <div class="profile-photo-container" id="photoContainer">
-                사진을 드래그하거나 선택하여 업로드해주세요.
+                사진 또는 동영상을 드래그하거나 선택하여 업로드해주세요.
             </div>
             <div class="card-body">
                 <div class="name-age"><span id="displayName">김데이지</span>, <span id="displayAge">28</span></div>
@@ -225,22 +253,60 @@
     const profilePhotoInput = document.getElementById('profilePhotoInput');
 
     // ----------------------------------------------------
-    // 공통 파일 처리 함수 (파일 선택, 드래그 앤 드롭 모두 사용)
+    // 공통 파일 처리 함수 (이미지/동영상 분기 처리)
     // ----------------------------------------------------
     function handleFile(file) {
-        if (!file.type.match('image.*')) {
-            alert("이미지 파일만 사용할 수 있습니다.");
+        // 기존 콘텐츠 초기화
+        photoContainer.innerHTML = ''; 
+        photoContainer.style.backgroundImage = 'none';
+
+        if (file.type.match('image.*')) {
+            // 이미지 파일 처리
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                photoContainer.style.backgroundImage = `url('${event.target.result}')`;
+                photoContainer.textContent = ''; 
+            };
+            reader.readAsDataURL(file);
+
+        } else if (file.type.match('video.*')) {
+            // 동영상 파일 처리
+            const videoElement = document.createElement('video');
+            videoElement.controls = false; // 컨트롤바 숨김
+            videoElement.loop = true;
+            videoElement.muted = true;
+            videoElement.autoplay = true; // 자동 재생
+            videoElement.preload = 'metadata';
+            
+            // 캡처를 위해 동영상의 첫 프레임을 포스터로 설정 (html2canvas가 video 요소를 캡처하는 데 어려움이 있을 수 있으므로, 시각적으로 이미지를 표시)
+            // 실제 video 요소가 포함되었기 때문에 html2canvas가 이 영역을 투명하게 캡처하거나 비디오의 현재 프레임을 캡처하려고 시도함.
+            // video 자체를 캡처하기 어렵기 때문에 포스터와 오버레이 아이콘으로 대체하여 시각적으로 표시.
+            
+            const fileURL = URL.createObjectURL(file);
+            videoElement.src = fileURL;
+
+            // 재생 아이콘 오버레이 추가 (캡처에 포함될 수 있도록)
+            const overlay = document.createElement('div');
+            overlay.className = 'play-icon-overlay';
+            overlay.innerHTML = '<span class="play-icon">▶️</span>'; // 재생 아이콘
+
+            photoContainer.appendChild(videoElement);
+            photoContainer.appendChild(overlay);
+            photoContainer.textContent = ''; // 텍스트 제거
+
+            // 동영상이 로드된 후 포스터를 캡처할 준비가 되도록 대기
+            videoElement.onloadeddata = () => {
+                videoElement.play(); // 자동 재생 시작
+                // 필요하다면, 여기서 videoElement.currentTime을 설정하여 포스터로 사용할 프레임을 지정할 수도 있습니다.
+            };
+
+            // HTML2Canvas가 캔버스 기반 캡처를 하므로, 동영상보다는 포스터 프레임과 오버레이가 캡처되도록 유도합니다.
+
+        } else {
+            alert("이미지 또는 동영상 파일만 사용할 수 있습니다.");
+            photoContainer.textContent = '사진 또는 동영상을 드래그하거나 선택하여 업로드해주세요.';
             return;
         }
-        
-        const reader = new FileReader();
-        
-        reader.onload = function(event) {
-            photoContainer.style.backgroundImage = `url('${event.target.result}')`;
-            photoContainer.textContent = ''; 
-        };
-        
-        reader.readAsDataURL(file);
     }
 
 
@@ -254,7 +320,7 @@
         const name = document.getElementById('name').value;
         const age = document.getElementById('age').value;
         const height = document.getElementById('height').value;
-        const weight = document.getElementById('weight').value; // 몸무게 추가
+        const weight = document.getElementById('weight').value; 
         const bustSize = document.getElementById('bustSize').value;
         const occupation = document.getElementById('occupation').value;
         const tagline = document.getElementById('tagline').value;
@@ -264,7 +330,7 @@
         document.getElementById('displayName').textContent = name;
         document.getElementById('displayAge').textContent = age;
         document.getElementById('displayHeight').textContent = `${height}cm`;
-        document.getElementById('displayWeight').textContent = `${weight}kg`; // 몸무게 출력
+        document.getElementById('displayWeight').textContent = `${weight}kg`; 
         document.getElementById('displayBustSize').textContent = `${bustSize}컵`;
         document.getElementById('displayOccupation').textContent = occupation;
         document.getElementById('displayTagline').textContent = `"${tagline}"`;
@@ -285,7 +351,7 @@
     });
 
     // ----------------------------------------------------
-    // 2. 사진 미리보기 (파일 선택 기능)
+    // 2. 사진/동영상 미리보기 (파일 선택 기능)
     // ----------------------------------------------------
     profilePhotoInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
@@ -341,11 +407,22 @@
     document.getElementById('downloadImageBtn').addEventListener('click', function() {
         const cardElement = document.getElementById('profileCardToCapture');
         
+        // 캡처 전에 동영상 자동 재생을 일시 중지하여 포스터 프레임만 캡처되도록 함
+        const video = cardElement.querySelector('video');
+        if (video) {
+            video.pause();
+        }
+
         html2canvas(cardElement, {
             scale: 2, 
             allowTaint: true,
             useCORS: true 
         }).then(function(canvas) {
+            // 캡처 완료 후 동영상 다시 재생 (필요하다면)
+            if (video) {
+                video.play();
+            }
+
             const imageURI = canvas.toDataURL("image/png");
             const a = document.createElement('a');
             const name = document.getElementById('name').value || '데이지';
@@ -357,6 +434,9 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+
+            // 사용자 경험을 위해 작은 알림 추가
+            alert(`✅ 프로필 카드 이미지 다운로드가 완료되었습니다. (${fileName})`);
         });
     });
 
