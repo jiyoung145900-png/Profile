@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 데이지 프로필 카드 생성기 - 최종 버전</title>
+    <title>🌸 동영상 합성 프로필 카드 (FFmpeg.wasm)</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
+    <script src='https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js'></script>
+    
     <style>
-        /* CSS 스타일은 이전과 동일하게 유지됩니다. */
+        /* (이전 코드의 CSS 스타일을 기반으로 아래 추가/수정) */
         body { font-family: 'Malgun Gothic', 'Arial', sans-serif; background-color: #f5f5f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .wrapper { display: flex; gap: 40px; max-width: 1000px; margin: 0 auto; }
         h2 { color: #f7a7bb; text-align: center; margin-bottom: 25px; }
@@ -21,115 +24,44 @@
         textarea { resize: vertical; height: 60px; }
         
         .btn-primary { 
-            background-color: #f7a7bb; 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-            transition: background-color 0.3s, transform 0.1s; 
-            margin-top: 10px;
+            background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;
         }
         .btn-primary:hover { background-color: #e696a9; transform: translateY(-1px); }
 
-        .btn-secondary { 
-            background-color: #5b995b; 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-            transition: background-color 0.3s, transform 0.1s; 
-            margin-top: 10px;
+        /* [1] 합성 MP4 버튼 스타일 */
+        .btn-complex { 
+            background-color: #3b82f6; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;
+        }
+        .btn-complex:hover:not(:disabled) { background-color: #2563eb; transform: translateY(-1px); }
+        .btn-complex:disabled { background-color: #93c5fd; cursor: not-allowed; }
+
+        .btn-secondary { /* [3] 원본 파일 다운로드 버튼 스타일 */
+            background-color: #5b995b; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;
         }
         .btn-secondary:hover { background-color: #4c804c; transform: translateY(-1px); }
 
-        /* ------------------------------------------- */
-        /* 프로필 카드 스타일 */
-        /* ------------------------------------------- */
-        .profile-card { 
-            width: 350px; 
-            background: white; 
-            border: 1px solid #eee;
-            border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
 
-        .card-header {
-            background-color: #f7a7bb; 
-            color: white;
-            padding: 10px 15px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            display: flex;
-            justify-content: center; 
-            align-items: center;
+        #encodingStatus {
+            margin-top: 15px; font-size: 0.9em; color: #ef4444; font-weight: bold; display: none; padding: 10px; 
+            border: 1px dashed #fca5a5; background-color: #fee2e2; border-radius: 8px; text-align: center;
         }
-        .logo-text { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; }
+        #encodingStatus.success { color: #10b981; border-color: #6ee7b7; background-color: #d1fae5; }
 
-        /* 사진/동영상 영역 */
-        .profile-photo-container {
-            width: 100%;
-            height: 350px; 
-            background-color: #f0f0f0;
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #aaa;
-            font-style: italic;
-            cursor: pointer; 
-            border: 2px dashed transparent; 
-            transition: border-color 0.3s;
-            position: relative; 
-            overflow: hidden; 
-        }
+        /* (카드 디자인 스타일은 이전 코드와 동일하게 유지) */
+        .profile-card { width: 350px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-top: 20px;}
+        .card-header { background-color: #f7a7bb; color: white; padding: 10px 15px; border-top-left-radius: 12px; border-top-right-radius: 12px; text-align: center;}
+        .profile-photo-container { width: 100%; height: 350px; background-color: #f0f0f0; background-size: cover; background-position: center; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        .profile-photo-container video { width: 100%; height: 100%; object-fit: cover; display: block; }
         
-        /* 동영상 스타일 */
-        .profile-photo-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; 
-            border-radius: 0;
-            display: block; 
-        }
+        .play-icon-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.3); pointer-events: none; z-index: 10; }
+        .play-icon { font-size: 60px; color: white; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
 
-        /* 동영상 재생 아이콘 오버레이 (캡처 시 아이콘 포함을 위함) */
-        .play-icon-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3); 
-            pointer-events: none; 
-            z-index: 10;
-        }
-        .play-icon {
-            font-size: 60px;
-            color: white;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-        }
-
-        /* 캡처를 위해 동영상 숨김 상태 */
-        .profile-photo-container.capture-mode video, 
-        .profile-photo-container.capture-mode .play-icon-overlay {
-            display: none;
-        }
-
-        /* 나머지 카드 정보 스타일은 동일 */
         .card-body { padding: 20px; }
         .name-age { font-size: 2.2em; font-weight: 800; color: #333; margin-bottom: 5px; line-height: 1; }
-        .extra-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px; margin-bottom: 20px; font-size: 1em; color: #555; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .extra-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .extra-info span { font-weight: 600; color: #333; }
         .tagline { font-style: italic; color: #f7a7bb; margin-bottom: 20px; border-left: 4px solid #f7a7bb; padding-left: 10px; line-height: 1.4; }
         .interests-area h4 { color: #5b995b; margin-bottom: 10px; font-size: 1.1em; }
@@ -139,14 +71,14 @@
 </head>
 <body>
 
-<h2>🌸 데이지 프로필 카드 생성기</h2>
+<h2>🌸 동영상 합성 프로필 카드 생성기 (FFmpeg.wasm)</h2>
 
 <div class="wrapper">
     
     <div class="input-panel">
         <form id="profileForm">
             <div class="form-group">
-                <label for="profilePhotoInput">1. 프로필 사진/동영상 (파일 선택 또는 드래그 & 드롭)</label>
+                <label for="profilePhotoInput">1. 프로필 사진/동영상</label>
                 <input type="file" id="profilePhotoInput" accept="image/*,video/*">
             </div>
             
@@ -178,9 +110,7 @@
 
     <div class="profile-output">
         <div class="profile-card" id="profileCardToCapture">
-            <div class="card-header">
-                <span class="logo-text">🌼 DAISY Hookups</span>
-            </div>
+            <div class="card-header"><span class="logo-text">🌼 DAISY Hookups</span></div>
             <div class="profile-photo-container" id="photoContainer">
                 사진 또는 동영상을 드래그하거나 선택하여 업로드해주세요.
             </div>
@@ -198,252 +128,19 @@
                 
                 <div class="interests-area">
                     <h4># 나의 취미들</h4>
-                    <div class="interest-list" id="displayInterests">
-                        <span class="interest-tag">영화 감상</span>
-                        <span class="interest-tag">요리</span>
-                        <span class="interest-tag">와인 테이스팅</span>
-                        <span class="interest-tag">독서</span>
-                    </div>
+                    <div class="interest-list" id="displayInterests"></div>
                 </div>
             </div>
         </div>
 
         <div id="downloadArea" style="display: none;">
-            <button id="downloadVideoBtn" class="btn-secondary" style="display:none;">🎬 프로필 동영상 원본 다운로드</button>
-            <button id="downloadImageBtn" class="btn-primary">🖼️ 프로필 카드 이미지 캡처/다운로드 (.png)</button>
+            <p id="encodingStatus">⌛ FFmpeg 모듈 로딩 중... (최초 실행 시 필요)</p>
+            
+            <button id="downloadMP4Btn" class="btn-complex" disabled>🎬 [1] 프로필 레이아웃 합성 MP4 다운로드</button>
+            <hr>
+            
+            <button id="downloadImageBtn" class="btn-primary">🖼️ [2] 프로필 카드 이미지 캡처 (PNG)</button>
+            <button id="downloadVideoBtn" class="btn-secondary" style="display:none;">💾 [3] 원본 동영상 파일 다운로드</button>
         </div>
     </div>
 </div>
-
-<script>
-    const photoContainer = document.getElementById('photoContainer');
-    const profilePhotoInput = document.getElementById('profilePhotoInput');
-    const downloadVideoBtn = document.getElementById('downloadVideoBtn');
-    let uploadedFile = null; // 현재 업로드된 파일 정보를 저장할 변수
-
-    // ----------------------------------------------------
-    // 공통 파일 처리 함수 (이미지/동영상 분기 처리)
-    // ----------------------------------------------------
-    function handleFile(file) {
-        photoContainer.innerHTML = ''; 
-        photoContainer.style.backgroundImage = 'none';
-        uploadedFile = file;
-        downloadVideoBtn.style.display = 'none';
-        
-        // 동영상 처리 시 이전 URL 해제 (메모리 관리)
-        const oldVideo = photoContainer.querySelector('video');
-        if (oldVideo && oldVideo.src) {
-            URL.revokeObjectURL(oldVideo.src);
-        }
-
-        if (file.type.match('image.*')) {
-            // 이미지 파일 처리
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                photoContainer.style.backgroundImage = `url('${event.target.result}')`;
-                photoContainer.textContent = ''; 
-            };
-            reader.readAsDataURL(file);
-
-        } else if (file.type.match('video.*')) {
-            // 동영상 파일 처리
-            const fileURL = URL.createObjectURL(file);
-            
-            const videoElement = document.createElement('video');
-            videoElement.controls = false; 
-            videoElement.loop = true;
-            videoElement.muted = true;
-            videoElement.autoplay = true;
-            videoElement.preload = 'auto'; // 'metadata'에서 'auto'로 변경하여 로딩 안정화
-            videoElement.src = fileURL;
-
-            const overlay = document.createElement('div');
-            overlay.className = 'play-icon-overlay';
-            overlay.innerHTML = '<span class="play-icon">▶️</span>'; 
-
-            photoContainer.appendChild(videoElement);
-            photoContainer.appendChild(overlay);
-            photoContainer.textContent = '';
-
-            // 동영상 다운로드 버튼 활성화
-            downloadVideoBtn.style.display = 'block';
-
-        } else {
-            alert("이미지 또는 동영상 파일만 사용할 수 있습니다.");
-            photoContainer.textContent = '사진 또는 동영상을 드래그하거나 선택하여 업로드해주세요.';
-            uploadedFile = null;
-            downloadVideoBtn.style.display = 'none';
-            return;
-        }
-        
-        document.getElementById('downloadArea').style.display = 'block';
-    }
-
-
-    // ----------------------------------------------------
-    // 1. 프로필 카드 업데이트 (텍스트 정보)
-    // ----------------------------------------------------
-    document.getElementById('profileForm').addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        
-        const name = document.getElementById('name').value;
-        const age = document.getElementById('age').value;
-        const height = document.getElementById('height').value;
-        const weight = document.getElementById('weight').value; 
-        const bustSize = document.getElementById('bustSize').value;
-        const occupation = document.getElementById('occupation').value;
-        const tagline = document.getElementById('tagline').value;
-        const interestsInput = document.getElementById('interests').value;
-
-        // 화면 업데이트
-        document.getElementById('displayName').textContent = name;
-        document.getElementById('displayAge').textContent = age;
-        document.getElementById('displayHeight').textContent = `${height}cm`;
-        document.getElementById('displayWeight').textContent = `${weight}kg`; 
-        document.getElementById('displayBustSize').textContent = `${bustSize}컵`;
-        document.getElementById('displayOccupation').textContent = occupation;
-        document.getElementById('displayTagline').textContent = `"${tagline}"`;
-        
-        // 취미 태그 생성
-        const interestsArray = interestsInput.split(',').map(item => item.trim()).filter(item => item !== '');
-        const interestsContainer = document.getElementById('displayInterests');
-        interestsContainer.innerHTML = ''; 
-
-        interestsArray.forEach(interest => {
-            const tag = document.createElement('span');
-            tag.className = 'interest-tag';
-            tag.textContent = interest;
-            interestsContainer.appendChild(tag);
-        });
-        
-        document.getElementById('downloadArea').style.display = 'block';
-    });
-
-    // ----------------------------------------------------
-    // 2. 사진/동영상 미리보기 (파일 선택 및 드래그 앤 드롭 로직 유지)
-    // ----------------------------------------------------
-    profilePhotoInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            handleFile(e.target.files[0]);
-        }
-    });
-
-    // 드래그 앤 드롭 로직 (생략: 기존 코드와 동일)
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        photoContainer.addEventListener(eventName, preventDefaults, false);
-    });
-    function preventDefaults (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    photoContainer.addEventListener('dragenter', e => photoContainer.classList.add('drag-over'), false);
-    photoContainer.addEventListener('dragover', e => photoContainer.classList.add('drag-over'), false);
-    photoContainer.addEventListener('dragleave', e => photoContainer.classList.remove('drag-over'), false);
-    photoContainer.addEventListener('drop', e => photoContainer.classList.remove('drag-over'), false);
-
-    photoContainer.addEventListener('drop', function(e) {
-        let files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFile(files[0]);
-        }
-    }, false);
-
-
-    // ----------------------------------------------------
-    // 4. 프로필 카드 이미지 캡처 기능 (html2canvas 사용)
-    // ----------------------------------------------------
-    document.getElementById('downloadImageBtn').addEventListener('click', function() {
-        const cardElement = document.getElementById('profileCardToCapture');
-        const photoCont = cardElement.querySelector('.profile-photo-container');
-        const video = cardElement.querySelector('video');
-        let originalBG = photoCont.style.backgroundImage; // 원래 배경 저장
-        let imageToRestore = null;
-
-        if (video) {
-            // 동영상 파일의 경우: 캡처 안정화를 위해 현재 프레임을 추출하여 배경 이미지로 대체
-            try {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = video.videoWidth;
-                tempCanvas.height = video.videoHeight;
-                const ctx = tempCanvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-                imageToRestore = tempCanvas.toDataURL('image/png'); 
-                
-                // 1. 동영상 숨기고 추출된 이미지를 배경으로 설정
-                video.style.display = 'none';
-                photoCont.style.backgroundImage = `url('${imageToRestore}')`;
-            } catch (error) {
-                console.error("동영상 프레임 캡처 실패:", error);
-                // 실패해도 이미지 캡처는 진행하도록 놔둠
-            }
-        }
-
-        html2canvas(cardElement, {
-            scale: 2, 
-            allowTaint: true,
-            useCORS: true 
-        }).then(function(canvas) {
-            // **캡처 완료 후 동영상/배경 복원**
-            if (video) {
-                video.style.display = 'block'; 
-                photoCont.style.backgroundImage = originalBG; 
-            }
-            
-            const imageURI = canvas.toDataURL("image/png");
-            const a = document.createElement('a');
-            const name = document.getElementById('name').value || '데이지';
-            const fileName = `${name}_프로필_카드_캡처.png`;
-            
-            a.href = imageURI;
-            a.download = fileName;
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            alert(`✅ 프로필 카드 이미지 캡처가 완료되었습니다. (${fileName})`);
-        });
-    });
-
-
-    // ----------------------------------------------------
-    // 5. 프로필 동영상 원본 다운로드 기능
-    // ----------------------------------------------------
-    document.getElementById('downloadVideoBtn').addEventListener('click', downloadVideo);
-    
-    function downloadVideo() {
-        if (!uploadedFile || !uploadedFile.type.match('video.*')) {
-            alert('업로드된 동영상이 없습니다.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const a = document.createElement('a');
-            const name = document.getElementById('name').value || '데이지';
-            
-            // 파일 확장자 추출 (예: video/mp4 -> .mp4)
-            const extension = uploadedFile.name.split('.').pop() || uploadedFile.type.split('/')[1] || 'mp4'; 
-            const fileName = `${name}_프로필_원본_영상.${extension}`;
-
-            a.href = e.target.result; // Data URL (Blob)
-            a.download = fileName;
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            alert(`✅ 프로필 동영상 원본 파일 다운로드가 완료되었습니다. (${fileName})`);
-        };
-
-        // 파일을 Data URL 형태로 읽음 (파일 크기에 따라 느려질 수 있음)
-        reader.readAsDataURL(uploadedFile); 
-    }
-
-
-    // 초기 로드 시 기본 프로필 정보로 한 번 업데이트
-    document.getElementById('profileForm').dispatchEvent(new Event('submit'));
-</script>
-
-</body>
-</html>
