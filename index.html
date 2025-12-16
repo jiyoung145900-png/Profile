@@ -22,8 +22,33 @@
         textarea { resize: vertical; height: 60px; }
         
         /* 버튼 스타일 */
-        .btn-primary { background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;}
+        .btn-primary { 
+            background-color: #f7a7bb; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            width: 100%; 
+            transition: background-color 0.3s, transform 0.1s; 
+            margin-top: 10px;
+        }
         .btn-primary:hover { background-color: #e696a9; transform: translateY(-1px); }
+
+        .btn-secondary { 
+            background-color: #5b995b; /* 취미 태그 색상과 맞춤 */
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            width: 100%; 
+            transition: background-color 0.3s, transform 0.1s; 
+            margin-top: 10px;
+        }
+        .btn-secondary:hover { background-color: #4c804c; transform: translateY(-1px); }
 
         /* ------------------------------------------- */
         /* 프로필 카드 스타일 (출력, 이미지화 대상) */
@@ -66,7 +91,8 @@
             cursor: pointer; 
             border: 2px dashed transparent; 
             transition: border-color 0.3s;
-            position: relative; /* 자식 요소(video, icon) 배치를 위해 추가 */
+            position: relative; 
+            overflow: hidden; /* video가 넘치지 않도록 */
         }
         .profile-photo-container.drag-over {
             border-color: #f7a7bb; 
@@ -77,8 +103,9 @@
         .profile-photo-container video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 영역에 맞게 꽉 채움 */
+            object-fit: cover; 
             border-radius: 0;
+            display: block; /* video 기본 여백 제거 */
         }
 
         /* 동영상 재생 아이콘 오버레이 (캡처 시 아이콘 포함을 위함) */
@@ -91,13 +118,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.3); /* 살짝 어두운 배경 */
-            pointer-events: none; /* 클릭 이벤트 무시 */
+            background: rgba(0, 0, 0, 0.3); 
+            pointer-events: none; 
+            z-index: 10;
         }
         .play-icon {
             font-size: 60px;
             color: white;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 캡처를 위해 동영상 숨김 상태 */
+        .profile-photo-container.capture-mode video {
+            display: none;
+        }
+        .profile-photo-container.capture-mode .play-icon-overlay {
+            /* 캡처 모드에서는 오버레이만 남기고 배경 이미지(첫 프레임)가 보이도록 */
         }
         
         /* 정보 영역 */
@@ -107,7 +143,7 @@
         /* 키/몸무게/사이즈/직업 정보 레이아웃 */
         .extra-info {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
+            grid-template-columns: repeat(2, 1fr); 
             gap: 10px 20px;
             margin-bottom: 20px;
             font-size: 1em;
@@ -139,6 +175,8 @@
             font-size: 0.9em;
             font-weight: 600;
         }
+        /* 다운로드 버튼 영역 */
+        #downloadArea button { margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -242,8 +280,9 @@
             </div>
         </div>
 
-        <div id="downloadArea">
-            <button id="downloadImageBtn" class="btn-primary">🖼️ 프로필 카드 이미지 다운로드 (.png)</button>
+        <div id="downloadArea" style="display: none;">
+            <button id="downloadVideoBtn" class="btn-secondary" style="display:none;">🎬 동영상 원본 다운로드</button>
+            <button id="downloadImageBtn" class="btn-primary">🖼️ 프로필 카드 이미지 캡처/다운로드 (.png)</button>
         </div>
     </div>
 </div>
@@ -251,6 +290,8 @@
 <script>
     const photoContainer = document.getElementById('photoContainer');
     const profilePhotoInput = document.getElementById('profilePhotoInput');
+    const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+    let uploadedFile = null; // 현재 업로드된 파일 정보를 저장할 변수
 
     // ----------------------------------------------------
     // 공통 파일 처리 함수 (이미지/동영상 분기 처리)
@@ -259,6 +300,11 @@
         // 기존 콘텐츠 초기화
         photoContainer.innerHTML = ''; 
         photoContainer.style.backgroundImage = 'none';
+        uploadedFile = file; // 현재 파일 저장
+
+        // 동영상 버튼 초기화
+        downloadVideoBtn.style.display = 'none';
+        downloadVideoBtn.onclick = null; 
 
         if (file.type.match('image.*')) {
             // 이미지 파일 처리
@@ -271,42 +317,45 @@
 
         } else if (file.type.match('video.*')) {
             // 동영상 파일 처리
+            const fileURL = URL.createObjectURL(file);
+            
             const videoElement = document.createElement('video');
-            videoElement.controls = false; // 컨트롤바 숨김
+            videoElement.controls = false; 
             videoElement.loop = true;
             videoElement.muted = true;
-            videoElement.autoplay = true; // 자동 재생
+            videoElement.autoplay = true;
             videoElement.preload = 'metadata';
-            
-            // 캡처를 위해 동영상의 첫 프레임을 포스터로 설정 (html2canvas가 video 요소를 캡처하는 데 어려움이 있을 수 있으므로, 시각적으로 이미지를 표시)
-            // 실제 video 요소가 포함되었기 때문에 html2canvas가 이 영역을 투명하게 캡처하거나 비디오의 현재 프레임을 캡처하려고 시도함.
-            // video 자체를 캡처하기 어렵기 때문에 포스터와 오버레이 아이콘으로 대체하여 시각적으로 표시.
-            
-            const fileURL = URL.createObjectURL(file);
             videoElement.src = fileURL;
 
-            // 재생 아이콘 오버레이 추가 (캡처에 포함될 수 있도록)
+            // 재생 아이콘 오버레이 추가
             const overlay = document.createElement('div');
             overlay.className = 'play-icon-overlay';
-            overlay.innerHTML = '<span class="play-icon">▶️</span>'; // 재생 아이콘
+            overlay.innerHTML = '<span class="play-icon">▶️</span>'; 
 
             photoContainer.appendChild(videoElement);
             photoContainer.appendChild(overlay);
-            photoContainer.textContent = ''; // 텍스트 제거
+            photoContainer.textContent = ''; 
 
-            // 동영상이 로드된 후 포스터를 캡처할 준비가 되도록 대기
-            videoElement.onloadeddata = () => {
-                videoElement.play(); // 자동 재생 시작
-                // 필요하다면, 여기서 videoElement.currentTime을 설정하여 포스터로 사용할 프레임을 지정할 수도 있습니다.
+            // 동영상이 로드되면 URL을 해제하여 메모리 누수 방지
+            videoElement.onloadedmetadata = () => {
+                URL.revokeObjectURL(fileURL); // 동영상이 재생될 준비가 되면 임시 URL 해제
             };
 
-            // HTML2Canvas가 캔버스 기반 캡처를 하므로, 동영상보다는 포스터 프레임과 오버레이가 캡처되도록 유도합니다.
+            // 동영상 다운로드 버튼 활성화 및 기능 할당
+            downloadVideoBtn.style.display = 'block';
+            downloadVideoBtn.onclick = function() {
+                // 다운로드 기능은 캡처 기능 아래에 구현
+                downloadVideo();
+            };
 
         } else {
             alert("이미지 또는 동영상 파일만 사용할 수 있습니다.");
             photoContainer.textContent = '사진 또는 동영상을 드래그하거나 선택하여 업로드해주세요.';
+            uploadedFile = null;
             return;
         }
+        
+        document.getElementById('downloadArea').style.display = 'block';
     }
 
 
@@ -361,7 +410,7 @@
 
 
     // ----------------------------------------------------
-    // 3. 드래그 앤 드롭 기능 추가
+    // 3. 드래그 앤 드롭 기능 추가 (기존 로직 유지)
     // ----------------------------------------------------
     
     // 기본 브라우저 동작 방지
@@ -406,11 +455,22 @@
     // ----------------------------------------------------
     document.getElementById('downloadImageBtn').addEventListener('click', function() {
         const cardElement = document.getElementById('profileCardToCapture');
-        
-        // 캡처 전에 동영상 자동 재생을 일시 중지하여 포스터 프레임만 캡처되도록 함
         const video = cardElement.querySelector('video');
-        if (video) {
-            video.pause();
+        let imageToRestore = null;
+
+        // **[핵심 수정] 캡처를 위한 동영상 처리**
+        if (video && uploadedFile.type.match('video.*')) {
+            // 1. 캔버스 요소를 사용하여 동영상의 현재 프레임을 이미지로 추출
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+            imageToRestore = tempCanvas.toDataURL('image/png'); // 추출된 프레임 이미지
+
+            // 2. 동영상 숨기고 추출된 이미지를 배경으로 설정하여 html2canvas가 캡처하도록 유도
+            video.style.display = 'none';
+            cardElement.querySelector('.profile-photo-container').style.backgroundImage = `url('${imageToRestore}')`;
         }
 
         html2canvas(cardElement, {
@@ -418,15 +478,16 @@
             allowTaint: true,
             useCORS: true 
         }).then(function(canvas) {
-            // 캡처 완료 후 동영상 다시 재생 (필요하다면)
-            if (video) {
-                video.play();
+            // **[복원] 캡처 완료 후 동영상/배경 복원**
+            if (video && uploadedFile.type.match('video.*')) {
+                video.style.display = 'block'; // 동영상 다시 표시
+                cardElement.querySelector('.profile-photo-container').style.backgroundImage = 'none'; // 배경 제거
             }
-
+            
             const imageURI = canvas.toDataURL("image/png");
             const a = document.createElement('a');
             const name = document.getElementById('name').value || '데이지';
-            const fileName = `${name}_데이지_프로필_카드.png`;
+            const fileName = `${name}_프로필_카드_캡처.png`;
             
             a.href = imageURI;
             a.download = fileName;
@@ -435,10 +496,44 @@
             a.click();
             document.body.removeChild(a);
 
-            // 사용자 경험을 위해 작은 알림 추가
-            alert(`✅ 프로필 카드 이미지 다운로드가 완료되었습니다. (${fileName})`);
+            alert(`✅ 프로필 카드 이미지 캡처가 완료되었습니다. (${fileName})`);
         });
     });
+
+
+    // ----------------------------------------------------
+    // 5. 동영상 원본 다운로드 기능 추가
+    // ----------------------------------------------------
+    function downloadVideo() {
+        if (!uploadedFile || !uploadedFile.type.match('video.*')) {
+            alert('업로드된 동영상이 없습니다.');
+            return;
+        }
+
+        // FileReader를 사용하여 Blob 데이터를 읽고 다운로드
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const a = document.createElement('a');
+            const name = document.getElementById('name').value || '데이지';
+            
+            // 파일 확장자 추출 (예: video/mp4 -> .mp4)
+            const extension = uploadedFile.type.split('/')[1] || 'mp4'; 
+            const fileName = `${name}_원본_영상.${extension}`;
+
+            a.href = e.target.result; // Data URL (Blob)
+            a.download = fileName;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            alert(`✅ 동영상 원본 파일 다운로드가 완료되었습니다. (${fileName})`);
+        };
+
+        // 파일을 Data URL 형태로 읽음
+        reader.readAsDataURL(uploadedFile); 
+    }
+
 
     // 초기 로드 시 기본 프로필 정보로 한 번 업데이트
     document.getElementById('profileForm').dispatchEvent(new Event('submit'));
