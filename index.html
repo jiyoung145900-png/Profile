@@ -3,83 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 데이지 프로필 카드 생성기 - 최종 버전</title>
+    <title>🌸 데이지 프로필 카드 생성기 - 고화질 통합 버전</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        /* 기본 설정 */
-        body { font-family: 'Malgun Gothic', 'Arial', sans-serif; background-color: #f5f5f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .wrapper { display: flex; gap: 40px; max-width: 1000px; margin: 0 auto; }
-        h2 { color: #f7a7bb; text-align: center; margin-bottom: 25px; }
-
-        /* 입력 폼 스타일 */
-        .input-panel { width: 400px; background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); height: fit-content; }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: bold; margin-bottom: 6px; color: #444; }
-        input[type="text"], input[type="number"], textarea, input[type="file"], select { 
-            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s; 
+        /* 1. 기본 레이아웃 설정 */
+        body { 
+            font-family: 'Malgun Gothic', 'Arial', sans-serif; 
+            background-color: #f5f5f5; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
         }
-        input:focus, textarea:focus, select:focus { border-color: #f7a7bb; outline: none; }
-        textarea { resize: vertical; height: 60px; }
+        .wrapper { 
+            display: flex; 
+            gap: 40px; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            align-items: flex-start;
+        }
+        h2 { 
+            color: #f7a7bb; 
+            text-align: center; 
+            margin-bottom: 25px; 
+        }
+
+        /* 2. 입력 폼 스타일 (왼쪽 패널) */
+        .input-panel { 
+            width: 400px; 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); 
+            height: fit-content; 
+        }
+        .form-group { 
+            margin-bottom: 18px; 
+        }
+        label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 6px; 
+            color: #444; 
+        }
+        input[type="text"], 
+        input[type="number"], 
+        textarea, 
+        input[type="file"], 
+        select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            transition: border-color 0.3s; 
+        }
+        input:focus, textarea:focus, select:focus { 
+            border-color: #f7a7bb; 
+            outline: none; 
+        }
+        textarea { 
+            resize: vertical; 
+            height: 60px; 
+        }
         
-        /* 버튼 스타일 */
-        .btn-primary { background-color: #f7a7bb; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s, transform 0.1s; margin-top: 10px;}
-        .btn-primary:hover { background-color: #e696a9; transform: translateY(-1px); }
+        .btn-primary { 
+            background-color: #f7a7bb; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            width: 100%; 
+            transition: background-color 0.3s, transform 0.1s; 
+            margin-top: 10px;
+        }
+        .btn-primary:hover { 
+            background-color: #e696a9; 
+            transform: translateY(-1px); 
+        }
 
         /* ------------------------------------------- */
-        /* 프로필 카드 스타일 (출력, 이미지화 대상) */
+        /* 3. 프로필 카드 스타일 (출력/이미지화 대상) */
         /* ------------------------------------------- */
         .profile-card { 
             width: 350px; 
             background: white; 
-            border: 1px solid #eee;
+            /* ❗중요: 흰줄 방지를 위해 border 대신 박스 그림자만 사용하거나 아주 얇은 투명 border 사용 */
+            border: none; 
             border-radius: 12px; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
+            overflow: hidden; /* 사진이 테두리 밖으로 나가는 현상 방지 */
         }
 
-        /* 카드 헤더 (로고만 표시) */
+        /* 카드 헤더 */
         .card-header {
             background-color: #f7a7bb; 
             color: white;
             padding: 10px 15px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
             display: flex;
-            justify-content: center; /* 로고 중앙 정렬 */
+            justify-content: center;
             align-items: center;
         }
-        .logo-text { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; }
-        .logo-text span { margin-right: 5px; font-size: 1.1em; } 
+        .logo-text { 
+            font-size: 1.3em; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+        }
 
-        /* 사진 영역 */
+        /* 사진 영역 - 화질 렌더링 최적화 */
         .profile-photo-container {
             width: 100%;
             height: 350px; 
             background-color: #f0f0f0;
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             justify-content: center;
             align-items: center;
             color: #aaa;
             font-style: italic;
+            text-align: center;
+            padding: 0 20px;
+            box-sizing: border-box;
             cursor: pointer; 
             border: 2px dashed transparent; 
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            /* ❗이미지 렌더링 선명도 우선 설정 */
+            image-rendering: -webkit-optimize-contrast;
         }
         .profile-photo-container.drag-over {
             border-color: #f7a7bb; 
             background-color: #fff0f5;
+            color: #f7a7bb;
         }
         
-        /* 정보 영역 */
-        .card-body { padding: 20px; }
-        .name-age { font-size: 2.2em; font-weight: 800; color: #333; margin-bottom: 5px; line-height: 1; }
+        /* 카드 바디 (정보 텍스트) */
+        .card-body { 
+            padding: 20px; 
+            background-color: white; 
+        }
+        .name-age { 
+            font-size: 2.2em; 
+            font-weight: 800; 
+            color: #333; 
+            margin-bottom: 5px; 
+            line-height: 1; 
+        }
         
-        /* 키/몸무게/사이즈/직업 정보 레이아웃 */
+        /* 상세 정보 그리드 레이아웃 */
         .extra-info {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px 20px;
             margin-bottom: 20px;
             font-size: 1em;
@@ -87,22 +166,41 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
         }
-        .extra-info > div { /* 각 정보 항목에 스타일 적용 */
-            display: flex;
-            justify-content: space-between;
+        .extra-info > div { 
+            display: flex; 
+            justify-content: space-between; 
         }
-        .extra-info span {
-            font-weight: 600;
-            color: #333;
+        .extra-info span { 
+            font-weight: 600; 
+            color: #333; 
         }
 
         /* 한 줄 소개 */
-        .tagline { font-style: italic; color: #f7a7bb; margin-bottom: 20px; border-left: 4px solid #f7a7bb; padding-left: 10px; line-height: 1.4; }
+        .tagline { 
+            font-style: italic; 
+            color: #f7a7bb; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #f7a7bb; 
+            padding-left: 10px; 
+            line-height: 1.4; 
+        }
         
         /* 취미 영역 */
-        .interests-area { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
-        .interests-area h4 { color: #5b995b; margin-bottom: 10px; font-size: 1.1em; }
-        .interest-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .interests-area { 
+            margin-top: 10px; 
+            padding-top: 10px; 
+            border-top: 1px solid #eee; 
+        }
+        .interests-area h4 { 
+            color: #5b995b; 
+            margin-bottom: 10px; 
+            font-size: 1.1em; 
+        }
+        .interest-list { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+        }
         .interest-tag { 
             background-color: #e8f5e9; 
             color: #5b995b; 
@@ -111,6 +209,12 @@
             font-size: 0.9em;
             font-weight: 600;
         }
+
+        /* 다운로드 버튼 영역 */
+        #downloadArea {
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -118,11 +222,10 @@
 <h2>🌸 데이지 프로필 카드 생성기</h2>
 
 <div class="wrapper">
-    
     <div class="input-panel">
         <form id="profileForm">
             <div class="form-group">
-                <label for="profilePhotoInput">1. 프로필 사진 (파일 선택 또는 드래그 & 드롭)</label>
+                <label for="profilePhotoInput">1. 프로필 사진 (클릭/드래그앤드롭)</label>
                 <input type="file" id="profilePhotoInput" accept="image/*">
             </div>
             
@@ -147,19 +250,19 @@
             </div>
             
             <div class="form-group">
-                <label for="bustSize">5. 가슴 사이즈</label>
+                <label for="bustSize">6. 가슴 사이즈</label>
                 <select id="bustSize" required>
-                    <option value="A">A컵</option>                  
+                    <option value="A">A컵</option>
                     <option value="A+">A+컵</option>
                     <option value="B">B컵</option>
-                    <option value="B+">B+컵</option>                    
+                    <option value="B+">B+컵</option>
                     <option value="C" selected>C컵</option>
-                    <option value="C+">C+컵</option>                    
+                    <option value="C+">C+컵</option>
                     <option value="D">D컵</option>
                     <option value="D+">D+컵</option>
-                    <option value="E">E컵 </option>
-                    <option value="E">F컵 </option>
-                    <option value="E">G컵 </option>
+                    <option value="E">E컵</option>
+                    <option value="F">F컵</option>
+                    <option value="G">G컵</option>
                 </select>
             </div>
 
@@ -174,11 +277,11 @@
             </div>
 
             <div class="form-group">
-                <label for="interests">9. 취미 (쉼표(,)로 구분)</label>
-                <textarea id="interests" placeholder="예: 요가, 독서, 여행" required>영화 감상, 요리, 와인 테이스팅, 독서</textarea>
+                <label for="interests">9. 취미 (쉼표로 구분)</label>
+                <textarea id="interests" required>영화 감상, 요리, 와인 테이스팅, 독서</textarea>
             </div>
 
-            <button type="submit" class="btn-primary">✨ 프로필 카드 생성/업데이트</button>
+            <button type="submit" class="btn-primary">✨ 프로필 카드 정보 업데이트</button>
         </form>
     </div>
 
@@ -205,17 +308,13 @@
                 <div class="interests-area">
                     <h4># 나의 취미들</h4>
                     <div class="interest-list" id="displayInterests">
-                        <span class="interest-tag">영화 감상</span>
-                        <span class="interest-tag">요리</span>
-                        <span class="interest-tag">와인 테이스팅</span>
-                        <span class="interest-tag">독서</span>
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
 
         <div id="downloadArea">
-            <button id="downloadImageBtn" class="btn-primary">🖼️ 프로필 카드 이미지 다운로드 (.png)</button>
+            <button id="downloadImageBtn" class="btn-primary" style="background-color: #5b995b;">🖼️ 고화질 이미지 다운로드 (.png)</button>
         </div>
     </div>
 </div>
@@ -225,67 +324,60 @@
     const profilePhotoInput = document.getElementById('profilePhotoInput');
 
     // ----------------------------------------------------
-    // 공통 파일 처리 함수 (파일 선택, 드래그 앤 드롭 모두 사용)
+    // [공통 파일 처리] 사진 미리보기 로직
     // ----------------------------------------------------
     function handleFile(file) {
         if (!file.type.match('image.*')) {
-            alert("이미지 파일만 사용할 수 있습니다.");
+            alert("이미지 파일만 가능합니다.");
             return;
         }
-        
         const reader = new FileReader();
-        
-        reader.onload = function(event) {
-            photoContainer.style.backgroundImage = `url('${event.target.result}')`;
-            photoContainer.textContent = ''; 
+        reader.onload = function(e) {
+            photoContainer.style.backgroundImage = `url('${e.target.result}')`;
+            photoContainer.textContent = ''; // 안내 문구 삭제
         };
-        
         reader.readAsDataURL(file);
     }
 
-
     // ----------------------------------------------------
-    // 1. 프로필 카드 업데이트 (텍스트 정보)
+    // [1. 텍스트 정보 업데이트]
     // ----------------------------------------------------
     document.getElementById('profileForm').addEventListener('submit', function(e) {
-        e.preventDefault(); 
+        e.preventDefault();
         
-        // 입력 값 가져오기
+        // 데이터 가져오기
         const name = document.getElementById('name').value;
         const age = document.getElementById('age').value;
         const height = document.getElementById('height').value;
-        const weight = document.getElementById('weight').value; // 몸무게 추가
+        const weight = document.getElementById('weight').value;
         const bustSize = document.getElementById('bustSize').value;
         const occupation = document.getElementById('occupation').value;
         const tagline = document.getElementById('tagline').value;
-        const interestsInput = document.getElementById('interests').value;
+        const interestsVal = document.getElementById('interests').value;
 
-        // 화면 업데이트
+        // 화면 텍스트 반영
         document.getElementById('displayName').textContent = name;
         document.getElementById('displayAge').textContent = age;
-        document.getElementById('displayHeight').textContent = `${height}cm`;
-        document.getElementById('displayWeight').textContent = `${weight}kg`; // 몸무게 출력
-        document.getElementById('displayBustSize').textContent = `${bustSize}컵`;
+        document.getElementById('displayHeight').textContent = height + 'cm';
+        document.getElementById('displayWeight').textContent = weight + 'kg';
+        document.getElementById('displayBustSize').textContent = bustSize + '컵';
         document.getElementById('displayOccupation').textContent = occupation;
         document.getElementById('displayTagline').textContent = `"${tagline}"`;
         
         // 취미 태그 생성
-        const interestsArray = interestsInput.split(',').map(item => item.trim()).filter(item => item !== '');
-        const interestsContainer = document.getElementById('displayInterests');
-        interestsContainer.innerHTML = ''; 
-
-        interestsArray.forEach(interest => {
-            const tag = document.createElement('span');
-            tag.className = 'interest-tag';
-            tag.textContent = interest;
-            interestsContainer.appendChild(tag);
+        const interestsArray = interestsVal.split(',').map(s => s.trim()).filter(s => s !== '');
+        const container = document.getElementById('displayInterests');
+        container.innerHTML = '';
+        interestsArray.forEach(text => {
+            const span = document.createElement('span');
+            span.className = 'interest-tag';
+            span.textContent = text;
+            container.appendChild(span);
         });
-        
-        document.getElementById('downloadArea').style.display = 'block';
     });
 
     // ----------------------------------------------------
-    // 2. 사진 미리보기 (파일 선택 기능)
+    // [2. 사진 변경 리스너 (클릭 선택)]
     // ----------------------------------------------------
     profilePhotoInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
@@ -293,74 +385,70 @@
         }
     });
 
-
     // ----------------------------------------------------
-    // 3. 드래그 앤 드롭 기능 추가
+    // [3. 드래그 앤 드롭 상세 로직] (원본 유지)
     // ----------------------------------------------------
-    
     // 기본 브라우저 동작 방지
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        photoContainer.addEventListener(eventName, preventDefaults, false);
+        photoContainer.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
     });
 
-    function preventDefaults (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+    // 시각적 피드백 (하이라이트)
+    ['dragenter', 'dragover'].forEach(eventName => {
+        photoContainer.addEventListener(eventName, () => {
+            photoContainer.classList.add('drag-over');
+        }, false);
+    });
 
-    // 드래그 오버(진입) 시 시각적 피드백 제공
-    photoContainer.addEventListener('dragenter', highlight, false);
-    photoContainer.addEventListener('dragover', highlight, false);
-    photoContainer.addEventListener('dragleave', unhighlight, false);
-    photoContainer.addEventListener('drop', unhighlight, false);
+    ['dragleave', 'drop'].forEach(eventName => {
+        photoContainer.addEventListener(eventName, () => {
+            photoContainer.classList.remove('drag-over');
+        }, false);
+    });
 
-    function highlight(e) {
-        photoContainer.classList.add('drag-over');
-    }
-
-    function unhighlight(e) {
-        photoContainer.classList.remove('drag-over');
-    }
-
-    // 드롭 이벤트 처리
-    photoContainer.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        let dt = e.dataTransfer;
-        let files = dt.files;
-
+    // 드롭 시 파일 처리
+    photoContainer.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
         if (files.length > 0) {
             handleFile(files[0]);
         }
-    }
-
+    }, false);
 
     // ----------------------------------------------------
-    // 4. 이미지 다운로드 기능 (html2canvas 사용)
+    // [4. 핵심: 초고화질 이미지 저장 (버그 수정판)]
     // ----------------------------------------------------
     document.getElementById('downloadImageBtn').addEventListener('click', function() {
         const cardElement = document.getElementById('profileCardToCapture');
         
+        // ❗ scale: 3 설정으로 원본보다 훨씬 선명하게 캡처 (픽셀 밀도 향상)
         html2canvas(cardElement, {
-            scale: 2, 
+            scale: 3,             
+            useCORS: true,        
             allowTaint: true,
-            useCORS: true 
+            backgroundColor: "#ffffff", // ❗배경을 흰색으로 고정하여 투명도 오차로 인한 흰 줄 방지
+            logging: false,
+            // ❗캡처 시 스크롤 위치에 따른 오프셋 방지
+            scrollX: 0,
+            scrollY: -window.scrollY 
         }).then(function(canvas) {
-            const imageURI = canvas.toDataURL("image/png");
-            const a = document.createElement('a');
-            const name = document.getElementById('name').value || '데이지';
-            const fileName = `${name}_데이지_프로필_카드.png`;
+            const imageURI = canvas.toDataURL("image/png", 1.0); // 최고 품질 추출
+            const link = document.createElement('a');
+            const userName = document.getElementById('name').value || '데이지';
             
-            a.href = imageURI;
-            a.download = fileName;
+            link.href = imageURI;
+            link.download = `${userName}_프로필_카드.png`;
             
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
     });
 
-    // 초기 로드 시 기본 프로필 정보로 한 번 업데이트
+    // 페이지 로드 시 초기 데이터 반영
     document.getElementById('profileForm').dispatchEvent(new Event('submit'));
 </script>
 
