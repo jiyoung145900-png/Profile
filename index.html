@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 데이지 프로필 카드 생성기 - 고화질 로고 조절 버전</title>
+    <title>🌸 데이지 프로필 카드 생성기 - 최종 통합본</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         /* [1. 전체 레이아웃] */
@@ -18,7 +18,7 @@
         .wrapper { 
             display: flex; 
             gap: 40px; 
-            max-width: 1100px; 
+            max-width: 1000px; 
             margin: 0 auto; 
             align-items: flex-start;
         }
@@ -28,65 +28,106 @@
             margin-bottom: 25px; 
         }
 
-        /* [2. 왼쪽 입력 패널] */
+        /* [2. 입력 폼 스타일 - 왼쪽 패널] */
         .input-panel { 
-            width: 420px; 
+            width: 400px; 
             background-color: white; 
-            padding: 25px; 
+            padding: 30px; 
             border-radius: 12px; 
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); 
             height: fit-content; 
         }
-        .form-group { margin-bottom: 15px; }
+        .form-group { 
+            margin-bottom: 18px; 
+        }
         label { 
             display: block; 
             font-weight: bold; 
-            margin-bottom: 5px; 
+            margin-bottom: 6px; 
             color: #444; 
-            font-size: 14px;
         }
-        input[type="text"], input[type="number"], textarea, input[type="file"], select { 
-            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; 
+        input[type="text"], 
+        input[type="number"], 
+        textarea, 
+        input[type="file"], 
+        select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            transition: border-color 0.3s; 
         }
-        
-        /* 로고 조절 슬라이더 디자인 */
-        .control-box {
-            background: #fff0f5;
+        input:focus, textarea:focus, select:focus { 
+            border-color: #f7a7bb; 
+            outline: none; 
+        }
+        textarea { 
+            resize: vertical; 
+            height: 60px; 
+        }
+
+        /* 신규 추가: 로고 상세 조절 컨트롤 박스 */
+        .logo-controls {
+            background-color: #fff9fa;
+            border: 1px solid #f7a7bb;
             padding: 15px;
             border-radius: 8px;
             margin-top: 10px;
-            border: 1px solid #f7a7bb;
         }
-        .control-box label { color: #d6336c; font-size: 12px; margin-bottom: 2px; }
-        .slider { width: 100%; margin-bottom: 10px; cursor: pointer; }
-
+        .logo-controls label {
+            font-size: 12px;
+            color: #f7a7bb;
+            margin-bottom: 2px;
+        }
+        .slider {
+            width: 100%;
+            margin-bottom: 10px;
+            accent-color: #f7a7bb;
+        }
+        
         .btn-primary { 
-            background-color: #f7a7bb; color: white; padding: 15px; border: none; border-radius: 8px; 
-            cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; margin-top: 10px;
+            background-color: #f7a7bb; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            width: 100%; 
+            transition: background-color 0.3s, transform 0.1s; 
+            margin-top: 10px;
+            font-weight: bold;
         }
-        .btn-primary:hover { background-color: #e696a9; }
+        .btn-primary:hover { 
+            background-color: #e696a9; 
+            transform: translateY(-1px); 
+        }
 
         /* [3. 프로필 카드 디자인] */
         .profile-card { 
             width: 350px; 
             background: white; 
+            border: none; 
             border-radius: 12px; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            /* 고화질 렌더링 힌트 */
+            margin-top: 20px;
+            overflow: hidden; 
+            /* 고화질 렌더링을 위한 설정 */
             image-rendering: -webkit-optimize-contrast;
             transform: translateZ(0);
         }
 
-        /* 카드 헤더 및 로고 위치 조절 핵심 */
+        /* 카드 헤더 (로고 자유 이동 구역) */
         .card-header {
             background-color: #f7a7bb; 
             color: white;
-            height: 55px; /* 헤더 높이 고정 */
-            position: relative;
+            padding: 12px 15px;
+            height: 40px; /* 헤더 높이 확보 */
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
             overflow: hidden;
         }
         
@@ -95,12 +136,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: none;
-            transform-origin: center center;
+            pointer-events: none; /* 슬라이더로만 조절 */
         }
 
         #displayLogo {
-            height: 35px; /* 기본 높이 */
+            height: 28px; 
             width: auto;
             object-fit: contain;
             display: none;
@@ -109,10 +149,11 @@
         .logo-text { 
             font-size: 1.3em; 
             font-weight: 700; 
-            z-index: 1;
+            display: flex; 
+            align-items: center; 
         }
 
-        /* 사진 영역 고화질 설정 */
+        /* 사진 영역 (기존 드래그 효과 그대로 유지) */
         .profile-photo-container {
             width: 100%;
             height: 350px; 
@@ -124,135 +165,225 @@
             justify-content: center;
             align-items: center;
             color: #aaa;
+            font-style: italic;
             text-align: center;
+            padding: 0 20px;
+            box-sizing: border-box;
             cursor: pointer; 
-            /* 이미지 품질 최우선 */
-            image-rendering: auto;
+            border: 2px dashed transparent; 
+            transition: all 0.3s;
+        }
+        .profile-photo-container.drag-over {
+            border-color: #f7a7bb; 
+            background-color: #fff0f5;
+            color: #f7a7bb;
         }
         
-        .card-body { padding: 20px; background-color: white; }
-        .name-age { font-size: 2.2em; font-weight: 800; color: #333; margin-bottom: 5px; line-height: 1; }
+        /* 카드 바디 (기존 스타일 유지) */
+        .card-body { 
+            padding: 20px; 
+            background-color: white; 
+        }
+        .name-age { 
+            font-size: 2.2em; 
+            font-weight: 800; 
+            color: #333; 
+            margin-bottom: 5px; 
+            line-height: 1; 
+        }
+        
         .extra-info {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px;
-            margin-bottom: 15px; font-size: 0.95em; color: #555; border-bottom: 1px solid #eee; padding-bottom: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 20px;
+            margin-bottom: 20px;
+            font-size: 1em;
+            color: #555;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
         }
-        .extra-info span { font-weight: 600; color: #333; }
-        .tagline { 
-            font-style: italic; color: #f7a7bb; margin-bottom: 15px; 
-            border-left: 4px solid #f7a7bb; padding-left: 10px; line-height: 1.4; font-size: 0.9em;
+        .extra-info > div { 
+            display: flex; 
+            justify-content: space-between; 
         }
-        .interests-area h4 { color: #5b995b; margin-bottom: 8px; font-size: 1em; }
-        .interest-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .interest-tag { 
-            background-color: #e8f5e9; color: #5b995b; padding: 4px 10px; 
-            border-radius: 20px; font-size: 0.85em; font-weight: 600;
+        .extra-info span { 
+            font-weight: 600; 
+            color: #333; 
         }
 
-        #downloadArea { margin-top: 20px; text-align: center; }
+        .tagline { 
+            font-style: italic; 
+            color: #f7a7bb; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #f7a7bb; 
+            padding-left: 10px; 
+            line-height: 1.4; 
+        }
+        
+        .interests-area { 
+            margin-top: 10px; 
+            padding-top: 10px; 
+            border-top: 1px solid #eee; 
+        }
+        .interests-area h4 { 
+            color: #5b995b; 
+            margin-bottom: 10px; 
+            font-size: 1.1em; 
+        }
+        .interest-list { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+        }
+        .interest-tag { 
+            background-color: #e8f5e9; 
+            color: #5b995b; 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        #downloadArea {
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-<h2>🌸 데이지 고화질 프로필 생성기</h2>
+<h2>🌸 데이지 프로필 카드 생성기</h2>
 
 <div class="wrapper">
     <div class="input-panel">
         <form id="profileForm">
             <div class="form-group">
-                <label>🚩 로고 업로드 및 위치 조절</label>
+                <label for="logoInput">🚩 우리 로고 업로드 및 위치 조절</label>
                 <input type="file" id="logoInput" accept="image/*">
-                <div class="control-box">
-                    <label>크기 조절</label>
-                    <input type="range" id="logoScale" class="slider" min="0.5" max="3" step="0.1" value="1">
-                    <label>좌우 위치</label>
+                <div class="logo-controls">
+                    <label>📏 로고 크기 (Scale)</label>
+                    <input type="range" id="logoScale" class="slider" min="0.5" max="5" step="0.1" value="1">
+                    <label>↔️ 좌우 위치 (X축)</label>
                     <input type="range" id="logoX" class="slider" min="-150" max="150" step="1" value="0">
-                    <label>상하 위치</label>
+                    <label>↕️ 상하 위치 (Y축)</label>
                     <input type="range" id="logoY" class="slider" min="-30" max="30" step="1" value="0">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>📸 프로필 사진 업로드</label>
+                <label for="profilePhotoInput">📸 프로필 사진 업로드 (드래그 가능)</label>
                 <input type="file" id="profilePhotoInput" accept="image/*">
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="form-group"><label>이름</label><input type="text" id="name" value="김데이지"></div>
-                <div class="form-group"><label>나이</label><input type="number" id="age" value="28"></div>
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" value="김데이지" required>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                <div class="form-group"><label>키</label><input type="number" id="height" value="165"></div>
-                <div class="form-group"><label>몸무게</label><input type="number" id="weight" value="50"></div>
-                <div class="form-group">
-                    <label>가슴</label>
-                    <select id="bustSize">
-                        <option value="A">A컵</option><option value="B">B컵</option><option value="C" selected>C컵</option>
-                        <option value="D">D컵</option><option value="E">E컵</option><option value="F">F컵</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label for="age">나이</label>
+                <input type="number" id="age" value="28" min="18" max="99" required>
             </div>
 
-            <div class="form-group"><label>직업</label><input type="text" id="occupation" value="마케터"></div>
-            <div class="form-group"><label>한 줄 소개</label><input type="text" id="tagline" value="따뜻한 대화와 에너지를 공유해요."></div>
-            <div class="form-group"><label>취미 (쉼표 구분)</label><textarea id="interests">영화, 요리, 와인, 독서</textarea></div>
+            <div class="form-group">
+                <label for="height">키 (cm)</label>
+                <input type="number" id="height" value="165" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">몸무게 (kg)</label>
+                <input type="number" id="weight" value="50" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bustSize">가슴 사이즈</label>
+                <select id="bustSize" required>
+                    <option value="A">A컵</option>
+                    <option value="B">B컵</option>
+                    <option value="C" selected>C컵</option>
+                    <option value="D">D컵</option>
+                    <option value="E">E컵</option>
+                    <option value="F">F컵</option>
+                </select>
+            </div>
 
-            <button type="submit" class="btn-primary">✨ 정보 업데이트</button>
+            <div class="form-group">
+                <label for="occupation">직업</label>
+                <input type="text" id="occupation" value="마케터" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tagline">한 줄 소개</label>
+                <input type="text" id="tagline" value="따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요." required>
+            </div>
+
+            <div class="form-group">
+                <label for="interests">취미 (쉼표로 구분)</label>
+                <textarea id="interests" required>영화 감상, 요리, 와인 테이스팅, 독서</textarea>
+            </div>
+
+            <button type="submit" class="btn-primary">✨ 프로필 카드 정보 업데이트</button>
         </form>
     </div>
 
     <div class="profile-output">
         <div class="profile-card" id="profileCardToCapture">
-            <div class="card-header" id="cardHeader">
+            <div class="card-header">
                 <div id="logoWrapper">
                     <img id="displayLogo" src="" alt="Logo">
                 </div>
                 <span class="logo-text" id="headerText">DAISY Hookups</span>
             </div>
             <div class="profile-photo-container" id="photoContainer">
-                사진을 업로드해주세요.
+                사진을 드래그하거나 선택하여 업로드해주세요.
             </div>
             <div class="card-body">
                 <div class="name-age"><span id="displayName">김데이지</span>, <span id="displayAge">28</span></div>
+                
                 <div class="extra-info">
                     <div>키: <span id="displayHeight">165cm</span></div>
                     <div>몸무게: <span id="displayWeight">50kg</span></div>
                     <div>사이즈: <span id="displayBustSize">C컵</span></div>
                     <div>직업: <span id="displayOccupation">마케터</span></div>
                 </div>
-                <div class="tagline" id="displayTagline">"따뜻한 대화와 에너지를 공유해요."</div>
+                
+                <div class="tagline" id="displayTagline">"따뜻한 대화와 긍정적인 에너지를 공유하고 싶어요."</div>
+                
                 <div class="interests-area">
+                    <h4># 나의 취미들</h4>
                     <div class="interest-list" id="displayInterests"></div>
                 </div>
             </div>
         </div>
 
         <div id="downloadArea">
-            <button id="downloadImageBtn" class="btn-primary" style="background-color: #5b995b;">🖼️ 초고화질 이미지 저장 (.png)</button>
+            <button id="downloadImageBtn" class="btn-primary" style="background-color: #5b995b;">🖼️ 고화질 이미지 다운로드 (.png)</button>
         </div>
     </div>
 </div>
 
 <script>
     const photoContainer = document.getElementById('photoContainer');
+    const profilePhotoInput = document.getElementById('profilePhotoInput');
+    const logoInput = document.getElementById('logoInput');
     const displayLogo = document.getElementById('displayLogo');
     const logoWrapper = document.getElementById('logoWrapper');
     const headerText = document.getElementById('headerText');
 
-    // [1. 로고 업로드 및 위치/크기 실시간 조절]
-    document.getElementById('logoInput').addEventListener('change', function(e) {
-        if (e.target.files[0]) {
+    // [1. 로고 업로드 및 실시간 위치 조절 로직]
+    logoInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 displayLogo.src = event.target.result;
                 displayLogo.style.display = 'block';
-                headerText.style.display = 'none'; // 로고 넣으면 글자는 숨김
+                headerText.style.display = 'none'; // 로고 넣으면 텍스트 숨김
             };
             reader.readAsDataURL(e.target.files[0]);
         }
     });
 
-    function updateLogoStyle() {
+    function updateLogoPosition() {
         const scale = document.getElementById('logoScale').value;
         const x = document.getElementById('logoX').value;
         const y = document.getElementById('logoY').value;
@@ -260,22 +391,52 @@
     }
 
     ['logoScale', 'logoX', 'logoY'].forEach(id => {
-        document.getElementById(id).addEventListener('input', updateLogoStyle);
+        document.getElementById(id).addEventListener('input', updateLogoPosition);
     });
 
-    // [2. 사진 업로드 (고화질 유지)]
-    document.getElementById('profilePhotoInput').addEventListener('change', function(e) {
-        if (e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                photoContainer.style.backgroundImage = `url('${event.target.result}')`;
-                photoContainer.textContent = ''; 
-            };
-            reader.readAsDataURL(e.target.files[0]);
+    // [2. 프로필 사진 업로드 (기존 핸들러 유지)]
+    function handleFile(file) {
+        if (!file.type.match('image.*')) {
+            alert("이미지 파일만 업로드 가능합니다.");
+            return;
         }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            photoContainer.style.backgroundImage = `url('${e.target.result}')`;
+            photoContainer.textContent = ''; 
+        };
+        reader.readAsDataURL(file);
+    }
+
+    profilePhotoInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
 
-    // [3. 텍스트 업데이트]
+    // [3. 드래그 앤 드롭 효과 (복구 완료)]
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        photoContainer.addEventListener(eventName, (e) => {
+            e.preventDefault(); e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        photoContainer.addEventListener(eventName, () => {
+            photoContainer.classList.add('drag-over');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        photoContainer.addEventListener(eventName, () => {
+            photoContainer.classList.remove('drag-over');
+        }, false);
+    });
+
+    photoContainer.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleFile(files[0]);
+    }, false);
+
+    // [4. 텍스트 정보 업데이트]
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         document.getElementById('displayName').textContent = document.getElementById('name').value;
@@ -286,39 +447,41 @@
         document.getElementById('displayOccupation').textContent = document.getElementById('occupation').value;
         document.getElementById('displayTagline').textContent = `"${document.getElementById('tagline').value}"`;
         
-        const tags = document.getElementById('interests').value.split(',').map(s => s.trim()).filter(s => s !== '');
+        const interestsArray = document.getElementById('interests').value.split(',').map(s => s.trim()).filter(s => s !== '');
         const container = document.getElementById('displayInterests');
         container.innerHTML = '';
-        tags.forEach(t => {
+        interestsArray.forEach(text => {
             const span = document.createElement('span');
             span.className = 'interest-tag';
-            span.textContent = t;
+            span.textContent = text;
             container.appendChild(span);
         });
     });
 
-    // [4. 초고화질 캡처 로직]
+    // [5. 초고화질 이미지 저장 (Scale: 4로 상향)]
     document.getElementById('downloadImageBtn').addEventListener('click', function() {
-        const card = document.getElementById('profileCardToCapture');
+        const cardElement = document.getElementById('profileCardToCapture');
         
-        // 화질을 위해 scale을 4로 높이고, 관련 옵션 최적화
-        html2canvas(card, {
-            scale: 4, // 4배 고해상도 캡처
-            useCORS: true,
+        html2canvas(cardElement, {
+            scale: 4, // 기존 3에서 4로 상향하여 완전 고화질 구현
+            useCORS: true,        
             allowTaint: true,
-            backgroundColor: "#ffffff",
-            letterRendering: true,
-            imageTimeout: 0,
-            logging: false
-        }).then(canvas => {
+            backgroundColor: "#ffffff", 
+            logging: false,
+            scrollX: 0,
+            scrollY: -window.scrollY 
+        }).then(function(canvas) {
+            const imageURI = canvas.toDataURL("image/png", 1.0); 
             const link = document.createElement('a');
-            link.href = canvas.toDataURL("image/png", 1.0);
-            link.download = `${document.getElementById('name').value}_고화질_프로필.png`;
+            const userName = document.getElementById('name').value || '데이지';
+            
+            link.href = imageURI;
+            link.download = `${userName}_고화질_프로필_카드.png`;
             link.click();
         });
     });
 
-    // 초기 실행
+    // 초기화
     document.getElementById('profileForm').dispatchEvent(new Event('submit'));
 </script>
 
