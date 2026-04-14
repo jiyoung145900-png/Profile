@@ -3,123 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackRock Korea Official ID</title>
+    <title>BlackRock Korea ID - Wide</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --br-black: #000000; --br-blue: #0076ff; --br-blue-dark: #003a8c; }
+        :root { --br-black: #000000; --br-blue: #0076ff; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background-color: #050505; padding: 40px; display: flex; flex-direction: column; align-items: center; color: white; }
-        .wrapper { display: flex; gap: 40px; max-width: 1100px; width: 100%; justify-content: center; align-items: flex-start; }
+        body { font-family: 'Inter', sans-serif; background-color: #111; padding: 40px; display: flex; flex-direction: column; align-items: center; color: white; }
+        .wrapper { display: flex; gap: 40px; max-width: 1200px; width: 100%; justify-content: center; align-items: flex-start; }
         
         /* 설정 패널 */
-        .input-panel { width: 350px; background: #111; padding: 25px; border: 1px solid #333; border-radius: 4px; }
+        .input-panel { width: 350px; background: #1a1a1a; padding: 25px; border: 1px solid #333; border-radius: 8px; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 11px; color: #777; font-weight: 700; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 4px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 11px; color: #888; font-weight: 700; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 4px; }
         .btn-main { background: white; color: black; border: none; padding: 15px; cursor: pointer; width: 100%; font-weight: 900; margin-top: 10px; text-transform: uppercase; }
 
-        /* 사원증 디자인 - [복구] 깔끔한 정석 레이아웃 */
+        /* 사원증 디자인 - [폭 확장 및 겹침 해결] */
         .id-card { 
-            width: 360px; height: 580px; background: white; position: relative; color: black;
+            width: 420px; height: 650px; background: white; position: relative; color: black;
             display: flex; flex-direction: column; align-items: center; box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+            border-radius: 4px; overflow: hidden;
         }
 
-        /* [요청] 블루 다이아몬드 패턴 헤더 */
+        /* 헤더 - 무늬 제거 및 로고 강조 */
         .card-header { 
-            width: 100%; height: 100px; background: var(--br-black); position: relative; overflow: hidden;
-            display: flex; flex-direction: column; justify-content: center; padding-left: 25px;
+            width: 100%; height: 110px; background: var(--br-black);
+            display: flex; flex-direction: column; justify-content: center; padding-left: 35px;
         }
-        .pattern-bg {
-            position: absolute; top: 0; right: -20px; width: 65%; height: 100%;
-            background: linear-gradient(135deg, var(--br-blue-dark) 25%, transparent 25%) -25px 0,
-                        linear-gradient(225deg, var(--br-blue-dark) 25%, transparent 25%) -25px 0,
-                        linear-gradient(45deg, var(--br-blue-dark) 25%, transparent 25%),
-                        linear-gradient(315deg, var(--br-blue-dark) 25%, var(--br-black) 25%);
-            background-size: 40px 40px; opacity: 0.8; transform: skewX(-15deg);
-        }
-        .header-overlay { position: absolute; inset: 0; background: linear-gradient(to right, #000 50%, transparent 90%); }
-        .br-logo { color: white; font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 34px; letter-spacing: -2px; position: relative; z-index: 2; }
-        .br-korea { color: #009cff; font-weight: 800; font-size: 13px; letter-spacing: 2px; position: relative; z-index: 2; margin-top: -2px; }
+        .br-logo { color: white; font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 38px; letter-spacing: -2px; }
+        .br-korea { color: #009cff; font-weight: 800; font-size: 14px; letter-spacing: 3px; margin-top: -2px; }
 
-        /* 사진 영역 - 원본 비율 유지 */
-        .photo-frame {
-            width: 240px; height: 280px; margin-top: 40px; background: #f0f0f0; border: 1px solid #ddd;
-            background-size: cover; background-position: center;
+        /* 사진 영역 - 넉넉한 사이즈 */
+        .photo-area {
+            width: 320px; height: 320px; margin-top: 30px; background: #f5f5f5; border: 1px solid #eee;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
         }
+        #displayPhoto { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 인적사항 */
-        .card-info { width: 100%; padding: 30px 40px; text-align: left; }
-        .name { font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: -1.5px; margin-bottom: 2px; }
-        .role { font-size: 15px; font-weight: 800; color: var(--br-blue); text-transform: uppercase; margin-bottom: 20px; }
+        /* 인적사항 - 간격 대폭 확대 */
+        .card-body { width: 100%; padding: 30px 45px; text-align: left; flex-grow: 1; }
+        .emp-name { font-size: 36px; font-weight: 900; text-transform: uppercase; letter-spacing: -1.5px; margin-bottom: 5px; line-height: 1; }
+        .emp-role { font-size: 16px; font-weight: 800; color: var(--br-blue); text-transform: uppercase; margin-bottom: 30px; }
         
-        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f2f2f2; font-size: 12px; }
-        .label { color: #aaa; font-weight: 700; text-transform: uppercase; }
-        .value { color: #222; font-weight: 800; }
+        .data-list { width: 100%; }
+        .data-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .data-label { color: #aaa; font-weight: 700; text-transform: uppercase; }
+        .data-value { color: #222; font-weight: 800; }
 
-        /* 하단 장식 제거 및 깔끔한 마무리 */
-        .footer-line { position: absolute; bottom: 30px; font-size: 9px; color: #ccc; font-weight: 700; letter-spacing: 1px; }
+        /* 하단 텍스트 겹침 방지 간격 확보 */
+        .footer-area { width: 100%; padding: 15px 0 25px 0; text-align: center; }
+        .footer-text { font-size: 10px; color: #bbb; font-weight: 700; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="input-panel">
-        <h3 style="color:white; margin-bottom:20px; font-size:14px;">ID CONFIG</h3>
-        <div class="form-group"><label>Employee Photo</label><input type="file" id="photoIn"></div>
+        <h3 style="color:white; margin-bottom:20px;">ID CONFIG</h3>
+        <div class="form-group"><label>Profile Photo</label><input type="file" id="photoIn"></div>
         <div class="form-group"><label>Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
         <div class="form-group"><label>Title</label><select id="roleIn">
-            <option value="VICE PRESIDENT">VICE PRESIDENT</option>
             <option value="MANAGING DIRECTOR">MANAGING DIRECTOR</option>
+            <option value="VICE PRESIDENT">VICE PRESIDENT</option>
             <option value="ANALYST">ANALYST</option>
         </select></div>
         <div class="form-group"><label>Department</label><input type="text" id="deptIn" value="Korea Fixed Income"></div>
         
-        <button class="btn-main" id="applyBtn">Apply</button>
-        <button class="btn-main" id="downBtn" style="background:#222; color:white; border:1px solid #444;">Download 4K</button>
+        <button class="btn-main" id="applyBtn">Update Preview</button>
+        <button class="btn-main" id="downBtn" style="background:#333; color:white;">Download HD PNG</button>
     </div>
 
     <div id="cardCapture" class="id-card">
         <div class="card-header">
-            <div class="pattern-bg"></div>
-            <div class="header-overlay"></div>
             <div class="br-logo">BLACKROCK</div>
             <div class="br-korea">KOREA</div>
         </div>
 
-        <div class="photo-frame" id="photoZone" style="background-image: url('https://via.placeholder.com/240x280?text=Profile');"></div>
-
-        <div class="card-info">
-            <div class="name" id="nameOut">KANG NOEUL</div>
-            <div class="role" id="roleOut">VICE PRESIDENT</div>
-            
-            <div class="info-row"><span class="label">Unit</span><span class="value" id="deptOut">Korea Fixed Income</span></div>
-            <div class="info-row"><span class="label">Location</span><span class="value">SEOUL, KOREA</span></div>
-            <div class="info-row"><span class="label">Status</span><span class="value">ACTIVE</span></div>
+        <div class="photo-area">
+            <img id="displayPhoto" src="https://via.placeholder.com/320x320?text=Scan+Photo">
         </div>
 
-        <div class="footer-line">BLACKROCK ADVISORS (KOREA) 2026</div>
+        <div class="card-body">
+            <div class="emp-name" id="nameOut">KANG NOEUL</div>
+            <div class="emp-role" id="outRole">MANAGING DIRECTOR</div>
+            
+            <div class="data-list">
+                <div class="data-item"><span class="data-label">Unit</span><span class="data-value" id="deptOut">Korea Fixed Income</span></div>
+                <div class="data-item"><span class="data-label">Location</span><span class="data-value">SEOUL, KOREA</span></div>
+                <div class="data-item"><span class="data-label">Status</span><span class="data-value">ACTIVE</span></div>
+            </div>
+        </div>
+
+        <div class="footer-area">
+            <div class="footer-text">BLACKROCK ADVISORS (KOREA) 2026</div>
+        </div>
     </div>
 </div>
 
 <script>
     const $ = id => document.getElementById(id);
+    
     $('photoIn').onchange = function(e) {
         if(this.files[0]) {
             const r = new FileReader();
-            r.onload = e => $('photoZone').style.backgroundImage = `url('${e.target.result}')`;
+            r.onload = e => $('displayPhoto').src = e.target.result;
             r.readAsDataURL(this.files[0]);
         }
     };
+
     $('applyBtn').onclick = () => {
         $('nameOut').innerText = $('nameIn').value;
-        $('roleOut').innerText = $('roleIn').value;
+        $('outRole').innerText = $('roleIn').value;
         $('deptOut').innerText = $('deptIn').value;
     };
+
     $('downBtn').onclick = () => {
-        html2canvas($('cardCapture'), {scale: 5, useCORS: true}).then(c => {
+        html2canvas($('cardCapture'), {scale: 4, useCORS: true}).then(c => {
             const l = document.createElement('a');
-            l.download = `BlackRock_ID.png`;
+            l.download = `BlackRock_ID_Wide.png`;
             l.href = c.toDataURL();
             l.click();
         });
