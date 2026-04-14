@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackRock Korea - Private Client ID (Draggable)</title>
+    <title>BlackRock Korea - Full Image Control</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -19,7 +19,6 @@
         
         .wrapper { display: flex; gap: 40px; max-width: 1400px; width: 100%; justify-content: center; align-items: flex-start; margin-top: 30px; }
         
-        /* 설정 패널 */
         .input-panel { width: 340px; background: #111; padding: 25px; border: 1px solid #222; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 11px; color: #666; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
@@ -27,9 +26,8 @@
         input:focus, select:focus { border-color: var(--br-blue); outline: none; }
         .btn-main { background: white; color: black; border: none; padding: 14px; cursor: pointer; width: 100%; font-weight: 900; margin-top: 10px; text-transform: uppercase; border-radius: 6px; font-size: 13px; letter-spacing: 1px; transition: 0.2s; }
         .btn-main:hover { background: var(--br-blue); color: white; }
-        .instr { font-size: 12px; color: #aaa; margin-top: 15px; line-height: 1.6; border-top: 1px solid #222; padding-top: 10px;}
 
-        /* 사원증 디자인 - 프리미엄 메탈릭 룩 */
+        /* 사원증 디자인 */
         .id-card { 
             width: 480px; height: 740px; 
             background: linear-gradient(135deg, var(--br-platinum) 0%, var(--br-silver) 100%); 
@@ -41,82 +39,65 @@
             z-index: 1;
         }
 
-        /* 보안 워터마크 */
-        .id-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text x="50%" y="50%" font-size="10" font-family="Arial" fill="rgba(0,118,255,0.015)" text-anchor="middle" transform="rotate(-45 50 50)">BLACKROCK</text></svg>');
-            pointer-events: none; z-index: 0;
-        }
-
-        /* 헤더 */
         .card-header { 
             width: 100%; height: 130px; background: var(--br-black);
             display: flex; flex-direction: column; justify-content: center; padding-left: 50px;
             border-bottom: 3px solid var(--br-blue); position: relative; z-index: 2;
         }
         .br-logo { color: white; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 48px; letter-spacing: -1px; line-height: 1; }
-        .br-korea { color: rgba(255,255,255,0.7); font-weight: 400; font-size: 16px; letter-spacing: 5px; margin-top: 2px; text-transform: uppercase; font-family: 'Inter', sans-serif;}
+        .br-korea { color: rgba(255,255,255,0.7); font-weight: 400; font-size: 16px; letter-spacing: 5px; margin-top: 2px; text-transform: uppercase; }
 
-        /* 사진 영역 - 카드 폭에 맞춰 꽉 차게 변경 및 드래그 설정 */
+        /* 사진 영역 - 원본 사진 조절용 */
         .photo-area {
-            width: 100%; /* 카드 전체 폭 */
-            height: 380px; /* 세로 길이 조정 */
-            background: #fff;
-            position: relative; overflow: hidden;
+            width: 100%;
+            height: 400px;
+            background: #eee;
+            position: relative; 
+            overflow: hidden; /* 영역 밖은 숨김 */
             z-index: 1;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            border-bottom: 1px solid #e0e0e0;
-            cursor: move; /* 드래그 가능 표시 */
+            cursor: move;
+            border-bottom: 1px solid #ddd;
         }
         #displayPhoto { 
-            width: 100%; height: 100%; 
-            object-fit: cover; /* 영역에 빈틈없이 꽉 채움 */
-            position: absolute; top: 0; left: 0;
-            will-change: transform; /* 성능 최적화 */
+            position: absolute;
+            /* 원본 크기 유지를 위해 width/height 고정 해제 */
+            width: auto; 
+            height: 100%; /* 일단 세로를 맞추되 드래그로 조정 */
+            min-width: 100%;
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
-        /* 인적사항 */
-        .card-body { width: 100%; padding: 25px 50px; text-align: left; flex-grow: 1; position: relative; z-index: 2; }
+        .card-body { width: 100%; padding: 20px 50px; text-align: left; flex-grow: 1; z-index: 2; }
         .emp-name { font-size: 42px; font-weight: 900; text-transform: uppercase; letter-spacing: -1.5px; margin-bottom: 2px; line-height: 1; color: var(--br-black); }
-        .emp-role { font-size: 18px; font-weight: 700; color: var(--br-blue); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px; }
+        .emp-role { font-size: 18px; font-weight: 700; color: var(--br-blue); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
         
         .data-list { width: 100%; }
-        .data-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5e5e5; font-size: 14px; }
-        .data-label { color: #888; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        .data-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e5e5; font-size: 14px; }
+        .data-label { color: #888; font-weight: 600; text-transform: uppercase; font-size: 11px; }
         .data-value { color: #000; font-weight: 800; font-size: 15px; }
 
-        /* 하단 푸터 */
-        .footer-area { width: 100%; padding-bottom: 25px; text-align: center; position: relative; z-index: 2; }
+        .footer-area { width: 100%; padding-bottom: 20px; text-align: center; z-index: 2; }
         .footer-hologram { font-family: 'Playfair Display', serif; font-size: 40px; color: var(--br-hologram); font-weight: 900; letter-spacing: -1px; margin-bottom: -15px; opacity: 0.6; }
         .footer-text { font-size: 10px; color: #aaa; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<h2 style="margin-bottom: 10px; font-weight: 900; letter-spacing: -1px;">BLACKROCK <span style="color: var(--br-blue); font-weight: 300;">| PRIVATE CLIENT SERVICES</span></h2>
-<p style="color: #666; font-size: 14px; margin-bottom: 30px;">Premium Draggable ID Generator</p>
-
 <div class="wrapper">
     <div class="input-panel">
-        <div class="form-group"><label>Profile Photo</label><input type="file" id="photoIn" accept="image/*"></div>
-        <div class="form-group"><label>Full Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
-        <div class="form-group"><label>Title (Position)</label>
+        <h3 style="margin-bottom:15px; color:var(--br-blue)">PHOTO CONTROL</h3>
+        <div class="form-group"><label>1. Profile Photo</label><input type="file" id="photoIn" accept="image/*"></div>
+        <div class="form-group"><label>2. Full Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
+        <div class="form-group"><label>3. Title</label>
             <select id="roleIn">
                 <option value="PRIVATE COUNSELOR">PRIVATE COUNSELOR</option>
                 <option value="MANAGING DIRECTOR">MANAGING DIRECTOR</option>
-                <option value="VICE PRESIDENT">VICE PRESIDENT</option>
-                <option value="SR. ANALYST">SR. ANALYST</option>
             </select>
         </div>
-        <div class="form-group"><label>Department / Unit</label><input type="text" id="deptIn" value="Korea Fixed Income"></div>
-        
-        <button class="btn-main" id="applyBtn">Update ID Card</button>
+        <button class="btn-main" id="applyBtn">Update Details</button>
         <button class="btn-main" id="downBtn" style="background:#222; color:white;">Download HD PNG</button>
-
-        <div class="instr">
-            <strong>💡 사진 위치 조정 방법:</strong><br>
-            사진을 업로드한 후, 사원증 위의 사진을 클릭하여 원하는 위치로 드래그하세요.
-        </div>
+        <p style="font-size:11px; color:#666; margin-top:15px;">* 사진을 올린 후 사원증 위에서 드래그하여 위치를 잡으세요. 세로가 긴 사진도 위아래로 이동 가능합니다.</p>
     </div>
 
     <div id="cardCapture" class="id-card">
@@ -126,15 +107,13 @@
         </div>
 
         <div class="photo-area" id="photoArea">
-            <img id="displayPhoto" src="https://via.placeholder.com/480x380/ffffff/000000?text=UPLOAD+&++DRAG+PHOTO" style="top: 0px; left: 0px;">
+            <img id="displayPhoto" src="https://via.placeholder.com/800x1200?text=DRAG+YOUR+PHOTO" style="top: 0px; left: 0px;">
         </div>
 
         <div class="card-body">
             <div class="emp-name" id="nameOut">KANG NOEUL</div>
             <div class="emp-role" id="outRole">PRIVATE COUNSELOR</div>
-            
             <div class="data-list">
-                <div class="data-item"><span class="data-label">Unit</span><span class="data-value" id="deptOut">Korea Fixed Income</span></div>
                 <div class="data-item"><span class="data-label">Location</span><span class="data-value">SEOUL, KOREA</span></div>
                 <div class="data-item"><span class="data-label">Status</span><span class="data-value" style="color: var(--br-blue);">VERIFIED A+</span></div>
             </div>
@@ -152,15 +131,23 @@
     const photoImg = $('displayPhoto');
     const photoArea = $('photoArea');
 
-    // 사진 업로드 및 초기화
     $('photoIn').onchange = function(e) {
         if(this.files[0]) {
             const r = new FileReader();
             r.onload = e => {
                 photoImg.src = e.target.result;
-                // 사진 위치 초기화
                 photoImg.style.top = '0px';
                 photoImg.style.left = '0px';
+                // 이미지 로드 후 가로/세로 비율에 따라 초기 세팅
+                photoImg.onload = () => {
+                    if (photoImg.naturalHeight > photoImg.naturalWidth) {
+                        photoImg.style.width = '100%';
+                        photoImg.style.height = 'auto';
+                    } else {
+                        photoImg.style.height = '100%';
+                        photoImg.style.width = 'auto';
+                    }
+                }
             };
             r.readAsDataURL(this.files[0]);
         }
@@ -169,41 +156,29 @@
     $('applyBtn').onclick = () => {
         $('nameOut').innerText = $('nameIn').value;
         $('outRole').innerText = $('roleIn').value;
-        $('deptOut').innerText = $('deptIn').value;
     };
 
-    // --- 드래그 이동 기능 구현 ---
     let isDragging = false;
-    let startX, startY;
-    let initialLeft, initialTop;
+    let startX, startY, initialLeft, initialTop;
 
     const startDrag = (e) => {
         isDragging = true;
-        // 터치 이벤트 지원
         const pageX = e.pageX || e.touches[0].pageX;
         const pageY = e.pageY || e.touches[0].pageY;
-        
         startX = pageX;
         startY = pageY;
-        
-        initialLeft = parseInt(photoImg.style.left.replace('px', '')) || 0;
-        initialTop = parseInt(photoImg.style.top.replace('px', '')) || 0;
-        
+        initialLeft = parseInt(photoImg.style.left) || 0;
+        initialTop = parseInt(photoImg.style.top) || 0;
         photoArea.style.cursor = 'grabbing';
-        e.preventDefault(); // 기본 드래그 동작 방지
+        e.preventDefault();
     };
 
     const doDrag = (e) => {
         if (!isDragging) return;
-        
         const pageX = e.pageX || e.touches[0].pageX;
         const pageY = e.pageY || e.touches[0].pageY;
-        
-        const dx = pageX - startX;
-        const dy = pageY - startY;
-        
-        photoImg.style.left = `${initialLeft + dx}px`;
-        photoImg.style.top = `${initialTop + dy}px`;
+        photoImg.style.left = `${initialLeft + (pageX - startX)}px`;
+        photoImg.style.top = `${initialTop + (pageY - startY)}px`;
     };
 
     const stopDrag = () => {
@@ -211,40 +186,23 @@
         photoArea.style.cursor = 'move';
     };
 
-    // 마우스 이벤트
     photoArea.addEventListener('mousedown', startDrag);
     window.addEventListener('mousemove', doDrag);
     window.addEventListener('mouseup', stopDrag);
-
-    // 터치 이벤트 (모바일 지원)
     photoArea.addEventListener('touchstart', startDrag);
     window.addEventListener('touchmove', doDrag);
     window.addEventListener('touchend', stopDrag);
-    // --------------------------------
 
     $('downBtn').onclick = () => {
-        const card = $('cardCapture');
-        downBtn.innerText = "Downloading...";
-        downBtn.style.opacity = '0.5';
-
-        // 다운로드 시 퀄리티를 위해 해상도를 높이고, CORS 허용
-        html2canvas(card, {
+        html2canvas($('cardCapture'), {
             scale: 4, 
             useCORS: true,
-            backgroundColor: null,
-            letterRendering: true,
-            // 드래그된 이미지를 정확히 캡처하기 위해 transform 스타일 적용 확인
-            onclone: (clonedDoc) => {
-                clonedDoc.getElementById('displayPhoto').style.transform = photoImg.style.transform;
-            }
+            backgroundColor: null
         }).then(c => {
             const l = document.createElement('a');
-            l.download = `BlackRock_PrivateID_${$('nameIn').value}.png`;
+            l.download = `BlackRock_ID.png`;
             l.href = c.toDataURL('image/png');
             l.click();
-            
-            downBtn.innerText = "Download HD PNG";
-            downBtn.style.opacity = '1';
         });
     };
 </script>
