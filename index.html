@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackRock Korea - Private Client Services ID (BIG PORTRAIT)</title>
+    <title>BlackRock Korea - Private Client Services ID</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root { 
             --br-black: #050505; 
             --br-deep-black: #000000;
-            --br-platinum-base: #f0f0f2;
-            --br-platinum-light: #ffffff;
+            --br-platinum: #ffffff; /* 형님이 배경 넣기 편하시게 순백색으로 변경 */
             --br-blue: #0056f3; 
             --br-text-gray: #666666;
             --br-red: #e02020;
@@ -21,75 +20,67 @@
         
         .wrapper { display: flex; gap: 40px; max-width: 1400px; width: 100%; justify-content: center; align-items: flex-start; margin-top: 30px; }
         
-        /* 형님 스타일 설정 패널 */
-        .input-panel { width: 350px; background: #111; padding: 30px; border: 1px solid #222; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .input-panel { width: 350px; background: #111; padding: 30px; border: 1px solid #222; border-radius: 16px; }
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 8px; font-size: 11px; color: #777; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
-        input, select { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; font-size: 14px; font-family: 'Inter'; }
-        .btn-main { background: var(--br-blue); color: white; border: none; padding: 16px; cursor: pointer; width: 100%; font-weight: 900; margin-top: 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1.5px; transition: 0.2s; }
-        .btn-main:hover { background: #0046c7; }
+        input, select { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; font-size: 14px; }
+        .btn-main { background: var(--br-blue); color: white; border: none; padding: 16px; cursor: pointer; width: 100%; font-weight: 900; margin-top: 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1.5px; }
 
-        /* 사원증 디자인 - 사진을 큼지막하게 키운 버전 */
+        /* 사원증 디자인 - 무늬 제거 및 텍스트 강조 */
         .id-card { 
             width: 480px; height: 740px; 
-            background: linear-gradient(135deg, var(--br-platinum-base) 0%, var(--br-platinum-light) 50%, var(--br-platinum-base) 100%); 
+            background: var(--br-platinum); 
             position: relative; color: #000;
             display: flex; flex-direction: column; align-items: center; 
             box-shadow: 0 50px 100px rgba(0,0,0,0.9);
-            border-radius: 12px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 4px; overflow: hidden;
         }
 
         .card-header { 
             width: 100%; height: 110px; background: var(--br-deep-black);
             display: flex; flex-direction: column; justify-content: center; padding-left: 45px;
-            border-bottom: 4px solid var(--br-blue); z-index: 10;
+            border-bottom: 5px solid var(--br-blue); z-index: 10;
         }
-        .br-logo-text { color: white; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 48px; letter-spacing: -1.5px; line-height: 1; }
-        .br-korea-text { color: var(--br-blue); font-weight: 800; font-size: 16px; letter-spacing: 6px; margin-top: 2px; text-transform: uppercase; }
+        .br-logo-text { color: white; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 42px; letter-spacing: -1.5px; line-height: 1; }
+        .br-korea-text { color: var(--br-blue); font-weight: 800; font-size: 16px; letter-spacing: 4px; margin-top: 4px; text-transform: uppercase; }
 
-        /* 사진 영역 - 형님 요청대로 큼지막하게(480px) */
         .photo-area {
             width: 100%; height: 480px; 
-            background: #eee; position: relative; overflow: hidden;
+            background: #f7f7f7; position: relative; overflow: hidden;
             z-index: 5; cursor: move;
-            border-bottom: 1px solid #ddd;
-            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.1);
         }
-        #displayPhoto { position: absolute; width: 100%; height: auto; min-height: 100%; user-select: none; -webkit-user-drag: none; }
+        #displayPhoto { position: absolute; width: 100%; height: auto; min-height: 100%; user-select: none; }
 
-        /* 인적사항 */
         .card-body { width: 100%; padding: 25px 45px; text-align: left; z-index: 10; flex-grow: 1; background: white; }
-        .emp-name { font-size: 46px; font-weight: 900; letter-spacing: -2px; margin-bottom: 2px; line-height: 1; color: #000; text-transform: uppercase; }
-        .emp-role { font-size: 19px; font-weight: 800; color: var(--br-blue); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .emp-name { font-size: 46px; font-weight: 900; letter-spacing: -2px; margin-bottom: 2px; line-height: 1; color: #000; }
+        .emp-role { font-size: 19px; font-weight: 800; color: var(--br-blue); margin-bottom: 15px; letter-spacing: 1px; }
         
         .data-list { width: 100%; display: flex; flex-direction: column; gap: 6px; }
-        .data-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; line-height: 1.1; padding-bottom: 6px; border-bottom: 1px solid #f2f2f2; }
-        .data-label { color: var(--br-text-gray); font-weight: 700; text-transform: uppercase; font-size: 10px; width: 110px; }
-        .data-value { color: #000; font-weight: 800; font-size: 14px; text-align: right; flex: 1; }
+        .data-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+        .data-label { color: var(--br-text-gray); font-weight: 700; text-transform: uppercase; font-size: 10px; }
+        .data-value { color: #000; font-weight: 800; font-size: 14px; }
 
-        .footer-area { width: 100%; padding: 10px 45px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; background: white; }
-        .footer-logo-hologram { font-family: 'Playfair Display', serif; font-size: 32px; color: rgba(0, 86, 243, 0.04); font-weight: 900; letter-spacing: -1px; margin-bottom: -10px; }
-        .footer-security-text { font-size: 9px; color: #bbb; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; }
+        .footer-area { width: 100%; padding: 10px 45px 20px; display: flex; flex-direction: column; align-items: center; background: white; }
+        .footer-security-text { font-size: 9px; color: #aaa; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="input-panel">
-        <h3 style="margin-bottom:20px; color:#fff; font-weight:900;">ID CONFIG (BIG PORTRAIT)</h3>
+        <h3 style="margin-bottom:20px; color:#fff; font-weight:900;">ID CONFIG (KOREA)</h3>
         <div class="form-group"><label>Profile Photo</label><input type="file" id="photoIn" accept="image/*"></div>
-        <div class="form-group"><label>Employee Full Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
-        <div class="form-group"><label>Official Title</label>
+        <div class="form-group"><label>Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
+        <div class="form-group"><label>Title</label>
             <select id="roleIn">
-                <option value="PRIVATE COUNSELOR">PRIVATE COUNSELOR</option>
+                <option value="PRIVATE COUNSELOR">상담사 (COUNSELOR)</option>
                 <option value="MANAGING DIRECTOR">MANAGING DIRECTOR</option>
                 <option value="EXECUTIVE DIRECTOR">EXECUTIVE DIRECTOR</option>
             </select>
         </div>
-        <div class="form-group"><label>Department</label><input type="text" id="deptIn" value="Korea Wealth Management Group"></div>
-        <button class="btn-main" id="applyBtn">Apply Changes</button>
-        <button class="btn-main" id="downBtn" style="background:#222; color:white; margin-top:10px;">Download 4K PNG</button>
+        <div class="form-group"><label>Dept</label><input type="text" id="deptIn" value="BlackRock Korea Wealth Management"></div>
+        <button class="btn-main" id="applyBtn">적용하기</button>
+        <button class="btn-main" id="downBtn" style="background:#222; margin-top:10px;">이미지 저장</button>
     </div>
 
     <div id="cardCapture" class="id-card">
@@ -99,23 +90,22 @@
         </div>
 
         <div class="photo-area" id="photoArea">
-            <img id="displayPhoto" src="https://via.placeholder.com/1000x1200/000000/333333?text=UPLOAD+PORTRAIT" style="top: 0px; left: 0px;">
+            <img id="displayPhoto" src="https://via.placeholder.com/1000x1200/f7f7f7/cccccc?text=PHOTO+HERE" style="top: 0px; left: 0px;">
         </div>
 
         <div class="card-body">
             <div class="emp-name" id="nameOut">KANG NOEUL</div>
-            <div class="emp-role" id="outRole">PRIVATE COUNSELOR</div>
+            <div class="emp-role" id="outRole">상담사 (COUNSELOR)</div>
             
             <div class="data-list">
-                <div class="data-item"><span class="data-label">Department</span><span class="data-value" id="deptOut">Korea Wealth Management Group</span></div>
-                <div class="data-item"><span class="data-label">Security Level</span><span class="data-value" style="color:var(--br-red)">LEVEL 4 GRANTED</span></div>
+                <div class="data-item"><span class="data-label">Dept</span><span class="data-value" id="deptOut">BlackRock Korea Wealth Management</span></div>
+                <div class="data-item"><span class="data-label">Status</span><span class="data-value" style="color:var(--br-blue)">OFFICIAL STAFF</span></div>
                 <div class="data-item"><span class="data-label">Valid Thru</span><span class="data-value">APR 2031</span></div>
             </div>
         </div>
 
         <div class="footer-area">
-            <div class="footer-logo-hologram">BlackRock</div>
-            <div class="footer-security-text">OFFICIAL STAFF ID • EST. NEW YORK</div>
+            <div class="footer-security-text">OFFICIAL STAFF ID • BLACKROCK KOREA</div>
         </div>
     </div>
 </div>
@@ -158,7 +148,6 @@
         startX = pageX; startY = pageY;
         initialLeft = parseInt(photoImg.style.left) || 0;
         initialTop = parseInt(photoImg.style.top) || 0;
-        photoArea.style.cursor = 'grabbing';
     };
     const doDrag = (e) => {
         if (!isDragging) return;
@@ -167,7 +156,7 @@
         photoImg.style.left = `${initialLeft + (pageX - startX)}px`;
         photoImg.style.top = `${initialTop + (pageY - startY)}px`;
     };
-    const stopDrag = () => { isDragging = false; photoArea.style.cursor = 'move'; };
+    const stopDrag = () => { isDragging = false; };
 
     photoArea.addEventListener('mousedown', startDrag);
     window.addEventListener('mousemove', doDrag);
@@ -177,9 +166,9 @@
     window.addEventListener('touchend', stopDrag);
 
     $('downBtn').onclick = () => {
-        html2canvas($('cardCapture'), { scale: 4, useCORS: true, backgroundColor: null }).then(c => {
+        html2canvas($('cardCapture'), { scale: 4, useCORS: true }).then(c => {
             const l = document.createElement('a');
-            l.download = `BlackRock_Portrait_ID.png`;
+            l.download = `BlackRock_Staff_ID.png`;
             l.href = c.toDataURL('image/png');
             l.click();
         });
