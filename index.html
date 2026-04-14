@@ -3,249 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 프리미엄 데이지 프로필 카드 생성기</title>
+    <title>BlackRock Institutional ID Generator</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
     <style>
-        :root { --main-pink: #f7a7bb; --bg-gray: #f8f9fa; }
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #eee; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .wrapper { display: flex; gap: 30px; max-width: 1200px; width: 100%; justify-content: center; align-items: flex-start; }
-        
-        /* 왼쪽 설정 패널 */
-        .input-panel { width: 450px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
-        .input-panel h3 { margin-top: 0; color: var(--main-pink); border-bottom: 2px solid var(--main-pink); padding-bottom: 10px; }
-        .control-group { background: #fff5f7; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #ffe0e6; }
-        .control-group label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; color: #555; }
-        .slider-box { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .slider-box input { flex: 1; accent-color: var(--main-pink); }
-        .slider-box span { width: 40px; font-size: 12px; color: #888; text-align: right; }
-
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; }
-        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        
-        .btn-primary { background: var(--main-pink); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
-        .btn-primary:hover { background: #e696a9; }
-
-        /* 오른쪽 프로필 카드 */
-        .profile-card { 
-            width: 380px; background: white; border-radius: 20px; overflow: hidden; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative;
-            image-rendering: -webkit-optimize-contrast; /* 선명도 향상 */
+        :root { 
+            --br-black: #000000; 
+            --br-gray: #222222; 
+            --br-silver: #e0e0e0;
+            --accent-blue: #00b4ff;
         }
+        body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; padding: 40px; display: flex; flex-direction: column; align-items: center; color: white; }
+        .wrapper { display: flex; gap: 50px; max-width: 1300px; width: 100%; justify-content: center; align-items: flex-start; }
         
-        /* 카드 헤더 - 조절 가능한 영역 */
+        /* 설정 패널 */
+        .input-panel { width: 400px; background: #2d2d2d; padding: 25px; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #444; }
+        .input-panel h3 { margin-top: 0; color: white; border-left: 4px solid var(--accent-blue); padding-left: 15px; font-size: 18px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 10px; border: 1px solid #444; border-radius: 0; background: #111; color: white; }
+        
+        .btn-generate { background: white; color: black; border: none; padding: 15px; cursor: pointer; width: 100%; font-weight: 900; font-size: 14px; text-transform: uppercase; transition: 0.3s; margin-top: 20px; }
+        .btn-generate:hover { background: var(--accent-blue); color: white; }
+
+        /* 사원증 카드 디자인 (Vertical ID Card) */
+        .id-card { 
+            width: 350px; height: 550px; background: white; border-radius: 12px; overflow: hidden; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8); position: relative; color: black;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* 카드 상단 블랙록 로고바 */
         .card-header { 
-            background: var(--main-pink); height: 70px; position: relative; 
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            width: 100%; height: 80px; background: var(--br-black); display: flex; align-items: center; justify-content: center; position: relative;
         }
-        #displayLogo { position: absolute; height: 30px; object-fit: contain; z-index: 2; }
-        #logoText { position: absolute; color: white; font-weight: 800; font-size: 1.4em; z-index: 1; white-space: nowrap; }
+        .br-logo { color: white; font-weight: 900; font-size: 24px; letter-spacing: -1px; }
 
-        /* 사진 영역 - 여백/잘림 방지 */
-        .photo-area { 
-            width: 100.1%; /* 1px 여백 방지 */
-            height: 420px; background-color: #f0f0f0; background-size: cover; 
-            background-position: center; background-repeat: no-repeat;
-            display: flex; justify-content: center; align-items: center;
-            color: #aaa; font-style: italic; cursor: pointer; border: none; margin-left: -0.05%;
+        /* 사진 영역 */
+        .photo-frame {
+            width: 220px; height: 260px; margin-top: 30px; background: #eee; border: 1px solid #ddd;
+            background-size: cover; background-position: center; position: relative; overflow: hidden;
         }
-        .photo-area.drag-over { background-color: #fff0f5; border: 3px dashed var(--main-pink); }
+        .photo-frame::after {
+            content: ''; position: absolute; inset: 0; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
 
-        /* 카드 바디 */
-        .card-body { padding: 25px; background: white; }
-        .name-age { font-size: 2.2em; font-weight: 900; color: #222; margin-bottom: 10px; letter-spacing: -1px; }
-        .name-age span { font-size: 0.8em; font-weight: normal; color: #666; }
+        /* 인적사항 */
+        .card-info { text-align: center; margin-top: 25px; width: 100%; padding: 0 30px; box-sizing: border-box; }
+        .emp-name { font-size: 28px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; color: #111; }
+        .emp-role { font-size: 14px; font-weight: 700; color: #666; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 15px; }
-        .info-item { font-size: 14px; color: #555; }
-        .info-item b { color: #222; }
+        .meta-info { display: flex; justify-content: space-between; font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .meta-info b { color: #333; }
 
-        .tagline { color: var(--main-pink); font-style: italic; font-weight: bold; border-left: 4px solid var(--main-pink); padding-left: 12px; margin-bottom: 20px; line-height: 1.4; }
-        
-        .hobby-title { font-size: 12px; color: #5b995b; font-weight: bold; margin-bottom: 8px; opacity: 0.8; }
-        .hobby-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .hobby-tag { background: #e8f5e9; color: #5b995b; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        /* 보안 요소: IC칩 & 바코드 */
+        .ic-chip {
+            position: absolute; left: 30px; top: 100px; width: 45px; height: 35px;
+            background: linear-gradient(135deg, #d4af37 0%, #f9e29c 50%, #d4af37 100%);
+            border-radius: 6px; border: 1px solid rgba(0,0,0,0.1);
+        }
+        .barcode-area {
+            position: absolute; bottom: 20px; width: 80%; text-align: center; opacity: 0.8;
+        }
+        .barcode-img { width: 100%; height: 40px; object-fit: cover; filter: grayscale(1); }
+        .barcode-num { font-size: 10px; font-family: monospace; letter-spacing: 3px; margin-top: 4px; }
 
-        #downloadBtn { background: #5b995b; margin-top: 20px; }
+        /* 홀로그램 효과 */
+        .hologram {
+            position: absolute; right: 20px; top: 100px; width: 40px; height: 40px;
+            background: radial-gradient(circle, #7db9ff, #ffffff); opacity: 0.3; border-radius: 50%;
+            mix-blend-mode: multiply;
+        }
+
+        #downloadBtn { background: #333; color: white; border: 1px solid #555; }
     </style>
 </head>
 <body>
 
-<h2 style="color: var(--main-pink);">🌸 데이지 프리미엄 프로필 생성기</h2>
+<h2 style="font-weight: 900; letter-spacing: -1px; margin-bottom: 40px;">BLACKROCK INSTITUTIONAL ID SYSTEM</h2>
 
 <div class="wrapper">
     <div class="input-panel">
-        <form id="profileForm">
-            <h3>1. 로고 & 텍스트 세부 설정</h3>
-            <div class="control-group">
-                <label>🚩 로고 이미지 업로드</label>
-                <input type="file" id="logoInput" accept="image/*" style="margin-bottom:10px;">
-                
-                <label>로고 크기</label>
-                <div class="slider-box"><input type="range" id="lSize" min="10" max="150" value="30"><span id="v-lSize">30</span></div>
-                <label>로고 위치 (가로 / 세로)</label>
-                <div class="slider-box"><input type="range" id="lX" min="-150" max="150" value="-80"><span id="v-lX">-80</span></div>
-                <div class="slider-box"><input type="range" id="lY" min="-30" max="30" value="0"><span id="v-lY">0</span></div>
-            </div>
+        <h3>1. EMPLOYEE DATA</h3>
+        <div class="form-group">
+            <label>Employee Photo</label>
+            <input type="file" id="photoInput" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="inName" value="HONG GILDONG">
+        </div>
+        <div class="form-group">
+            <label>Position / Title</label>
+            <input type="text" id="inRole" value="Senior Portfolio Manager">
+        </div>
+        <div class="form-group">
+            <label>Department</label>
+            <select id="inDept">
+                <option value="Global Equities">Global Equities</option>
+                <option value="Fixed Income">Fixed Income</option>
+                <option value="Multi-Asset Strategies">Multi-Asset Strategies</option>
+                <option value="BlackRock Solutions">BlackRock Solutions</option>
+                <option value="Risk Management">Risk Management</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Employee ID No.</label>
+            <input type="text" id="inID" value="BR-7749-2026">
+        </div>
 
-            <div class="control-group">
-                <label>🔠 로고 텍스트 설정</label>
-                <input type="text" id="logoTextInput" value="DAISY Hookups" style="margin-bottom:10px;">
-                
-                <label>글자 크기</label>
-                <div class="slider-box"><input type="range" id="tSize" min="10" max="40" value="22"><span id="v-tSize">22</span></div>
-                <label>글자 위치 (가로 / 세로)</label>
-                <div class="slider-box"><input type="range" id="tX" min="-150" max="150" value="40"><span id="v-tX">40</span></div>
-                <div class="slider-box"><input type="range" id="tY" min="-30" max="30" value="0"><span id="v-tY">0</span></div>
-            </div>
-
-            <h3>2. 프로필 정보 입력</h3>
-            <div class="form-group">
-                <label>📸 사진 (드래그 가능)</label>
-                <input type="file" id="photoInput" accept="image/*">
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group"><label>이름</label><input type="text" id="inName" value="김데이지"></div>
-                <div class="form-group"><label>나이</label><input type="number" id="inAge" value="28"></div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group"><label>키(cm)</label><input type="number" id="inHeight" value="165"></div>
-                <div class="form-group"><label>몸무게(kg)</label><input type="number" id="inWeight" value="50"></div>
-            </div>
-            <div class="form-group">
-                <label>가슴 사이즈</label>
-                <select id="inBust">
-                    <option value="A">A컵</option><option value="A+">A+컵</option>
-                    <option value="B">B컵</option><option value="B+">B+컵</option>
-                    <option value="C" selected>C컵</option><option value="C+">C+컵</option>
-                    <option value="D">D컵</option><option value="D+">D+컵</option>
-                    <option value="E">E컵</option><option value="F">F컵</option>
-                </select>
-            </div>
-            <div class="form-group"><label>직업</label><input type="text" id="inJob" value="마케터"></div>
-            <div class="form-group"><label>한 줄 소개</label><input type="text" id="inTag" value="따뜻한 대화와 긍정적인 에너지를 공유해요."></div>
-            <div class="form-group"><label>취미 (쉼표 구분)</label><textarea id="inHobby">영화 감상, 요리, 와인, 독서</textarea></div>
-
-            <button type="submit" class="btn-primary">✨ 정보 실시간 업데이트</button>
-        </form>
+        <button id="updateBtn" class="btn-generate">Apply & Re-Generate</button>
+        <button id="downloadBtn" class="btn-generate">Download Ultra-HD Image</button>
     </div>
 
     <div class="output-panel">
-        <div class="profile-card" id="cardCapture">
+        <div class="id-card" id="cardCapture">
             <div class="card-header">
-                <img id="displayLogo" src="" alt="" style="display:none;">
-                <div id="logoText">DAISY Hookups</div>
+                <div class="br-logo">BLACKROCK</div>
             </div>
             
-            <div class="photo-area" id="photoZone">사진을 드래그하거나 클릭하여 업로드</div>
+            <div class="ic-chip"></div>
+            <div class="hologram"></div>
+            
+            <div class="photo-frame" id="photoZone" style="background-image: url('https://via.placeholder.com/220x260?text=Profile+Photo');"></div>
 
-            <div class="card-body">
-                <div class="name-age"><span id="outName">김데이지</span> <span><span id="outAge">28</span>세</span></div>
+            <div class="card-body card-info">
+                <div class="emp-name" id="outName">HONG GILDONG</div>
+                <div class="emp-role" id="outRole">Senior Portfolio Manager</div>
                 
-                <div class="info-grid">
-                    <div class="info-item">키: <b><span id="outHeight">165</span>cm</b></div>
-                    <div class="info-item">몸무게: <b><span id="outWeight">50</span>kg</b></div>
-                    <div class="info-item">사이즈: <b><span id="outBust">C</span>컵</b></div>
-                    <div class="info-item">직업: <b><span id="outJob">마케터</span></b></div>
+                <div class="meta-info">
+                    <span>Department</span>
+                    <b><span id="outDept">Global Equities</span></b>
                 </div>
+                <div class="meta-info">
+                    <span>Issue Date</span>
+                    <b>APR 2026</b>
+                </div>
+                <div class="meta-info">
+                    <span>Expiry Date</span>
+                    <b>APR 2031</b>
+                </div>
+                <div class="meta-info">
+                    <span>Access Level</span>
+                    <b style="color:red;">LEVEL 4</b>
+                </div>
+            </div>
 
-                <div class="tagline" id="outTag">"따뜻한 대화와 긍정적인 에너지를 공유해요."</div>
-
-                <div class="hobby-title"># MY INTERESTS</div>
-                <div class="hobby-list" id="outHobby"></div>
+            <div class="barcode-area">
+                <img src="https://www.scandit.com/wp-content/themes/scandit/img/barcode-types/code-128.png" class="barcode-img">
+                <div class="barcode-num" id="outID">BR-7749-2026</div>
             </div>
         </div>
-        <button id="downloadBtn" class="btn-primary">🖼️ 초초고화질 이미지 다운로드</button>
     </div>
 </div>
 
 <script>
     const $ = id => document.getElementById(id);
 
-    // [1. 로고 이미지 및 텍스트 실시간 조절]
-    const updateHeader = () => {
-        const lS = $('lSize').value, lX = $('lX').value, lY = $('lY').value;
-        const tS = $('tSize').value, tX = $('tX').value, tY = $('tY').value;
-        const textValue = $('logoTextInput').value;
-
-        // 값 표시
-        $('v-lSize').innerText = lS; $('v-lX').innerText = lX; $('v-lY').innerText = lY;
-        $('v-tSize').innerText = tS; $('v-tX').innerText = tX; $('v-tY').innerText = tY;
-
-        // 스타일 적용
-        $('displayLogo').style.height = lS + 'px';
-        $('displayLogo').style.transform = `translate(${lX}px, ${lY}px)`;
-        
-        $('logoText').innerText = textValue;
-        $('logoText').style.fontSize = (tS / 16) + 'em';
-        $('logoText').style.transform = `translate(${tX}px, ${tY}px)`;
-    };
-
-    ['lSize', 'lX', 'lY', 'tSize', 'tX', 'tY', 'logoTextInput'].forEach(id => $(id).addEventListener('input', updateHeader));
-
-    // [2. 로고 파일 업로드]
-    $('logoInput').addEventListener('change', function(e) {
+    // 사진 업로드 처리
+    $('photoInput').addEventListener('change', function(e) {
         if (this.files[0]) {
             const reader = new FileReader();
-            reader.onload = (ex) => { $('displayLogo').src = ex.target.result; $('displayLogo').style.display = 'block'; };
+            reader.onload = (ex) => { $('photoZone').style.backgroundImage = `url('${ex.target.result}')`; };
             reader.readAsDataURL(this.files[0]);
         }
     });
 
-    // [3. 프로필 사진 처리 (드래그 앤 드롭)]
-    const handlePhoto = (file) => {
-        if (!file.type.match('image.*')) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            $('photoZone').style.backgroundImage = `url('${e.target.result}')`;
-            $('photoZone').innerText = '';
-        };
-        reader.readAsDataURL(file);
-    };
-
-    $('photoInput').addEventListener('change', e => e.target.files[0] && handlePhoto(e.target.files[0]));
-    
-    ['dragenter', 'dragover'].forEach(n => $('photoZone').addEventListener(n, e => { e.preventDefault(); $('photoZone').classList.add('drag-over'); }));
-    ['dragleave', 'drop'].forEach(n => $('photoZone').addEventListener(n, e => { e.preventDefault(); $('photoZone').classList.remove('drag-over'); }));
-    $('photoZone').addEventListener('drop', e => { e.preventDefault(); handlePhoto(e.dataTransfer.files[0]); });
-    $('photoZone').addEventListener('click', () => $('photoInput').click());
-
-    // [4. 정보 실시간 업데이트]
-    $('profileForm').addEventListener('submit', (e) => {
-        e.preventDefault();
+    // 정보 업데이트
+    $('updateBtn').addEventListener('click', () => {
         $('outName').innerText = $('inName').value;
-        $('outAge').innerText = $('inAge').value;
-        $('outHeight').innerText = $('inHeight').value;
-        $('outWeight').innerText = $('inWeight').value;
-        $('outBust').innerText = $('inBust').value;
-        $('outJob').innerText = $('inJob').value;
-        $('outTag').innerText = `"${$('inTag').value}"`;
-
-        const hobbies = $('inHobby').value.split(',').map(h => h.trim()).filter(h => h);
-        $('outHobby').innerHTML = hobbies.map(h => `<span class="hobby-tag">${h}</span>`).join('');
+        $('outRole').innerText = $('inRole').value;
+        $('outDept').innerText = $('inDept').value;
+        $('outID').innerText = $('inID').value;
     });
 
-    // [5. 고화질 다운로드 (Scale 4)]
+    // 고화질 다운로드
     $('downloadBtn').addEventListener('click', () => {
         const btn = $('downloadBtn');
-        btn.innerText = "⏳ 고화질 생성 중...";
+        btn.innerText = "PROCESSING...";
         html2canvas($('cardCapture'), {
-            scale: 4, 
+            scale: 5, // 훨씬 선명하게 (5배수)
             useCORS: true,
-            allowTaint: true,
             backgroundColor: null
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `${$('inName').value}_프로필_카드.png`;
-            link.href = canvas.toDataURL("image/png", 1.0);
+            link.download = `BlackRock_ID_${$('inName').value}.png`;
+            link.href = canvas.toDataURL("image/png");
             link.click();
-            btn.innerText = "🖼️ 초초고화질 이미지 다운로드";
+            btn.innerText = "Download Ultra-HD Image";
         });
     });
-
-    // 초기 실행
-    updateHeader();
-    $('profileForm').dispatchEvent(new Event('submit'));
 </script>
 
 </body>
