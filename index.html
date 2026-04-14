@@ -3,127 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackRock Korea - Executive ID Elite (Balanced)</title>
+    <title>BlackRock Korea - Classic ID Style</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --br-black: #080808; 
-            --br-platinum: #ffffff; 
-            --br-silver: #f4f4f4;
-            --br-blue: #0056f3; 
-            --br-gold: #c5a059;
-            --br-hologram: rgba(0, 86, 243, 0.04);
+            --br-black: #000000; 
+            --br-white: #ffffff; 
+            --br-gray: #f9f9f9;
+            --br-text-gray: #888888;
+            --br-red: #e02020;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background-color: #050505; padding: 20px; display: flex; flex-direction: column; align-items: center; color: white; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; padding: 20px; display: flex; flex-direction: column; align-items: center; color: white; }
         
-        .wrapper { display: flex; gap: 50px; max-width: 1400px; width: 100%; justify-content: center; align-items: flex-start; margin-top: 30px; }
+        .wrapper { display: flex; gap: 40px; max-width: 1400px; width: 100%; justify-content: center; align-items: flex-start; margin-top: 30px; }
         
-        /* 설정 패널 - 다크 모드 */
-        .input-panel { width: 360px; background: #121212; padding: 30px; border: 1px solid #222; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 11px; color: #777; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
-        input, select { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; font-size: 14px; transition: all 0.3s; font-family: 'Inter'; }
-        input:focus, select:focus { border-color: var(--br-blue); outline: none; box-shadow: 0 0 10px rgba(0, 86, 243, 0.2); }
-        .btn-main { background: var(--br-blue); color: white; border: none; padding: 16px; cursor: pointer; width: 100%; font-weight: 900; margin-top: 10px; text-transform: uppercase; border-radius: 8px; font-size: 13px; letter-spacing: 1.5px; transition: 0.3s; }
-        .btn-main:hover { background: #0046c7; transform: translateY(-2px); }
+        /* 설정 패널 */
+        .input-panel { width: 340px; background: #111; padding: 25px; border: 1px solid #222; border-radius: 12px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 11px; color: #666; font-weight: 700; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 6px; font-size: 14px; }
+        .btn-main { background: white; color: black; border: none; padding: 14px; cursor: pointer; width: 100%; font-weight: 900; margin-top: 10px; border-radius: 6px; text-transform: uppercase; }
 
-        /* 사원증 디자인 - 세로 길이 단축 및 여백 최적화 */
+        /* 사원증 디자인 - 홍길동 스타일 비율 */
         .id-card { 
-            width: 500px; height: 650px; /* 기존 780px에서 단축 */
-            background: linear-gradient(145deg, var(--br-platinum) 0%, var(--br-silver) 100%); 
-            position: relative; color: #111;
+            width: 460px; height: 680px; 
+            background: var(--br-white); 
+            position: relative; color: #000;
             display: flex; flex-direction: column; align-items: center; 
-            box-shadow: 0 60px 120px rgba(0,0,0,0.9);
-            border-radius: 12px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,1);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+            border-radius: 15px; overflow: hidden;
         }
 
-        /* 헤더 */
+        /* 블랙 헤더 */
         .card-header { 
-            width: 100%; height: 130px; background: var(--br-black);
-            display: flex; flex-direction: column; justify-content: center; padding-left: 50px;
-            border-bottom: 4px solid var(--br-blue); position: relative; z-index: 10;
+            width: 100%; height: 90px; background: var(--br-black);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10;
         }
-        .br-logo { color: white; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 50px; letter-spacing: -1.5px; line-height: 1; }
-        .br-korea { color: var(--br-blue); font-weight: 800; font-size: 16px; letter-spacing: 6px; margin-top: 2px; text-transform: uppercase; }
+        .br-logo-text { color: white; font-weight: 900; font-size: 34px; letter-spacing: -1px; text-transform: uppercase; }
 
-        /* 사진 영역 - 밸런스 유지 */
+        /* 장식 요소 */
+        .gold-chip { position: absolute; top: 110px; left: 30px; width: 45px; height: 35px; background: linear-gradient(135deg, #d4af37, #f9e29c); border-radius: 6px; z-index: 10; opacity: 0.8; }
+        .blue-dot { position: absolute; top: 110px; right: 30px; width: 40px; height: 40px; background: radial-gradient(circle, #e0f0ff, #ffffff); border-radius: 50%; z-index: 10; opacity: 0.5; filter: blur(2px); }
+
+        /* 사진 영역 */
         .photo-area {
-            width: 100%; height: 360px; /* 기존 420px에서 단축 */
-            background: #000; position: relative; overflow: hidden;
-            z-index: 5; cursor: move;
-            box-shadow: inset 0 -15px 30px rgba(0,0,0,0.3);
-            border-bottom: 1px solid #ddd;
+            width: 320px; height: 320px; margin-top: 30px;
+            background: #eee; position: relative; overflow: hidden;
+            z-index: 5; cursor: move; border: 1px solid #eee;
         }
-        #displayPhoto { 
-            position: absolute; width: auto; height: 100%; min-width: 100%;
-            user-select: none; -webkit-user-drag: none; filter: contrast(1.03) brightness(1.02);
-        }
+        #displayPhoto { position: absolute; width: auto; height: 100%; min-width: 100%; user-select: none; -webkit-user-drag: none; }
 
-        /* 인적사항 - 위로 끌어올리고 여백 압축 */
-        .card-body { width: 100%; padding: 25px 50px; text-align: left; flex-grow: 1; z-index: 10; background: white; }
-        .emp-name { font-size: 44px; font-weight: 900; text-transform: uppercase; letter-spacing: -2px; margin-bottom: 2px; line-height: 1; color: #000; }
-        .emp-role { font-size: 18px; font-weight: 800; color: var(--br-blue); text-transform: uppercase; margin-bottom: 18px; letter-spacing: 1px; }
+        /* 인적사항 */
+        .card-body { width: 100%; padding: 25px 40px; text-align: center; z-index: 10; }
+        .emp-name { font-size: 40px; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px; color: #000; }
+        .emp-role { font-size: 18px; font-weight: 700; color: #666; margin-bottom: 25px; }
         
-        .data-list { width: 100%; }
-        .data-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .data-label { color: #999; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; width: 100px; text-align: left;}
-        /* 텍스트 위치 조정을 위한 padding 부여 */
-        .data-value { color: #222; font-weight: 900; font-size: 16px; flex: 1; text-align: left; padding-left: 20px;}
+        .divider { width: 100%; height: 1px; background: #eee; margin-bottom: 20px; }
 
-        /* 푸터 - 위로 이동 및 압축 */
-        .footer-area { width: 100%; padding-bottom: 20px; text-align: center; z-index: 10; background: white; border-top: 1px solid #f9f9f9;}
-        .footer-hologram { font-family: 'Playfair Display', serif; font-size: 38px; color: var(--br-hologram); font-weight: 900; letter-spacing: -1px; margin-bottom: -15px; }
-        .footer-text { font-size: 10px; color: #ccc; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; }
+        /* 데이터 리스트 - 우측 정렬 스타일 */
+        .data-list { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        .data-item { display: flex; justify-content: space-between; font-size: 13px; line-height: 1.2; }
+        .data-label { color: var(--br-text-gray); font-weight: 600; text-transform: uppercase; }
+        .data-value { color: #000; font-weight: 800; text-align: right; }
+
+        /* 하단 푸터 */
+        .footer-area { width: 100%; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: absolute; bottom: 0; background: #fff; }
+        .id-number { font-size: 11px; color: #aaa; font-weight: 500; letter-spacing: 2px; }
+        .security-tag { font-size: 12px; color: var(--br-red); font-weight: 900; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="input-panel">
-        <h3 style="margin-bottom:20px; color:var(--br-blue); font-weight:900;">ID CONFIG (Balanced)</h3>
+        <h3 style="margin-bottom:20px; color:#fff;">CLASSIC ID SETTING</h3>
         <div class="form-group"><label>Profile Photo</label><input type="file" id="photoIn" accept="image/*"></div>
-        <div class="form-group"><label>Employee Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
-        <div class="form-group"><label>Official Title (직책)</label>
-            <select id="roleIn">
-                <option value="COUNSELOR">COUNSELOR (상담사)</option>
-                <option value="MANAGING DIRECTOR">MANAGING DIRECTOR</option>
-                <option value="VICE PRESIDENT">VICE PRESIDENT</option>
-                <option value="EXECUTIVE DIRECTOR">EXECUTIVE DIRECTOR</option>
-                <option value="SR. INVESTMENT EXPERT">SR. INVESTMENT EXPERT</option>
-            </select>
-        </div>
-        <div class="form-group"><label>Department / Unit</label><input type="text" id="deptIn" value="Wealth Management Group"></div>
-        <button class="btn-main" id="applyBtn">Apply Changes</button>
-        <button class="btn-main" id="downBtn" style="background:#222; color:white; margin-top:12px;">Download HD PNG</button>
+        <div class="form-group"><label>Full Name</label><input type="text" id="nameIn" value="KANG NOEUL"></div>
+        <div class="form-group"><label>Title</label><input type="text" id="roleIn" value="Executive Director"></div>
+        <div class="form-group"><label>Department</label><input type="text" id="deptIn" value="WEALTH MANAGEMENT"></div>
+        <button class="btn-main" id="applyBtn">Update ID</button>
+        <button class="btn-main" id="downBtn" style="background:#222; color:white; margin-top:10px;">Download PNG</button>
     </div>
 
     <div id="cardCapture" class="id-card">
-        <div class="card-header">
-            <div class="br-logo">BlackRock</div>
-            <div class="br-korea">KOREA</div>
-        </div>
+        <div class="card-header"><div class="br-logo-text">BlackRock</div></div>
+        <div class="gold-chip"></div>
+        <div class="blue-dot"></div>
 
         <div class="photo-area" id="photoArea">
-            <img id="displayPhoto" src="https://via.placeholder.com/1000x1200/ffffff/cccccc?text=UPLOAD+PORTRAIT" style="top: 0px; left: 0px;">
+            <img id="displayPhoto" src="https://via.placeholder.com/400x400/ffffff/cccccc?text=PHOTO" style="top: 0px; left: 0px;">
         </div>
 
         <div class="card-body">
             <div class="emp-name" id="nameOut">KANG NOEUL</div>
-            <div class="emp-role" id="outRole">COUNSELOR</div>
+            <div class="emp-role" id="outRole">Executive Director</div>
+            <div class="divider"></div>
             
             <div class="data-list">
-                <div class="data-item"><span class="data-label">Unit</span><span class="data-value" id="deptOut">Wealth Management Group</span></div>
-                <div class="data-item"><span class="data-label">Location</span><span class="data-value">SEOUL, KOREA</span></div>
-                <div class="data-item"><span class="data-label">Security</span><span class="data-value" style="color: var(--br-blue);">LEVEL 4 GRANTED</span></div>
+                <div class="data-item"><span class="data-label">Department</span><span class="data-value" id="deptOut">WEALTH MANAGEMENT</span></div>
+                <div class="data-item"><span class="data-label">Issue Date</span><span class="data-value">APR 2026</span></div>
+                <div class="data-item"><span class="data-label">Expiry Date</span><span class="data-value">APR 2031</span></div>
+                <div class="data-item"><span class="data-label">Access Level</span><span class="data-value" style="color:var(--br-red)">LEVEL 4</span></div>
             </div>
         </div>
 
         <div class="footer-area">
-            <div class="footer-hologram">BlackRock</div>
-            <div class="footer-text">ESTABLISHED IN NEW YORK • 2026</div>
+            <div class="id-number">BR-7749-2026</div>
         </div>
     </div>
 </div>
@@ -142,11 +130,9 @@
                 photoImg.style.left = '0px';
                 photoImg.onload = () => {
                     if (photoImg.naturalHeight > photoImg.naturalWidth) {
-                        photoImg.style.width = '100%';
-                        photoImg.style.height = 'auto';
+                        photoImg.style.width = '100%'; photoImg.style.height = 'auto';
                     } else {
-                        photoImg.style.height = '100%';
-                        photoImg.style.width = 'auto';
+                        photoImg.style.height = '100%'; photoImg.style.width = 'auto';
                     }
                 }
             };
@@ -160,20 +146,18 @@
         $('deptOut').innerText = $('deptIn').value;
     };
 
+    // 드래그 시스템
     let isDragging = false;
     let startX, startY, initialLeft, initialTop;
-
     const startDrag = (e) => {
         isDragging = true;
         const pageX = (e.pageX || e.touches[0].pageX);
         const pageY = (e.pageY || e.touches[0].pageY);
-        startX = pageX;
-        startY = pageY;
+        startX = pageX; startY = pageY;
         initialLeft = parseInt(photoImg.style.left) || 0;
         initialTop = parseInt(photoImg.style.top) || 0;
         photoArea.style.cursor = 'grabbing';
     };
-
     const doDrag = (e) => {
         if (!isDragging) return;
         const pageX = (e.pageX || e.touches[0].pageX);
@@ -181,11 +165,7 @@
         photoImg.style.left = `${initialLeft + (pageX - startX)}px`;
         photoImg.style.top = `${initialTop + (pageY - startY)}px`;
     };
-
-    const stopDrag = () => {
-        isDragging = false;
-        photoArea.style.cursor = 'move';
-    };
+    const stopDrag = () => { isDragging = false; photoArea.style.cursor = 'move'; };
 
     photoArea.addEventListener('mousedown', startDrag);
     window.addEventListener('mousemove', doDrag);
@@ -195,14 +175,9 @@
     window.addEventListener('touchend', stopDrag);
 
     $('downBtn').onclick = () => {
-        html2canvas($('cardCapture'), {
-            scale: 4, 
-            useCORS: true,
-            backgroundColor: null,
-            logging: false
-        }).then(c => {
+        html2canvas($('cardCapture'), { scale: 4, useCORS: true, backgroundColor: null }).then(c => {
             const l = document.createElement('a');
-            l.download = `BlackRock_Balanced_ID_${$('nameIn').value}.png`;
+            l.download = `BlackRock_Classic_ID.png`;
             l.href = c.toDataURL('image/png');
             l.click();
         });
