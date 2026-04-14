@@ -3,158 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackRock Institutional ID Generator (V2.0)</title>
+    <title>BlackRock Institutional ID Generator (V3.0)</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
             --br-black: #000000; 
-            --br-dark: #121212;
-            --br-gray: #333333; 
-            --br-silver: #cccccc;
-            --accent-blue: #0076ff; /* 좀 더 차분하고 신뢰감 있는 블루로 조정 */
-            --br-gold: #c3a44d;
+            --accent-blue: #0066ff;
+            --br-gold: #b89535;
         }
-        body { font-family: 'Roboto', sans-serif; background-color: #0a0a0a; padding: 40px; display: flex; flex-direction: column; align-items: center; color: white; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; padding: 40px; display: flex; flex-direction: column; align-items: center; color: white; }
         .wrapper { display: flex; gap: 50px; max-width: 1300px; width: 100%; justify-content: center; align-items: flex-start; }
         
-        /* 설정 패널 - 더 세련되게 수정 */
-        .input-panel { width: 420px; background: #1a1a1a; padding: 30px; border-radius: 8px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); border: 1px solid #2a2a2a; }
-        .input-panel h3 { margin-top: 0; color: white; font-weight: 900; letter-spacing: -0.5px; border-bottom: 2px solid var(--accent-blue); padding-bottom: 12px; margin-bottom: 30px; text-transform: uppercase; }
+        /* 설정 패널 */
+        .input-panel { width: 400px; background: #111; padding: 30px; border-radius: 2px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #333; }
+        .input-panel h3 { margin-top: 0; color: white; border-left: 5px solid white; padding-left: 15px; font-weight: 900; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #222; background: #000; color: white; font-size: 14px; }
         
-        .form-group { margin-bottom: 22px; }
-        .form-group label { display: block; margin-bottom: 10px; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 4px; background: #080808; color: white; font-size: 14px; transition: border 0.3s; }
-        input[type="text"]:focus, select:focus { border-color: var(--accent-blue); outline: none; }
-        
-        .btn-generate { background: white; color: var(--br-black); border: none; padding: 18px; cursor: pointer; width: 100%; font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 15px; border-radius: 4px; }
-        .btn-generate:hover { background: var(--accent-blue); color: white; }
+        .btn-generate { background: white; color: black; border: none; padding: 18px; cursor: pointer; width: 100%; font-weight: 900; text-transform: uppercase; margin-top: 15px; transition: 0.3s; }
+        .btn-generate:hover { background: #ccc; }
 
-        /* 사원증 카드 디자인 - 수직 규격 */
+        /* 사원증 카드 디자인 */
         .id-card { 
-            width: 380px; height: 600px; background: white; border-radius: 16px; overflow: hidden; 
-            box-shadow: 0 40px 90px rgba(0,0,0,0.9); position: relative; color: var(--br-black);
-            display: flex; flex-direction: column; align-items: center; image-rendering: -webkit-optimize-contrast;
-            border: 1px solid rgba(0,0,0,0.05);
+            width: 360px; height: 580px; background: white; border-radius: 4px; overflow: hidden; 
+            box-shadow: 0 50px 100px rgba(0,0,0,1); position: relative; color: black;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* 카드 헤더 (로고바) - 더 묵직하게 */
+        /* [수정] 블랙록 공식 스타일 로고바 */
         .card-header { 
-            width: 100%; height: 90px; background: var(--br-black); display: flex; align-items: center; justify-content: center; position: relative;
+            width: 100%; height: 90px; background: var(--br-black); display: flex; align-items: center; padding-left: 30px; position: relative;
         }
-        .br-logo { color: white; font-weight: 900; font-size: 28px; letter-spacing: -1.5px; text-transform: uppercase; }
-
-        /* [해결 포인트] 사진 영역 - IC 칩과 겹침 완벽 제거 */
-        .photo-frame {
-            width: 250px; height: 300px; margin-top: 35px; background: #f5f5f5; border: 1px solid #eee;
-            background-size: cover; background-position: center; position: relative; overflow: hidden;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.03); border-radius: 2px;
+        /* 블랙록 공식 폰트 스타일 (Bold & Condensed 느낌) */
+        .br-logo-text { 
+            color: white; font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 34px; letter-spacing: -2px; 
+            transform: scaleY(1.1); /* 세로로 살짝 늘려 권위감 부여 */
         }
-        
-        /* 인적사항 - 폰트 무게 및 자간 조정 */
-        .card-info { text-align: center; margin-top: 30px; width: 100%; padding: 0 40px; box-sizing: border-box; }
-        .emp-name { font-size: 32px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; color: var(--br-black); letter-spacing: -1px; }
-        .emp-role { font-size: 15px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-bottom: 25px; border-bottom: 1px solid #f0f0f0; padding-bottom: 18px; }
-        
-        .meta-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; text-align: left; font-size: 12px; width: 100%; }
-        .meta-label { color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .meta-value { color: #222; font-weight: 700; }
+        .header-stripe { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--accent-blue); }
 
-        /* 보안 요소: [수정] 사진 밖으로 이동 & 퀄리티 업 */
-        .security-elements { position: absolute; top: 110px; right: 35px; display: flex; flex-direction: column; gap: 15px; align-items: center; }
-        
+        /* 보안 요소 (사진과 겹치지 않게 우측 배치) */
         .ic-chip {
-            width: 48px; height: 38px;
-            background: linear-gradient(135deg, #d4af37 0%, #fff6bb 40%, #e8c96b 60%, #a4811a 100%);
-            border-radius: 7px; border: 1px solid rgba(0,0,0,0.1);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            image-rendering: auto; /* 선명하게 */
-        }
-        .ic-chip-lines { position: absolute; inset: 0; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="38"><rect x="5" y="5" width="38" height="28" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/><path d="M5 14h38M5 24h38M16 5v28M32 5v28" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/></svg>'); }
-
-        .hologram {
-            width: 35px; height: 35px;
-            background: radial-gradient(circle, #74b9ff 0%, #ffffff 60%, #a29bfe 100%); opacity: 0.25; border-radius: 50%;
-            mix-blend-mode: multiply; filter: blur(0.5px);
+            position: absolute; right: 30px; top: 110px; width: 50px; height: 40px;
+            background: linear-gradient(135deg, #c5a059 0%, #f7e2a9 50%, #c5a059 100%);
+            border-radius: 5px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        /* 바코드 - 더 정교하게 수정 */
-        .barcode-area {
-            position: absolute; bottom: 25px; width: 85%; text-align: center; opacity: 0.9;
+        /* 사진 영역 */
+        .photo-frame {
+            width: 230px; height: 280px; margin-top: 40px; background: #eee; 
+            background-size: cover; background-position: center; border: 1px solid #ddd;
         }
-        .barcode-img { width: 100%; height: 45px; object-fit: cover; filter: grayscale(1); mix-blend-mode: multiply; }
-        .barcode-num { font-size: 11px; font-family: 'Courier New', monospace; letter-spacing: 4px; margin-top: 6px; font-weight: 700; color: #111; }
 
-        #downloadBtn { background: #333; color: white; border: 1px solid #444; margin-top: 10px; }
-        #downloadBtn:hover { background: #555; }
+        /* 인적사항 */
+        .card-info { text-align: left; width: 100%; padding: 30px 40px; box-sizing: border-box; }
+        .emp-name { font-size: 30px; font-weight: 900; text-transform: uppercase; color: #000; letter-spacing: -1px; margin-bottom: 5px; }
+        .emp-role { font-size: 14px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 25px; }
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
+        .info-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; }
+        .info-value { font-size: 12px; color: #333; font-weight: 700; }
+
+        /* 하단 바코드 */
+        .barcode-area { position: absolute; bottom: 20px; width: 100%; text-align: center; }
+        .barcode-img { width: 80%; height: 35px; filter: contrast(150%); }
+        .barcode-num { font-size: 10px; font-family: monospace; letter-spacing: 3px; color: #888; margin-top: 5px; }
+
+        #downloadBtn { background: #222; color: #fff; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<h2 style="font-weight: 900; letter-spacing: -1.5px; margin-bottom: 50px; text-transform: uppercase; color: #f0f0f0; border-bottom: 3px solid var(--accent-blue); padding-bottom: 10px;">BlackRock Institutional ID System</h2>
+<h2 style="font-weight: 900; letter-spacing: -1px; margin-bottom: 40px; color: #fff;">BLACKROCK ID ISSUANCE SYSTEM</h2>
 
 <div class="wrapper">
     <div class="input-panel">
-        <h3>1. Employee Information</h3>
+        <h3>ID CONFIGURATION</h3>
         <div class="form-group">
-            <label>Profile Photo</label>
+            <label>Employee Photo</label>
             <input type="file" id="photoInput" accept="image/*">
         </div>
         <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="inName" value="KIM CHULSOO">
+            <label>Employee Name</label>
+            <input type="text" id="inName" value="LARRY FINK">
         </div>
         <div class="form-group">
-            <label>Position / Title</label>
-            <input type="text" id="inRole" value="Chief Investment Officer">
+            <label>Official Title</label>
+            <input type="text" id="inRole" value="Managing Director">
         </div>
         <div class="form-group">
-            <label>Department</label>
-            <select id="inDept">
-                <option value="Global Equities">Global Equities</option>
-                <option value="Fixed Income">Fixed Income</option>
-                <option value="Risk Management">Risk Management</option>
-                <option value="Multi-Asset Strategies" selected>Multi-Asset Strategies</option>
-                <option value="BlackRock Solutions">BlackRock Solutions</option>
-            </select>
+            <label>Business Unit</label>
+            <input type="text" id="inDept" value="Institutional Client Business">
         </div>
         <div class="form-group">
-            <label>Employee ID No.</label>
-            <input type="text" id="inID" value="BR-8820-2026">
+            <label>Serial Number</label>
+            <input type="text" id="inID" value="BLK-9982-2026">
         </div>
 
-        <button id="updateBtn" class="btn-generate">Apply & Re-Generate ID</button>
-        <button id="downloadBtn" class="btn-generate">Download Ultra-HD Image</button>
+        <button id="updateBtn" class="btn-generate">Apply Changes</button>
+        <button id="downloadBtn" class="btn-generate">Download 4K Image</button>
     </div>
 
     <div class="output-panel">
         <div class="id-card" id="cardCapture">
             <div class="card-header">
-                <div class="br-logo">BLACKROCK</div>
+                <div class="br-logo-text">BLACKROCK</div>
+                <div class="header-stripe"></div>
             </div>
             
-            <div class="security-elements">
-                <div class="ic-chip"><div class="ic-chip-lines"></div></div>
-                <div class="hologram"></div>
-            </div>
+            <div class="ic-chip"></div>
             
-            <div class="photo-frame" id="photoZone" style="background-image: url('https://via.placeholder.com/250x300?text=Upload+Photo');"></div>
+            <div class="photo-frame" id="photoZone" style="background-image: url('https://via.placeholder.com/230x280?text=Scan+Photo');"></div>
 
-            <div class="card-body card-info">
-                <div class="emp-name" id="outName">KIM CHULSOO</div>
-                <div class="emp-role" id="outRole">Chief Investment Officer</div>
+            <div class="card-info">
+                <div class="emp-name" id="outName">LARRY FINK</div>
+                <div class="emp-role" id="outRole">Managing Director</div>
                 
-                <div class="meta-grid">
-                    <span class="meta-label">Department</span> <span class="meta-value" id="outDept">Multi-Asset Strategies</span>
-                    <span class="meta-label">Issue Date</span> <span class="meta-value">APR 2026</span>
-                    <span class="meta-label">Expiry Date</span> <span class="meta-value">APR 2031</span>
-                    <span class="meta-label">Access Level</span> <span class="meta-value" style="color:#d32f2f;">LEVEL 5</span>
-                </div>
+                <div class="info-row"><span class="info-label">Unit</span><span class="info-value" id="outDept">Institutional Client Business</span></div>
+                <div class="info-row"><span class="info-label">Issue Date</span><span class="info-value">14 APR 2026</span></div>
+                <div class="info-row"><span class="info-label">Status</span><span class="info-value">PERMANENT</span></div>
+                <div class="info-row"><span class="info-label">Clearance</span><span class="info-value" style="color:red;">UNRESTRICTED</span></div>
             </div>
 
             <div class="barcode-area">
                 <img src="https://www.scandit.com/wp-content/themes/scandit/img/barcode-types/code-128.png" class="barcode-img">
-                <div class="barcode-num" id="outID">BR-8820-2026</div>
+                <div class="barcode-num" id="outID">BLK-9982-2026</div>
             </div>
         </div>
     </div>
@@ -163,7 +137,6 @@
 <script>
     const $ = id => document.getElementById(id);
 
-    // 사진 업로드 처리 (깨끗한 Photo Area 전용)
     $('photoInput').addEventListener('change', function(e) {
         if (this.files[0]) {
             const reader = new FileReader();
@@ -172,7 +145,6 @@
         }
     });
 
-    // 정보 업데이트
     $('updateBtn').addEventListener('click', () => {
         $('outName').innerText = $('inName').value;
         $('outRole').innerText = $('inRole').value;
@@ -180,21 +152,19 @@
         $('outID').innerText = $('inID').value;
     });
 
-    // 초초고화질 다운로드 (Scale 5로 설정하여 인쇄 규격 대응)
     $('downloadBtn').addEventListener('click', () => {
         const btn = $('downloadBtn');
-        btn.innerText = "PROCESSING ULTR-HD...";
+        btn.innerText = "GENERATING 4K IMAGE...";
         html2canvas($('cardCapture'), {
-            scale: 5, // 훨씬 선명하게 (초고해상도)
+            scale: 5, 
             useCORS: true,
-            allowTaint: true,
             backgroundColor: null
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `BlackRock_ID_${$('inName').value}.png`;
-            link.href = canvas.toDataURL("image/png", 1.0);
+            link.download = `BlackRock_Asset_${$('inName').value}.png`;
+            link.href = canvas.toDataURL("image/png");
             link.click();
-            btn.innerText = "Download Ultra-HD Image";
+            btn.innerText = "Download 4K Image";
         });
     });
 </script>
