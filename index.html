@@ -2,303 +2,369 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>BLACKROCK PRO V10.6</title>
+    <title>BLACKROCK GLOBAL TRADING PLATFORM</title>
     <style>
-        :root { --bg: #0f0f0f; --panel: #1a1a1a; --item: #252525; --point: #007bff; --text: #e0e0e0; }
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg); color: var(--text); user-select: none; overflow: hidden; }
-        
-        .header { display: flex; align-items: center; padding: 6px 15px; background: var(--panel); border-bottom: 1px solid #333; gap: 10px; }
-        .search-input { flex: 1; background: #000; border: 1px solid #444; color: #00ff00; padding: 5px 12px; border-radius: 4px; outline: none; font-size: 13px; }
-        .btn-group { display: flex; gap: 4px; }
-        .menu-btn { background: #333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-main { background: var(--point) !important; }
-
-        .container { padding: 8px 12px; height: calc(100vh - 45px); overflow-y: auto; }
-        .tab-bar { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
-        .tab-btn { padding: 4px 10px; background: #2a2a2a; border: none; color: #888; cursor: pointer; border-radius: 4px; font-size: 12px; transition: 0.2s; }
-        .tab-btn.active { background: var(--point); color: white; font-weight: bold; }
-        .tab-btn:hover { background: #3a3a3a; color: #fff; }
-
-        .macro-list { display: grid; grid-template-columns: 1fr; gap: 4px; } 
-        
-        .macro-item { display: flex; align-items: flex-start; background: var(--item); padding: 8px 12px; border-radius: 4px; border: 1px solid #2d2d2d; outline: none; cursor: move; transition: background 0.1s, border-color 0.1s; } 
-        .macro-item:hover { border-color: var(--point); background: #2a2a2a; }
-        .macro-item:focus { border-color: #ffc107; background: #333; }
-        
-        /* 단축키 실행 시 반짝이는 애니메이션 클래스 */
-        .macro-item.flash-active { background: var(--point) !important; border-color: #fff !important; color: #fff !important; }
-        
-        .num-box { display: flex; align-items: center; width: 55px; flex-shrink: 0; font-weight: bold; font-size: 11px; margin-top: 3px; }
-        .num-idx { color: #555; width: 16px; }
-        .num-badge { color: var(--point); font-size: 10px; font-family: monospace; }
-        
-        .macro-content { 
-            flex: 1; 
-            cursor: pointer; 
-            font-size: 14px; 
-            line-height: 1.5; 
-            white-space: pre-wrap; 
-            word-break: break-all; 
-            display: block; 
-            padding-bottom: 2px;
+        :root {
+            --bg: #0b0b0c;
+            --panel: #141416;
+            --item: #1e1e22;
+            --up-color: #f6465d;   /* 매수 / 양봉 (해외 기준 레드) */
+            --down-color: #0ecb81; /* 매도 / 음봉 (해외 기준 그린) */
+            --text-main: #eaecef;
+            --text-muted: #848e9c;
+            --border: #2b2f36;
         }
 
-        #modalOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; }
-        .modal { background: #1e1e1e; padding: 20px; border-radius: 8px; width: 500px; border: 1px solid var(--point); }
-        .modal-input { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 4px; outline: none; font-size: 14px; box-sizing: border-box; margin-bottom: 15px; }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text-main);
+            user-select: none;
+            overflow: hidden;
+        }
 
-        #contextMenu { display: none; position: fixed; background: #2a2a2a; border: 1px solid #444; z-index: 2000; border-radius: 6px; padding: 5px 0; min-width: 140px; }
-        #contextMenu div { padding: 8px 15px; cursor: pointer; font-size: 13px; color: white; }
-        #contextMenu div:hover { background: var(--point); }
-        #toast { visibility: hidden; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--point); color: white; padding: 8px 20px; border-radius: 30px; font-size: 12px; z-index: 6000; }
-        #toast.show { visibility: visible; animation: fadein 0.2s, fadeout 0.2s 0.7s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        /* 레이아웃 구조 */
+        .header {
+            height: 50px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .logo { font-weight: bold; color: var(--up-color); letter-spacing: 1px; font-size: 16px; }
+        .wallet-info { display: flex; gap: 20px; font-size: 13px; }
+        .wallet-info span { color: var(--text-muted); }
+        .wallet-info b { color: var(--text-main); }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 320px 350px;
+            height: calc(100vh - 50px);
+        }
+
+        /* 1. 차트 영역 */
+        .chart-section {
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+        .ticker-bar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 30px;
+            background: var(--panel);
+        }
+        .ticker-info h2 { margin: 0; font-size: 20px; }
+        .ticker-metrics { display: flex; gap: 20px; align-items: center; font-size: 12px; }
+        #chartCanvas { flex: 1; width: 100%; background: #0b0b0c; }
+
+        /* 2. 호가창 영역 */
+        .orderbook-section {
+            border-right: 1px solid var(--border);
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-title {
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        .order-list { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 0; font-family: monospace; font-size: 13px; }
+        .order-row { display: flex; justify-content: space-between; padding: 4px 15px; position: relative; }
+        .order-row .bar { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(246, 70, 93, 0.1); z-index: 1; }
+        .order-row.asks .bar { background: rgba(246, 70, 93, 0.08); }
+        .order-row.bids .bar { background: rgba(14, 203, 129, 0.08); }
+        .order-row span { z-index: 2; }
+        .current-price-box {
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: #18181c;
+        }
+
+        /* 3. 주문 및 체결 내역 영역 */
+        .trade-section {
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+        }
+        .execution-list {
+            flex: 1;
+            overflow-y: hidden;
+            padding: 10px 15px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .execution-row { display: flex; justify-content: space-between; padding: 3px 0; }
+        
+        /* 하단 주문 패널 */
+        .order-panel {
+            padding: 20px;
+            background: var(--item);
+            border-top: 1px solid var(--border);
+        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .trade-btn {
+            border: none; padding: 12px; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 14px;
+        }
+        .btn-buy { background: var(--up-color); }
+        .btn-buy:hover { background: #d9384f; }
+        .btn-sell { background: var(--down-color); }
+        .btn-sell:hover { background: #0baf6f; }
+        
+        .input-group { display: flex; background: #000; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .input-group input { background: transparent; border: none; color: white; outline: none; text-align: right; width: 70%; font-size: 14px; }
+        .input-group label { font-size: 12px; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
-<div id="toast">메신저로 발사!</div>
-<div id="contextMenu"></div>
-
-<div id="modalOverlay">
-    <div class="modal">
-        <div id="modalTitle" style="margin-bottom:10px; color:var(--point); font-weight:bold;">문장 관리</div>
-        <textarea id="modalInp" class="modal-input" rows="12" placeholder="엔터 쳐서 내용을 입력하세요..."></textarea>
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button class="menu-btn" onclick="closeModal()">취소</button>
-            <button class="menu-btn btn-main" onclick="saveItem()">확인</button>
+    <div class="header">
+        <div class="logo">BLACKROCK GLOBAL TRADING</div>
+        <div class="wallet-info">
+            <span>보유 자산: <b id="userBalance">10,000.00</b> USDT</span>
+            <span>보유 주식: <b id="userStock">0.00</b> BR</span>
         </div>
     </div>
-</div>
 
-<div class="header">
-    <input type="text" id="searchBox" class="search-input" placeholder="🔍 검색어..." onkeyup="render()">
-    <div class="btn-group">
-        <button class="menu-btn" onclick="addTabPrompt()">탭+</button>
-        <button class="menu-btn btn-main" onclick="openModal()">문장+</button>
-        <button class="menu-btn" onclick="exportData()">저장</button>
-        <button class="menu-btn" onclick="document.getElementById('importFile').click()">복원</button>
+    <div class="main-container">
+        
+        <div class="chart-section">
+            <div class="ticker-bar">
+                <div class="ticker-info">
+                    <h2>BR / USDT</h2>
+                </div>
+                <div class="ticker-metrics">
+                    <div><span style="color:var(--text-muted)">현재가</span> <br> <b id="tickerPrice" style="font-size:14px;">100.00</b></div>
+                    <div><span style="color:var(--text-muted)">24h 변동</span> <br> <b id="tickerChange" style="color:var(--up-color)">+2.45%</b></div>
+                </div>
+            </div>
+            <canvas id="chartCanvas"></canvas>
+        </div>
+
+        <div class="orderbook-section">
+            <div class="panel-title">실시간 호가창 (Order Book)</div>
+            <div class="order-list asks" id="asksList" style="justify-content: flex-end;"></div>
+            <div class="current-price-box" id="centerPrice">100.00</div>
+            <div class="order-list bids" id="bidsList"></div>
+        </div>
+
+        <div class="trade-section">
+            <div class="panel-title">최근 체결 내역 (Recent Trades)</div>
+            <div class="execution-list" id="executionList"></div>
+            
+            <div class="order-panel">
+                <div class="input-group">
+                    <label>주문 가격</label>
+                    <input type="text" id="orderPrice" value="100.00" readonly>
+                </div>
+                <div class="input-group">
+                    <label>주문 수량</label>
+                    <input type="number" id="orderQty" value="1" min="1">
+                </div>
+                <div class="btn-group">
+                    <button class="trade-btn btn-buy" onclick="actionOrder('BUY')">매수 (BUY)</button>
+                    <button class="trade-btn btn-sell" onclick="actionOrder('SELL')">매도 (SELL)</button>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <input type="file" id="importFile" style="display:none" onchange="importData(this)">
-</div>
-
-<div class="container">
-    <div class="tab-bar" id="tabBar"></div>
-    <div class="macro-list" id="list"></div>
-</div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('br_v10')) || { "인사": [{t:"안녕하세요, 블랙록 강노을입니다."}] };
-    let curTab = Object.keys(db)[0];
-    let editIdx = -1;
-    let rightClickedTab = "";
-    let dragTabName = ""; 
+    // 상태 데이터 기본 구조
+    let currentPrice = 100.00;
+    let balance = 10000.00;
+    let stockQty = 0.00;
+    let historyData = []; // 캔들 데이터 스택
 
-    function render() {
-        const list = document.getElementById('list');
-        const tabBar = document.getElementById('tabBar');
-        const search = document.getElementById('searchBox').value.toLowerCase();
+    // 초기 차트 스택 더미 데이터 채우기
+    for(let i=0; i<40; i++) {
+        let open = 95 + Math.random()*10;
+        let close = open + (Math.random()*6 - 3);
+        historyData.push({ open, high: Math.max(open, close)+Math.random(), low: Math.min(open, close)-Math.random(), close });
+    }
+
+    // 1. 실시간 주가 변동 및 드라이버엔진
+    function updateMarket() {
+        const change = (Math.random() * 1.6 - 0.8); // 등락 랜덤 계산
+        currentPrice = parseFloat((currentPrice + change).toFixed(2));
+        if(currentPrice < 10) currentPrice = 10;
+
+        document.getElementById('tickerPrice').innerText = currentPrice.toFixed(2);
+        document.getElementById('centerPrice').innerText = currentPrice.toFixed(2);
+        document.getElementById('orderPrice').value = currentPrice.toFixed(2);
+
+        // 현재가 기준으로 실시간 변동률 대략 계산 표기
+        const startPrice = historyData[0]?.open || 100;
+        const totalChange = ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
+        const changeEl = document.getElementById('tickerChange');
+        changeEl.innerText = `${totalChange >= 0 ? '+' : ''}${totalChange}%`;
+        changeEl.style.color = totalChange >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        document.getElementById('centerPrice').style.color = change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+
+        // 실시간 데이터 밀어넣기 및 매분 새 캔들 갱신 시뮬레이션
+        let lastCandle = historyData[historyData.length - 1];
+        lastCandle.close = currentPrice;
+        if(currentPrice > lastCandle.high) lastCandle.high = currentPrice;
+        if(currentPrice < lastCandle.low) lastCandle.low = currentPrice;
+
+        generateOrderBook();
+        if(Math.random() > 0.4) generateExecution(change >= 0 ? 'BUY' : 'SELL');
+        drawChart();
+    }
+
+    // 2. 실시간 호가창(OrderBook) 랜더러
+    function generateOrderBook() {
+        const asksBody = document.getElementById('asksList');
+        const bidsBody = document.getElementById('bidsList');
         
-        tabBar.innerHTML = Object.keys(db).map(t => 
-            `<button class="tab-btn ${t===curTab?'active':''}" 
-                draggable="true"
-                onclick="setTab('${t}')" 
-                oncontextmenu="showTabMenu(event, '${t}')"
-                ondragstart="tabDragStart(event, '${t}')"
-                ondragover="event.preventDefault()"
-                ondrop="tabDrop(event, '${t}')">${t}</button>`
-        ).join('');
-        
-        list.innerHTML = "";
-        (db[curTab] || []).forEach((item, i) => {
-            if(item.t.toLowerCase().includes(search)) {
-                const div = document.createElement('div');
-                div.className = 'macro-item';
-                div.tabIndex = 0;
-                div.draggable = true;
-                div.oncontextmenu = (e) => showItemMenu(e, i);
-                div.ondblclick = () => { copy(item.t); };
-                div.onkeydown = (e) => { if (e.key === "Delete" || e.key === "Del") delItem(i); };
+        let asksHTML = '';
+        let bidsHTML = '';
 
-                // [업그레이드] F1~F10 배지 가이드 UI 적용
-                const fBadge = i < 10 ? `<span class="num-badge">[F${i+1}]</span>` : '';
-                div.innerHTML = `
-                    <div class="num-box">
-                        <span class="num-idx">${i+1}</span>
-                        ${fBadge}
-                    </div>
-                    <div class="macro-content">${item.t}</div>
-                `;
-                
-                div.addEventListener('dragstart', (e) => { 
-                    e.dataTransfer.setData('idx', i); 
-                    e.dataTransfer.setData('type', 'item');
-                    div.style.opacity = '0.4'; 
-                });
-                div.addEventListener('dragover', (e) => e.preventDefault());
-                div.addEventListener('drop', (e) => {
-                    e.stopPropagation();
-                    const type = e.dataTransfer.getData('type');
-                    if(type !== 'item') return;
-
-                    const from = e.dataTransfer.getData('idx');
-                    const target = db[curTab].splice(from, 1)[0];
-                    db[curTab].splice(i, 0, target);
-                    saveDB(); render();
-                });
-                div.addEventListener('dragend', () => render());
-                list.appendChild(div);
-            }
-        });
-    }
-
-    function tabDragStart(e, name) {
-        dragTabName = name;
-        e.dataTransfer.setData('type', 'tab');
-    }
-
-    function tabDrop(e, targetName) {
-        e.preventDefault();
-        const type = e.dataTransfer.getData('type');
-        if(type !== 'tab' || dragTabName === targetName) return;
-
-        const keys = Object.keys(db);
-        const fromIdx = keys.indexOf(dragTabName);
-        const toIdx = keys.indexOf(targetName);
-
-        keys.splice(fromIdx, 1);
-        keys.splice(toIdx, 0, dragTabName);
-
-        const newDb = {};
-        keys.forEach(k => { newDb[k] = db[k]; });
-        db = newDb;
-        
-        saveDB(); render();
-    }
-
-    function copy(t) {
-        const cleanText = t.trim().replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, "");
-        navigator.clipboard.writeText(cleanText).then(() => {
-            const ts = document.getElementById('toast');
-            ts.className = 'show';
-            setTimeout(() => ts.className = '', 1000);
-        });
-    }
-
-    function openModal(idx = -1) {
-        editIdx = idx;
-        const overlay = document.getElementById('modalOverlay');
-        const input = document.getElementById('modalInp');
-        overlay.style.display = 'flex';
-        input.value = (idx === -1) ? "" : db[curTab][idx].t;
-        input.focus();
-    }
-    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
-    function saveItem() {
-        const t = document.getElementById('modalInp').value;
-        if(!t.trim()) return;
-        if(editIdx === -1) db[curTab].push({t:t});
-        else db[curTab][editIdx].t = t;
-        saveDB(); render(); closeModal();
-    }
-
-    function showTabMenu(e, tabName) {
-        e.preventDefault(); e.stopPropagation();
-        rightClickedTab = tabName;
-        const menu = document.getElementById('contextMenu');
-        menu.innerHTML = `<div onclick="editTabPrompt()">📝 이름 수정</div><div onclick="delTabConfirm()" style="color:#ff6b6b">❌ 탭 삭제</div>`;
-        displayMenu(e);
-    }
-    function showItemMenu(e, idx) {
-        e.preventDefault(); e.stopPropagation();
-        const menu = document.getElementById('contextMenu');
-        menu.innerHTML = `<div onclick="openModal(${idx})">📝 수정</div><div onclick="delItem(${idx})" style="color:#ff6b6b">❌ 삭제</div>`;
-        displayMenu(e);
-    }
-    function displayMenu(e) {
-        const menu = document.getElementById('contextMenu');
-        menu.style.display = 'block'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px';
-    }
-    window.onclick = () => document.getElementById('contextMenu').style.display = 'none';
-
-    function addTabPrompt() {
-        const n = prompt("새 탭 이름?");
-        if(n && !db[n]) { db[n] = []; curTab = n; saveDB(); render(); }
-    }
-    function editTabPrompt() {
-        const n = prompt("탭 이름 수정?", rightClickedTab);
-        if(n && n !== rightClickedTab && !db[n]) {
-            const newDb = {};
-            Object.keys(db).forEach(k => {
-                if(k === rightClickedTab) newDb[n] = db[k];
-                else newDb[k] = db[k];
-            });
-            db = newDb;
-            curTab = n; saveDB(); render();
+        // 매도 호가 (위쪽)
+        for(let i=5; i>=1; i--) {
+            let price = (currentPrice + (i * 0.15)).toFixed(2);
+            let size = (Math.random() * 500 + 10).toFixed(1);
+            let percent = Math.min((size / 500) * 100, 100);
+            asksHTML += `<div class="order-row asks"><span style="color:var(--up-color)">${price}</span><span>${size}</span><div class="bar" style="width:${percent}%"></div></div>`;
         }
+        // 매수 호가 (아래쪽)
+        for(let i=1; i<=5; i++) {
+            let price = (currentPrice - (i * 0.15)).toFixed(2);
+            let size = (Math.random() * 500 + 10).toFixed(1);
+            let percent = Math.min((size / 500) * 100, 100);
+            bidsHTML += `<div class="order-row bids"><span style="color:var(--down-color)">${price}</span><span>${size}</span><div class="bar" style="width:${percent}%"></div></div>`;
+        }
+
+        asksBody.innerHTML = asksHTML;
+        bidsBody.innerHTML = bidsHTML;
     }
-    function delTabConfirm() {
-        if(Object.keys(db).length > 1 && confirm(`삭제할까요?`)) { delete db[rightClickedTab]; curTab = Object.keys(db)[0]; saveDB(); render(); }
+
+    // 3. 최근 체결 내역 동적 제어
+    function generateExecution(side) {
+        const container = document.getElementById('executionList');
+        const time = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+        const qty = (Math.random() * 50 + 1).toFixed(2);
+        const color = side === 'BUY' ? 'var(--up-color)' : 'var(--down-color)';
+
+        const row = document.createElement('div');
+        row.className = 'execution-row';
+        row.innerHTML = `<span style="color:var(--text-muted)">${time}</span><span style="color:${color}; font-weight:bold;">${currentPrice.toFixed(2)}</span><span>${qty}</span>`;
+        
+        container.insertBefore(row, container.firstChild);
+        if(container.children.length > 25) container.removeChild(container.lastChild);
     }
-    function setTab(t) { curTab = t; render(); }
-    function delItem(i) { if(confirm("삭제할까요?")) { db[curTab].splice(i, 1); saveDB(); render(); } }
-    function saveDB() { localStorage.setItem('br_v10', JSON.stringify(db)); }
+
+    // 4. 순수 HTML5 Canvas 엔진 기반의 실시간 캔들 차트 드로잉
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight - 60;
+        drawChart();
+    }
+
+    function drawChart() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(historyData.length === 0) return;
+
+        const padding = 40;
+        const chartWidth = canvas.width - padding * 2;
+        const chartHeight = canvas.height - padding * 2;
+
+        // 고점 저점 스케일링 타겟 계산
+        let allPrices = historyData.map(d => [d.high, d.low]).flat();
+        let maxPrice = Math.max(...allPrices) * 1.002;
+        let minPrice = Math.min(...allPrices) * 0.998;
+        let priceRange = maxPrice - minPrice;
+
+        const candleWidth = chartWidth / historyData.length;
+
+        // 격자 가이드선 그리기
+        ctx.strokeStyle = '#1e1e22';
+        ctx.lineWidth = 1;
+        for(let i=1; i<5; i++) {
+            let y = padding + (chartHeight / 5) * i;
+            ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width - padding, y); ctx.stroke();
+        }
+
+        // 캔들 본체 루프 시각화
+        historyData.forEach((candle, idx) => {
+            let x = padding + (idx * candleWidth) + (candleWidth * 0.1);
+            let w = candleWidth * 0.8;
+
+            let yOpen = padding + chartHeight - ((candle.open - minPrice) / priceRange) * chartHeight;
+            let yClose = padding + chartHeight - ((candle.close - minPrice) / priceRange) * chartHeight;
+            let yHigh = padding + chartHeight - ((candle.high - minPrice) / priceRange) * chartHeight;
+            let yLow = padding + chartHeight - ((candle.low - minPrice) / priceRange) * chartHeight;
+
+            let isUp = candle.close >= candle.open;
+            ctx.strokeStyle = isUp ? '#f6465d' : '#0ecb81';
+            ctx.fillStyle = isUp ? '#f6465d' : '#0ecb81';
+
+            // 심지(꼬리) 라인 그리기
+            ctx.beginPath();
+            ctx.moveTo(x + w/2, yHigh);
+            ctx.lineTo(x + w/2, yLow);
+            ctx.stroke();
+
+            // 몸통 박스 그리기
+            ctx.fillRect(x, Math.min(yOpen, yClose), w, Math.max(Math.abs(yOpen - yClose), 1));
+        });
+    }
+
+    // 5. 모의 투자 인터랙션 시스템 (매수/매도 로직)
+    function actionOrder(side) {
+        const qty = parseFloat(document.getElementById('orderQty').value);
+        if(!qty || qty <= 0) return alert('정확한 수량을 입력하세요.');
+
+        const totalCost = currentPrice * qty;
+
+        if(side === 'BUY') {
+            if(balance < totalCost) return alert('자산이 부족합니다.');
+            balance -= totalCost;
+            stockQty += qty;
+        } else {
+            if(stockQty < qty) return alert('보유한 주식이 부족합니다.');
+            balance += totalCost;
+            stockQty -= qty;
+        }
+
+        // 지갑 동기화 UI 반영
+        document.getElementById('userBalance').innerText = balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('userStock').innerText = stockQty.toFixed(2);
+        
+        generateExecution(side);
+    }
+
+    // 새 캔들 타임스탬프 스위칭 인터벌 (6초마다 다음 봉으로 이동)
+    setInterval(() => {
+        historyData.shift();
+        historyData.push({ open: currentPrice, high: currentPrice, low: currentPrice, close: currentPrice });
+    }, 6000);
+
+    // 인터벌 코어 실행 및 이벤트 바인딩
+    window.addEventListener('resize', resizeCanvas);
+    setInterval(updateMarket, 4000); // 0.4초 간격 변동
     
-    function exportData() {
-        const blob = new Blob([JSON.stringify(db)], {type: 'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'blackrock_v10.json'; a.click();
-    }
-    function importData(input) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onload = function() {
-            try {
-                const importedData = JSON.parse(reader.result);
-                if(confirm("합칠까요?")) {
-                    for(let k in importedData) { if(db[k]) db[k] = db[k].concat(importedData[k]); else db[k] = importedData[k]; }
-                    saveDB(); render();
-                }
-            } catch(e) { alert("오류"); }
-        };
-        reader.readAsText(file);
-    }
-
-    // ==========================================
-    // [업그레이드] F1 ~ F10 초고속 즉시 복사 및 피드백 시스템
-    // ==========================================
-    window.addEventListener('keydown', (e) => {
-        if (e.keyCode >= 112 && e.keyCode <= 121) {
-            e.preventDefault(); // 브라우저 기본 단축키 먹통 처리
-            
-            const targetIdx = e.keyCode - 112; 
-            const currentTabItems = db[curTab] || [];
-            
-            if (currentTabItems[targetIdx]) {
-                // 1. 즉시 클립보드 복사 실행
-                copy(currentTabItems[targetIdx].t);
-                
-                // 2. 시각적 피드백 효과 적용 (반짝임 및 스크롤 포커스)
-                const items = document.querySelectorAll('.macro-item');
-                if (items[targetIdx]) {
-                    const targetEl = items[targetIdx];
-                    
-                    // 기존 효과 제거 후 재등록 (연타 대응)
-                    targetEl.classList.remove('flash-active');
-                    void targetEl.offsetWidth; // 리플로우 트리거
-                    targetEl.classList.add('flash-active');
-                    
-                    // 0.3초 후 원래 다크 모드 스타일로 복귀
-                    setTimeout(() => {
-                        targetEl.classList.remove('flash-active');
-                        targetEl.focus();
-                    }, 300);
-                }
-            }
-        }
-    });
-
-    render();
+    // 초기 로딩
+    setTimeout(() => {
+        resizeCanvas();
+        updateMarket();
+    }, 100);
 </script>
 </body>
 </html>
