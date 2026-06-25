@@ -2,57 +2,43 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>BANADA 최종 통합 프로필 생성기</title>
+    <title>BANADA 최종 완성본</title>
     <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
     <style>
         body { font-family: 'Pretendard', sans-serif; background: #121212; color: white; display: flex; gap: 30px; padding: 30px; justify-content: center; }
-        .controls { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 380px; display: flex; flex-direction: column; gap: 10px; }
-        input { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-        button { background: #d4af37; color: black; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        canvas { border-radius: 16px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .controls { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 380px; }
+        input { background: #000; border: 1px solid #333; color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        button { background: #d4af37; color: black; font-weight: bold; padding: 15px; border: none; width: 100%; cursor: pointer; }
+        canvas { border-radius: 16px; border: 1px solid #333; }
     </style>
 </head>
 <body>
-
     <div class="controls">
-        <h2>BANADA 통합 프로필기</h2>
+        <h2>BANADA 프로필 메이커</h2>
         <input type="file" id="videoInput" accept="video/mp4">
         <input type="file" id="logoInput" accept="image/png">
-        
-        <label>로고 조절 (크기 / X위치 / Y위치)</label>
-        <div style="display:flex; gap:5px;">
-            <input type="range" id="logoW" min="50" max="300" value="150">
-            <input type="range" id="logoX" min="0" max="360" value="105">
-            <input type="range" id="logoY" min="0" max="300" value="40">
-        </div>
-
-        <input type="text" id="nameInput" value="예인" placeholder="이름">
-        <input type="text" id="detailsInput" value="28세 | 163CM / 47KG | C컵" placeholder="상세정보">
+        <label>로고 조절 (크기 / X / Y)</label>
+        <div style="display:flex; gap:5px;"><input type="range" id="logoW" min="50" max="300" value="150"><input type="range" id="logoX" min="0" max="360" value="105"><input type="range" id="logoY" min="0" max="300" value="40"></div>
+        <input type="text" id="nameInput" value="예인">
+        <input type="text" id="detailsInput" value="28세 | 163CM / 47KG | C컵">
         <input type="text" id="sloganInput" value="A WORLD OF ELEGANCE & PASSION.">
-
-        <button id="uploadBtn">📥 GIF 생성 및 클라우드 업로드</button>
+        <button id="uploadBtn">📥 GIF 생성 및 업로드</button>
     </div>
-
     <video id="v" style="display:none;" loop muted playsinline></video>
     <img id="logo" style="display:none;">
     <canvas id="c" width="360" height="640"></canvas>
 
 <script>
-    const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d');
-    const video = document.getElementById('v');
-    const logo = document.getElementById('logo');
+    const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+    const video = document.getElementById('v'), logo = document.getElementById('logo');
 
     document.getElementById('videoInput').onchange = (e) => { video.src = URL.createObjectURL(e.target.files[0]); video.play(); };
     document.getElementById('logoInput').onchange = (e) => { logo.src = URL.createObjectURL(e.target.files[0]); };
 
     function draw() {
         ctx.drawImage(video, 0, 0, 360, 640);
-        const w = document.getElementById('logoW').value;
-        const x = document.getElementById('logoX').value;
-        const y = document.getElementById('logoY').value;
+        const w = document.getElementById('logoW').value, x = document.getElementById('logoX').value, y = document.getElementById('logoY').value;
         if(logo.src) ctx.drawImage(logo, x, y, w, w * (logo.naturalHeight / logo.naturalWidth));
-        
         ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 500, 360, 140);
         ctx.fillStyle = "#d4af37"; ctx.font = "bold 30px Pretendard"; ctx.textAlign = "center";
         ctx.fillText(document.getElementById('nameInput').value, 180, 550);
@@ -64,25 +50,28 @@
     }
     draw();
 
-    // 클라우드너리 업로드 연동
-    const myWidget = cloudinary.createUploadWidget({
-        cloudName: 'dwla93cgd', 
-        uploadPreset: 'banada_profile_preset',
-        // 영상 전송 시 GIF로 변환 명령
-        transformation: [{ format: "gif", width: 360, height: 640, crop: "fill" }]
-    }, (error, result) => {
-        if (!error && result && result.event === "success") {
-            alert("✅ 업로드 완료! GIF로 변환 중입니다.");
-            window.open(result.info.secure_url.replace('.mp4', '.gif'));
-        }
-    });
-
     document.getElementById('uploadBtn').onclick = () => {
-        // 캔버스 데이터 추출 후 업로드
-        canvas.toBlob(blob => {
-            const file = new File([blob], "profile.mp4", { type: "video/mp4" });
-            myWidget.open(); // 위젯을 열어 업로드 실행
-        }, "video/mp4");
+        // [핵심] 캔버스를 녹화하여 파일로 자동 변환 후 클라우드너리에 즉시 전달
+        const stream = canvas.captureStream(30);
+        const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, {type: 'video/webm'});
+            const file = new File([blob], "output.webm", {type: 'video/webm'});
+            
+            // 클라우드너리 위젯에 파일 직접 주입
+            cloudinary.applyUploadWidget(document.createElement('div'), {
+                cloudName: 'dwla93cgd',
+                uploadPreset: 'banada_profile_preset',
+                sources: ['local'],
+                transformation: [{ format: "gif", width: 360, height: 640, crop: "fill" }]
+            }, (error, result) => {
+                if (result.event === "success") window.open(result.info.secure_url.replace('.mp4', '.gif'));
+            }).open();
+        };
+        recorder.start();
+        setTimeout(() => recorder.stop(), 3000); // 3초 녹화 후 자동 업로드
     };
 </script>
 </body>
