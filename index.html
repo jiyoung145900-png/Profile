@@ -57,20 +57,37 @@
     }
     render();
 
-    document.getElementById('save').onclick = () => {
-        const stream = c.captureStream(30);
-        const recorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
-        let chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = () => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob(chunks, {type: 'video/webm'}));
-            a.download = 'BANADA_Profile.webm';
-            a.click();
-        };
-        recorder.start();
-        setTimeout(() => recorder.stop(), 3000);
-    };
+    document.getElementById('save').onclick = async () => {
+    const formData = new FormData();
+    formData.append('video', document.getElementById('vid').files[0]);
+    formData.append('logo', document.getElementById('log').files[0]);
+    formData.append('x', document.getElementById('x').value);
+    formData.append('y', document.getElementById('y').value);
+    formData.append('w', document.getElementById('w').value);
+    formData.append('name', document.getElementById('name').value);
+    formData.append('info', document.getElementById('info').value);
+
+    // 버튼 상태를 '처리 중'으로 바꾸면 좋겠죠?
+    const btn = document.getElementById('save');
+    btn.innerText = "서버에서 고화질 렌더링 중...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/render', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error("서버 렌더링 실패");
+        
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'BANADA_HQ.gif';
+        a.click();
+    } catch (err) {
+        alert("에러 발생: " + err.message);
+    } finally {
+        btn.innerText = "📥 GIF/영상으로 저장 (다운로드)";
+        btn.disabled = false;
+    }
+};
 </script>
 </body>
 </html>
