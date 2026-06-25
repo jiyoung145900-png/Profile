@@ -2,103 +2,44 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>BANADA 최종 프로필 생성기</title>
+    <title>BANADA 최종 완성본</title>
+    <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background: #121212; color: white; display: flex; gap: 30px; padding: 30px; justify-content: center; }
-        .controls { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 350px; display: flex; flex-direction: column; gap: 10px; }
-        .controls h2 { margin-top: 0; color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        input[type="text"], input[type="file"] { background: #000; border: 1px solid #333; color: white; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-        label { font-size: 12px; color: #aaa; margin-top: 5px; }
-        button { background: #d4af37; color: black; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 15px; }
-        canvas { border-radius: 16px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        body { background: #0b0b0c; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .control-panel { background: #1e1e1e; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-
-    <div class="controls">
-        <h2>BANADA 생성기</h2>
-        
-        <label>1. 배경 영상</label>
-        <input type="file" id="videoInput" accept="video/mp4">
-
-        <label>2. 상단 로고</label>
-        <input type="file" id="logoInput" accept="image/png">
-
-        <label>로고 가로 크기</label>
-        <input type="range" id="logoW" min="50" max="300" value="150">
-        <label>로고 위치 (X, Y)</label>
-        <div style="display:flex; gap:5px;">
-            <input type="range" id="logoX" min="0" max="360" value="105">
-            <input type="range" id="logoY" min="0" max="300" value="40">
-        </div>
-
-        <label>3. 프로필 정보</label>
-        <input type="text" id="nameInput" value="예인" placeholder="이름">
-        <input type="text" id="detailsInput" value="28세 | 163CM / 47KG | C컵" placeholder="상세정보">
-        <input type="text" id="sloganInput" value="A WORLD OF ELEGANCE & PASSION.">
-
-        <button id="recordBtn">📥 합성 영상 다운로드 (3초)</button>
+    <div class="control-panel">
+        <label>로고 가로 크기: </label><input type="range" id="logoW" min="50" max="300" value="150">
+        <label>위치 (X): </label><input type="range" id="logoX" min="0" max="360" value="100">
+        <label>위치 (Y): </label><input type="range" id="logoY" min="0" max="300" value="20">
     </div>
+    
+    <button id="upload_widget" style="padding:15px; background:#d4af37; border:none; cursor:pointer;">영상 합성 시작</button>
+    <div id="result"></div>
 
-    <video id="v" style="display:none;" loop muted playsinline></video>
-    <img id="logo" style="display:none;">
-    <canvas id="c" width="360" height="640"></canvas>
+    <script>
+        document.getElementById("upload_widget").addEventListener("click", () => {
+            const w = document.getElementById('logoW').value;
+            const x = document.getElementById('logoX').value;
+            const y = document.getElementById('logoY').value;
 
-<script>
-    const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d');
-    const video = document.getElementById('v');
-    const logo = document.getElementById('logo');
-
-    // 입력 처리
-    document.getElementById('videoInput').onchange = (e) => { video.src = URL.createObjectURL(e.target.files[0]); video.play(); };
-    document.getElementById('logoInput').onchange = (e) => { logo.src = URL.createObjectURL(e.target.files[0]); };
-
-    function draw() {
-        // 배경 영상
-        if(video.readyState >= 2) {
-            ctx.drawImage(video, 0, 0, 360, 640);
-        } else {
-            ctx.fillStyle = "#000"; ctx.fillRect(0,0,360,640);
-        }
-
-        // 로고 위치/크기 반영
-        const lw = document.getElementById('logoW').value;
-        const lx = document.getElementById('logoX').value;
-        const ly = document.getElementById('logoY').value;
-        if(logo.src) ctx.drawImage(logo, lx, ly, lw, lw * (logo.naturalHeight / logo.naturalWidth));
-
-        // 하단 텍스트
-        ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 500, 360, 140);
-        ctx.fillStyle = "#d4af37"; ctx.font = "bold 30px Pretendard"; ctx.textAlign = "center";
-        ctx.fillText(document.getElementById('nameInput').value, 180, 550);
-        ctx.fillStyle = "#fff"; ctx.font = "16px Pretendard";
-        ctx.fillText(document.getElementById('detailsInput').value, 180, 580);
-        ctx.fillStyle = "#d4af37"; ctx.font = "italic 12px serif";
-        ctx.fillText(document.getElementById('sloganInput').value, 180, 610);
-        
-        requestAnimationFrame(draw);
-    }
-    draw();
-
-    // 녹화 기능
-    const recordBtn = document.getElementById('recordBtn');
-    recordBtn.onclick = () => {
-        const stream = canvas.captureStream(30);
-        const recorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
-        let chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = () => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob(chunks, {type: 'video/webm'}));
-            a.download = 'BANADA_Profile.webm';
-            a.click();
-            recordBtn.innerText = "📥 합성 영상 다운로드 (3초)";
-        };
-        recorder.start();
-        recordBtn.innerText = "⏳ 녹화중...";
-        setTimeout(() => recorder.stop(), 3000);
-    };
-</script>
+            cloudinary.createUploadWidget({
+                cloudName: 'dwla93cgd',
+                uploadPreset: 'banada_profile_preset',
+                // 슬라이더 값을 동적으로 합성 주소에 넣습니다.
+                transformation: [{ 
+                    overlay: "5b206172-ddc1-4a95-a34e-c197ccb0eb10",
+                    gravity: "north_west",
+                    x: x, y: y, width: w 
+                }]
+            }, (error, result) => {
+                if (result.event === "success") {
+                    document.getElementById('result').innerHTML = `<video src="${result.info.secure_url}" controls width="360"></video>`;
+                }
+            }).open();
+        });
+    </script>
 </body>
 </html>
