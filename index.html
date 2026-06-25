@@ -2,369 +2,156 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>BLACKROCK GLOBAL TRADING PLATFORM</title>
+    <title>BANADA 프로필 메이커 (서버 불필요)</title>
     <style>
-        :root {
-            --bg: #0b0b0c;
-            --panel: #141416;
-            --item: #1e1e22;
-            --up-color: #f6465d;   /* 매수 / 양봉 (해외 기준 레드) */
-            --down-color: #0ecb81; /* 매도 / 음봉 (해외 기준 그린) */
-            --text-main: #eaecef;
-            --text-muted: #848e9c;
-            --border: #2b2f36;
-        }
-
-        body {
-            font-family: 'Pretendard', sans-serif;
-            margin: 0;
-            background: var(--bg);
-            color: var(--text-main);
-            user-select: none;
-            overflow: hidden;
-        }
-
-        /* 레이아웃 구조 */
-        .header {
-            height: 50px;
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-        .logo { font-weight: bold; color: var(--up-color); letter-spacing: 1px; font-size: 16px; }
-        .wallet-info { display: flex; gap: 20px; font-size: 13px; }
-        .wallet-info span { color: var(--text-muted); }
-        .wallet-info b { color: var(--text-main); }
-
-        .main-container {
-            display: grid;
-            grid-template-columns: 1fr 320px 350px;
-            height: calc(100vh - 50px);
-        }
-
-        /* 1. 차트 영역 */
-        .chart-section {
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            background: #000;
-        }
-        .ticker-bar {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            gap: 30px;
-            background: var(--panel);
-        }
-        .ticker-info h2 { margin: 0; font-size: 20px; }
-        .ticker-metrics { display: flex; gap: 20px; align-items: center; font-size: 12px; }
-        #chartCanvas { flex: 1; width: 100%; background: #0b0b0c; }
-
-        /* 2. 호가창 영역 */
-        .orderbook-section {
-            border-right: 1px solid var(--border);
-            background: var(--panel);
-            display: flex;
-            flex-direction: column;
-        }
-        .panel-title {
-            padding: 12px 15px;
-            font-size: 13px;
-            font-weight: bold;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-muted);
-        }
-        .order-list { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 0; font-family: monospace; font-size: 13px; }
-        .order-row { display: flex; justify-content: space-between; padding: 4px 15px; position: relative; }
-        .order-row .bar { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(246, 70, 93, 0.1); z-index: 1; }
-        .order-row.asks .bar { background: rgba(246, 70, 93, 0.08); }
-        .order-row.bids .bar { background: rgba(14, 203, 129, 0.08); }
-        .order-row span { z-index: 2; }
-        .current-price-box {
-            padding: 15px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            background: #18181c;
-        }
-
-        /* 3. 주문 및 체결 내역 영역 */
-        .trade-section {
-            background: var(--panel);
-            display: flex;
-            flex-direction: column;
-        }
-        .execution-list {
-            flex: 1;
-            overflow-y: hidden;
-            padding: 10px 15px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        .execution-row { display: flex; justify-content: space-between; padding: 3px 0; }
-        
-        /* 하단 주문 패널 */
-        .order-panel {
-            padding: 20px;
-            background: var(--item);
-            border-top: 1px solid var(--border);
-        }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .trade-btn {
-            border: none; padding: 12px; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 14px;
-        }
-        .btn-buy { background: var(--up-color); }
-        .btn-buy:hover { background: #d9384f; }
-        .btn-sell { background: var(--down-color); }
-        .btn-sell:hover { background: #0baf6f; }
-        
-        .input-group { display: flex; background: #000; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .input-group input { background: transparent; border: none; color: white; outline: none; text-align: right; width: 70%; font-size: 14px; }
-        .input-group label { font-size: 12px; color: var(--text-muted); }
+        body { font-family: 'Pretendard', sans-serif; background: #121212; color: white; display: flex; gap: 30px; padding: 30px; justify-content: center; }
+        .controls { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 350px; display: flex; flex-direction: column; gap: 15px; }
+        .controls h2 { margin-top: 0; color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        input[type="text"], input[type="file"] { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        button { background: #d4af37; color: black; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #f1c40f; }
+        canvas { border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #333; }
+        .recording { background: #e74c3c !important; color: white !important; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo">BLACKROCK GLOBAL TRADING</div>
-        <div class="wallet-info">
-            <span>보유 자산: <b id="userBalance">10,000.00</b> USDT</span>
-            <span>보유 주식: <b id="userStock">0.00</b> BR</span>
-        </div>
-    </div>
-
-    <div class="main-container">
+    <div class="controls">
+        <h2>BANADA 프로필 생성기</h2>
         
-        <div class="chart-section">
-            <div class="ticker-bar">
-                <div class="ticker-info">
-                    <h2>BR / USDT</h2>
-                </div>
-                <div class="ticker-metrics">
-                    <div><span style="color:var(--text-muted)">현재가</span> <br> <b id="tickerPrice" style="font-size:14px;">100.00</b></div>
-                    <div><span style="color:var(--text-muted)">24h 변동</span> <br> <b id="tickerChange" style="color:var(--up-color)">+2.45%</b></div>
-                </div>
-            </div>
-            <canvas id="chartCanvas"></canvas>
-        </div>
+        <label>1. 배경 영상 (MP4)</label>
+        <input type="file" id="videoInput" accept="video/mp4, video/webm">
 
-        <div class="orderbook-section">
-            <div class="panel-title">실시간 호가창 (Order Book)</div>
-            <div class="order-list asks" id="asksList" style="justify-content: flex-end;"></div>
-            <div class="current-price-box" id="centerPrice">100.00</div>
-            <div class="order-list bids" id="bidsList"></div>
-        </div>
+        <label>2. 상단 로고 (PNG)</label>
+        <input type="file" id="logoInput" accept="image/png">
 
-        <div class="trade-section">
-            <div class="panel-title">최근 체결 내역 (Recent Trades)</div>
-            <div class="execution-list" id="executionList"></div>
-            
-            <div class="order-panel">
-                <div class="input-group">
-                    <label>주문 가격</label>
-                    <input type="text" id="orderPrice" value="100.00" readonly>
-                </div>
-                <div class="input-group">
-                    <label>주문 수량</label>
-                    <input type="number" id="orderQty" value="1" min="1">
-                </div>
-                <div class="btn-group">
-                    <button class="trade-btn btn-buy" onclick="actionOrder('BUY')">매수 (BUY)</button>
-                    <button class="trade-btn btn-sell" onclick="actionOrder('SELL')">매도 (SELL)</button>
-                </div>
-            </div>
-        </div>
+        <label>3. 프로필 정보</label>
+        <input type="text" id="nameInput" value="예인" placeholder="이름">
+        <input type="text" id="ageInput" value="28세" placeholder="나이">
+        <input type="text" id="bodyInput" value="163CM / 47KG" placeholder="신체정보">
+        <input type="text" id="sizeInput" value="C컵" placeholder="체형">
+        
+        <label>하단 문구</label>
+        <input type="text" id="sloganInput" value="A WORLD OF ELEGANCE & PASSION.">
 
+        <button id="recordBtn">📥 합성 영상 다운로드 (3초 녹화)</button>
+        <p style="font-size: 12px; color: #aaa;">* 다운로드 버튼을 누르면 미리보기 화면을 고화질로 녹화하여 파일로 저장합니다.</p>
     </div>
+
+    <video id="sourceVideo" style="display:none;" loop muted playsinline></video>
+    <img id="sourceLogo" style="display:none;" crossorigin="anonymous">
+
+    <canvas id="previewCanvas" width="360" height="640"></canvas>
 
 <script>
-    // 상태 데이터 기본 구조
-    let currentPrice = 100.00;
-    let balance = 10000.00;
-    let stockQty = 0.00;
-    let historyData = []; // 캔들 데이터 스택
-
-    // 초기 차트 스택 더미 데이터 채우기
-    for(let i=0; i<40; i++) {
-        let open = 95 + Math.random()*10;
-        let close = open + (Math.random()*6 - 3);
-        historyData.push({ open, high: Math.max(open, close)+Math.random(), low: Math.min(open, close)-Math.random(), close });
-    }
-
-    // 1. 실시간 주가 변동 및 드라이버엔진
-    function updateMarket() {
-        const change = (Math.random() * 1.6 - 0.8); // 등락 랜덤 계산
-        currentPrice = parseFloat((currentPrice + change).toFixed(2));
-        if(currentPrice < 10) currentPrice = 10;
-
-        document.getElementById('tickerPrice').innerText = currentPrice.toFixed(2);
-        document.getElementById('centerPrice').innerText = currentPrice.toFixed(2);
-        document.getElementById('orderPrice').value = currentPrice.toFixed(2);
-
-        // 현재가 기준으로 실시간 변동률 대략 계산 표기
-        const startPrice = historyData[0]?.open || 100;
-        const totalChange = ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
-        const changeEl = document.getElementById('tickerChange');
-        changeEl.innerText = `${totalChange >= 0 ? '+' : ''}${totalChange}%`;
-        changeEl.style.color = totalChange >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-        document.getElementById('centerPrice').style.color = change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-
-        // 실시간 데이터 밀어넣기 및 매분 새 캔들 갱신 시뮬레이션
-        let lastCandle = historyData[historyData.length - 1];
-        lastCandle.close = currentPrice;
-        if(currentPrice > lastCandle.high) lastCandle.high = currentPrice;
-        if(currentPrice < lastCandle.low) lastCandle.low = currentPrice;
-
-        generateOrderBook();
-        if(Math.random() > 0.4) generateExecution(change >= 0 ? 'BUY' : 'SELL');
-        drawChart();
-    }
-
-    // 2. 실시간 호가창(OrderBook) 랜더러
-    function generateOrderBook() {
-        const asksBody = document.getElementById('asksList');
-        const bidsBody = document.getElementById('bidsList');
-        
-        let asksHTML = '';
-        let bidsHTML = '';
-
-        // 매도 호가 (위쪽)
-        for(let i=5; i>=1; i--) {
-            let price = (currentPrice + (i * 0.15)).toFixed(2);
-            let size = (Math.random() * 500 + 10).toFixed(1);
-            let percent = Math.min((size / 500) * 100, 100);
-            asksHTML += `<div class="order-row asks"><span style="color:var(--up-color)">${price}</span><span>${size}</span><div class="bar" style="width:${percent}%"></div></div>`;
-        }
-        // 매수 호가 (아래쪽)
-        for(let i=1; i<=5; i++) {
-            let price = (currentPrice - (i * 0.15)).toFixed(2);
-            let size = (Math.random() * 500 + 10).toFixed(1);
-            let percent = Math.min((size / 500) * 100, 100);
-            bidsHTML += `<div class="order-row bids"><span style="color:var(--down-color)">${price}</span><span>${size}</span><div class="bar" style="width:${percent}%"></div></div>`;
-        }
-
-        asksBody.innerHTML = asksHTML;
-        bidsBody.innerHTML = bidsHTML;
-    }
-
-    // 3. 최근 체결 내역 동적 제어
-    function generateExecution(side) {
-        const container = document.getElementById('executionList');
-        const time = new Date().toLocaleTimeString('ko-KR', { hour12: false });
-        const qty = (Math.random() * 50 + 1).toFixed(2);
-        const color = side === 'BUY' ? 'var(--up-color)' : 'var(--down-color)';
-
-        const row = document.createElement('div');
-        row.className = 'execution-row';
-        row.innerHTML = `<span style="color:var(--text-muted)">${time}</span><span style="color:${color}; font-weight:bold;">${currentPrice.toFixed(2)}</span><span>${qty}</span>`;
-        
-        container.insertBefore(row, container.firstChild);
-        if(container.children.length > 25) container.removeChild(container.lastChild);
-    }
-
-    // 4. 순수 HTML5 Canvas 엔진 기반의 실시간 캔들 차트 드로잉
-    const canvas = document.getElementById('chartCanvas');
+    const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight - 60;
-        drawChart();
-    }
-
-    function drawChart() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if(historyData.length === 0) return;
-
-        const padding = 40;
-        const chartWidth = canvas.width - padding * 2;
-        const chartHeight = canvas.height - padding * 2;
-
-        // 고점 저점 스케일링 타겟 계산
-        let allPrices = historyData.map(d => [d.high, d.low]).flat();
-        let maxPrice = Math.max(...allPrices) * 1.002;
-        let minPrice = Math.min(...allPrices) * 0.998;
-        let priceRange = maxPrice - minPrice;
-
-        const candleWidth = chartWidth / historyData.length;
-
-        // 격자 가이드선 그리기
-        ctx.strokeStyle = '#1e1e22';
-        ctx.lineWidth = 1;
-        for(let i=1; i<5; i++) {
-            let y = padding + (chartHeight / 5) * i;
-            ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width - padding, y); ctx.stroke();
-        }
-
-        // 캔들 본체 루프 시각화
-        historyData.forEach((candle, idx) => {
-            let x = padding + (idx * candleWidth) + (candleWidth * 0.1);
-            let w = candleWidth * 0.8;
-
-            let yOpen = padding + chartHeight - ((candle.open - minPrice) / priceRange) * chartHeight;
-            let yClose = padding + chartHeight - ((candle.close - minPrice) / priceRange) * chartHeight;
-            let yHigh = padding + chartHeight - ((candle.high - minPrice) / priceRange) * chartHeight;
-            let yLow = padding + chartHeight - ((candle.low - minPrice) / priceRange) * chartHeight;
-
-            let isUp = candle.close >= candle.open;
-            ctx.strokeStyle = isUp ? '#f6465d' : '#0ecb81';
-            ctx.fillStyle = isUp ? '#f6465d' : '#0ecb81';
-
-            // 심지(꼬리) 라인 그리기
-            ctx.beginPath();
-            ctx.moveTo(x + w/2, yHigh);
-            ctx.lineTo(x + w/2, yLow);
-            ctx.stroke();
-
-            // 몸통 박스 그리기
-            ctx.fillRect(x, Math.min(yOpen, yClose), w, Math.max(Math.abs(yOpen - yClose), 1));
-        });
-    }
-
-    // 5. 모의 투자 인터랙션 시스템 (매수/매도 로직)
-    function actionOrder(side) {
-        const qty = parseFloat(document.getElementById('orderQty').value);
-        if(!qty || qty <= 0) return alert('정확한 수량을 입력하세요.');
-
-        const totalCost = currentPrice * qty;
-
-        if(side === 'BUY') {
-            if(balance < totalCost) return alert('자산이 부족합니다.');
-            balance -= totalCost;
-            stockQty += qty;
-        } else {
-            if(stockQty < qty) return alert('보유한 주식이 부족합니다.');
-            balance += totalCost;
-            stockQty -= qty;
-        }
-
-        // 지갑 동기화 UI 반영
-        document.getElementById('userBalance').innerText = balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('userStock').innerText = stockQty.toFixed(2);
-        
-        generateExecution(side);
-    }
-
-    // 새 캔들 타임스탬프 스위칭 인터벌 (6초마다 다음 봉으로 이동)
-    setInterval(() => {
-        historyData.shift();
-        historyData.push({ open: currentPrice, high: currentPrice, low: currentPrice, close: currentPrice });
-    }, 6000);
-
-    // 인터벌 코어 실행 및 이벤트 바인딩
-    window.addEventListener('resize', resizeCanvas);
-    setInterval(updateMarket, 4000); // 0.4초 간격 변동
+    const video = document.getElementById('sourceVideo');
+    const logo = document.getElementById('sourceLogo');
     
-    // 초기 로딩
-    setTimeout(() => {
-        resizeCanvas();
-        updateMarket();
-    }, 100);
+    // 파일 업로드 처리
+    document.getElementById('videoInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            video.src = URL.createObjectURL(file);
+            video.play();
+        }
+    });
+
+    document.getElementById('logoInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(file) logo.src = URL.createObjectURL(file);
+    });
+
+    // 캔버스 실시간 렌더링 엔진 (초당 60프레임)
+    function drawFrame() {
+        // 1. 영상 배경 그리기
+        if (video.readyState >= 2) {
+            // 화면 꽉 차게 크롭하여 그리기
+            const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
+            const x = (canvas.width / scale - video.videoWidth) / 2;
+            const y = (canvas.height / scale - video.videoHeight) / 2;
+            ctx.drawImage(video, x, y, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth * scale, video.videoHeight * scale);
+        } else {
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 2. 상단 로고 그리기
+        if (logo.complete && logo.src) {
+            const logoWidth = 150;
+            const logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
+            ctx.drawImage(logo, (canvas.width - logoWidth) / 2, 40, logoWidth, logoHeight);
+        }
+
+        // 3. 하단 그라데이션 및 텍스트 그리기
+        const grad = ctx.createLinearGradient(0, canvas.height - 150, 0, canvas.height);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.9)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+
+        ctx.textAlign = "center";
+        
+        // 이름
+        ctx.font = "bold 32px Pretendard, sans-serif";
+        ctx.fillStyle = "#d4af37";
+        ctx.fillText(document.getElementById('nameInput').value, canvas.width / 2, canvas.height - 90);
+
+        // 신체 정보
+        ctx.font = "16px Pretendard, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        const details = `${document.getElementById('ageInput').value} | ${document.getElementById('bodyInput').value} | ${document.getElementById('sizeInput').value}`;
+        ctx.fillText(details, canvas.width / 2, canvas.height - 55);
+
+        // 하단 슬로건
+        ctx.font = "italic 12px serif";
+        ctx.fillStyle = "#d4af37";
+        ctx.fillText(document.getElementById('sloganInput').value, canvas.width / 2, canvas.height - 25);
+
+        requestAnimationFrame(drawFrame);
+    }
+    drawFrame(); // 렌더링 시작
+
+    // 녹화 및 다운로드 기능 (서버 불필요)
+    const recordBtn = document.getElementById('recordBtn');
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    recordBtn.addEventListener('click', () => {
+        if (!video.src) return alert("배경 영상을 먼저 업로드해주세요!");
+        
+        recordBtn.innerText = "⏳ 녹화 중... (3초)";
+        recordBtn.classList.add('recording');
+        recordedChunks = [];
+
+        // 캔버스 화면을 30프레임으로 캡처
+        const stream = canvas.captureStream(30);
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BANADA_${document.getElementById('nameInput').value}_Profile.webm`;
+            a.click();
+            
+            recordBtn.innerText = "📥 합성 영상 다운로드 (3초 녹화)";
+            recordBtn.classList.remove('recording');
+        };
+
+        mediaRecorder.start();
+
+        // 3초 후 녹화 자동 종료
+        setTimeout(() => {
+            mediaRecorder.stop();
+        }, 3000); // 길이를 늘리고 싶다면 3000(3초)을 수정하세요.
+    });
 </script>
 </body>
 </html>
