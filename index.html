@@ -2,156 +2,103 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>BANADA 프로필 메이커 (서버 불필요)</title>
+    <title>BANADA 최종 프로필 생성기</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; background: #121212; color: white; display: flex; gap: 30px; padding: 30px; justify-content: center; }
-        .controls { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 350px; display: flex; flex-direction: column; gap: 15px; }
+        .controls { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 350px; display: flex; flex-direction: column; gap: 10px; }
         .controls h2 { margin-top: 0; color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        input[type="text"], input[type="file"] { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-        button { background: #d4af37; color: black; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #f1c40f; }
-        canvas { border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #333; }
-        .recording { background: #e74c3c !important; color: white !important; }
+        input[type="text"], input[type="file"] { background: #000; border: 1px solid #333; color: white; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        label { font-size: 12px; color: #aaa; margin-top: 5px; }
+        button { background: #d4af37; color: black; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        canvas { border-radius: 16px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h2>BANADA 프로필 생성기</h2>
+        <h2>BANADA 생성기</h2>
         
-        <label>1. 배경 영상 (MP4)</label>
-        <input type="file" id="videoInput" accept="video/mp4, video/webm">
+        <label>1. 배경 영상</label>
+        <input type="file" id="videoInput" accept="video/mp4">
 
-        <label>2. 상단 로고 (PNG)</label>
+        <label>2. 상단 로고</label>
         <input type="file" id="logoInput" accept="image/png">
+
+        <label>로고 가로 크기</label>
+        <input type="range" id="logoW" min="50" max="300" value="150">
+        <label>로고 위치 (X, Y)</label>
+        <div style="display:flex; gap:5px;">
+            <input type="range" id="logoX" min="0" max="360" value="105">
+            <input type="range" id="logoY" min="0" max="300" value="40">
+        </div>
 
         <label>3. 프로필 정보</label>
         <input type="text" id="nameInput" value="예인" placeholder="이름">
-        <input type="text" id="ageInput" value="28세" placeholder="나이">
-        <input type="text" id="bodyInput" value="163CM / 47KG" placeholder="신체정보">
-        <input type="text" id="sizeInput" value="C컵" placeholder="체형">
-        
-        <label>하단 문구</label>
+        <input type="text" id="detailsInput" value="28세 | 163CM / 47KG | C컵" placeholder="상세정보">
         <input type="text" id="sloganInput" value="A WORLD OF ELEGANCE & PASSION.">
 
-        <button id="recordBtn">📥 합성 영상 다운로드 (3초 녹화)</button>
-        <p style="font-size: 12px; color: #aaa;">* 다운로드 버튼을 누르면 미리보기 화면을 고화질로 녹화하여 파일로 저장합니다.</p>
+        <button id="recordBtn">📥 합성 영상 다운로드 (3초)</button>
     </div>
 
-    <video id="sourceVideo" style="display:none;" loop muted playsinline></video>
-    <img id="sourceLogo" style="display:none;" crossorigin="anonymous">
-
-    <canvas id="previewCanvas" width="360" height="640"></canvas>
+    <video id="v" style="display:none;" loop muted playsinline></video>
+    <img id="logo" style="display:none;">
+    <canvas id="c" width="360" height="640"></canvas>
 
 <script>
-    const canvas = document.getElementById('previewCanvas');
+    const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
-    const video = document.getElementById('sourceVideo');
-    const logo = document.getElementById('sourceLogo');
-    
-    // 파일 업로드 처리
-    document.getElementById('videoInput').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(file) {
-            video.src = URL.createObjectURL(file);
-            video.play();
-        }
-    });
+    const video = document.getElementById('v');
+    const logo = document.getElementById('logo');
 
-    document.getElementById('logoInput').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(file) logo.src = URL.createObjectURL(file);
-    });
+    // 입력 처리
+    document.getElementById('videoInput').onchange = (e) => { video.src = URL.createObjectURL(e.target.files[0]); video.play(); };
+    document.getElementById('logoInput').onchange = (e) => { logo.src = URL.createObjectURL(e.target.files[0]); };
 
-    // 캔버스 실시간 렌더링 엔진 (초당 60프레임)
-    function drawFrame() {
-        // 1. 영상 배경 그리기
-        if (video.readyState >= 2) {
-            // 화면 꽉 차게 크롭하여 그리기
-            const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
-            const x = (canvas.width / scale - video.videoWidth) / 2;
-            const y = (canvas.height / scale - video.videoHeight) / 2;
-            ctx.drawImage(video, x, y, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth * scale, video.videoHeight * scale);
+    function draw() {
+        // 배경 영상
+        if(video.readyState >= 2) {
+            ctx.drawImage(video, 0, 0, 360, 640);
         } else {
-            ctx.fillStyle = "#111";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#000"; ctx.fillRect(0,0,360,640);
         }
 
-        // 2. 상단 로고 그리기
-        if (logo.complete && logo.src) {
-            const logoWidth = 150;
-            const logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
-            ctx.drawImage(logo, (canvas.width - logoWidth) / 2, 40, logoWidth, logoHeight);
-        }
+        // 로고 위치/크기 반영
+        const lw = document.getElementById('logoW').value;
+        const lx = document.getElementById('logoX').value;
+        const ly = document.getElementById('logoY').value;
+        if(logo.src) ctx.drawImage(logo, lx, ly, lw, lw * (logo.naturalHeight / logo.naturalWidth));
 
-        // 3. 하단 그라데이션 및 텍스트 그리기
-        const grad = ctx.createLinearGradient(0, canvas.height - 150, 0, canvas.height);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.9)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
-
-        ctx.textAlign = "center";
+        // 하단 텍스트
+        ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 500, 360, 140);
+        ctx.fillStyle = "#d4af37"; ctx.font = "bold 30px Pretendard"; ctx.textAlign = "center";
+        ctx.fillText(document.getElementById('nameInput').value, 180, 550);
+        ctx.fillStyle = "#fff"; ctx.font = "16px Pretendard";
+        ctx.fillText(document.getElementById('detailsInput').value, 180, 580);
+        ctx.fillStyle = "#d4af37"; ctx.font = "italic 12px serif";
+        ctx.fillText(document.getElementById('sloganInput').value, 180, 610);
         
-        // 이름
-        ctx.font = "bold 32px Pretendard, sans-serif";
-        ctx.fillStyle = "#d4af37";
-        ctx.fillText(document.getElementById('nameInput').value, canvas.width / 2, canvas.height - 90);
-
-        // 신체 정보
-        ctx.font = "16px Pretendard, sans-serif";
-        ctx.fillStyle = "#ffffff";
-        const details = `${document.getElementById('ageInput').value} | ${document.getElementById('bodyInput').value} | ${document.getElementById('sizeInput').value}`;
-        ctx.fillText(details, canvas.width / 2, canvas.height - 55);
-
-        // 하단 슬로건
-        ctx.font = "italic 12px serif";
-        ctx.fillStyle = "#d4af37";
-        ctx.fillText(document.getElementById('sloganInput').value, canvas.width / 2, canvas.height - 25);
-
-        requestAnimationFrame(drawFrame);
+        requestAnimationFrame(draw);
     }
-    drawFrame(); // 렌더링 시작
+    draw();
 
-    // 녹화 및 다운로드 기능 (서버 불필요)
+    // 녹화 기능
     const recordBtn = document.getElementById('recordBtn');
-    let mediaRecorder;
-    let recordedChunks = [];
-
-    recordBtn.addEventListener('click', () => {
-        if (!video.src) return alert("배경 영상을 먼저 업로드해주세요!");
-        
-        recordBtn.innerText = "⏳ 녹화 중... (3초)";
-        recordBtn.classList.add('recording');
-        recordedChunks = [];
-
-        // 캔버스 화면을 30프레임으로 캡처
+    recordBtn.onclick = () => {
         const stream = canvas.captureStream(30);
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-        mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) recordedChunks.push(e.data);
-        };
-
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
+        const recorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `BANADA_${document.getElementById('nameInput').value}_Profile.webm`;
+            a.href = URL.createObjectURL(new Blob(chunks, {type: 'video/webm'}));
+            a.download = 'BANADA_Profile.webm';
             a.click();
-            
-            recordBtn.innerText = "📥 합성 영상 다운로드 (3초 녹화)";
-            recordBtn.classList.remove('recording');
+            recordBtn.innerText = "📥 합성 영상 다운로드 (3초)";
         };
-
-        mediaRecorder.start();
-
-        // 3초 후 녹화 자동 종료
-        setTimeout(() => {
-            mediaRecorder.stop();
-        }, 3000); // 길이를 늘리고 싶다면 3000(3초)을 수정하세요.
-    });
+        recorder.start();
+        recordBtn.innerText = "⏳ 녹화중...";
+        setTimeout(() => recorder.stop(), 3000);
+    };
 </script>
 </body>
 </html>
