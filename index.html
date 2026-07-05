@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>프로필 GIF 생성기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0a;
+    color: #eee;
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 24px; }
+  h1 { font-size: 26px; color: #ffb347; margin-bottom: 6px; }
+  .sub { color: #888; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  section {
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .field { margin-bottom: 16px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label {
+    display: block;
+    font-size: 12px;
+    color: #ffb347;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  input[type="text"], select {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: #ffb347;
+  }
+  input[type="file"] {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px dashed #444;
+    color: #999;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  input[type="file"]::file-selector-button {
+    background: #ffb347;
+    color: #000;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-right: 10px;
+    font-family: inherit;
+  }
+  .hint { font-size: 11px; color: #666; margin-top: 4px; }
+  button.primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ffb347, #ff8c42);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+  button.primary:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+  }
+  button.primary:not(:disabled):hover { opacity: 0.9; }
+  .preview-wrapper {
+    position: relative;
+    aspect-ratio: 1;
+    max-width: 600px;
+    margin: 0 auto 16px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 14px;
+    background: rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
+  .overlay.hidden { display: none; }
+  .progress {
+    margin: 16px 0;
+    padding: 12px;
+    background: #0a0a0a;
+    border-radius: 8px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffb347, #ff8c42);
+    width: 0%;
+    transition: width 0.2s;
+  }
+  #progress-text { font-size: 12px; color: #999; text-align: center; }
+  .info {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .info p { margin: 4px 0; color: #aaa; }
+  .info span { color: #ffb347; font-weight: 700; }
+  .warn {
+    background: rgba(255,179,71,0.08);
+    border: 1px solid rgba(255,179,71,0.2);
+    color: #ffb347;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>💎 프로필 GIF 생성기</h1>
+    <p class="sub">원본 영상 → BANADA 스타일 프로필 카드 GIF</p>
+  </header>
+
+  <div class="grid">
+    <section>
+      <div class="field">
+        <label>1️⃣ 원본 영상 / 이미지</label>
+        <input type="file" accept="video/*,image/*" id="video-input">
+        <p class="hint">MP4, WebM, MOV, JPG, PNG · 권장 길이 3~8초</p>
+      </div>
+
+      <div class="field">
+        <label>2️⃣ 로고 (선택)</label>
+        <input type="file" accept="image/png,image/*" id="logo-input">
+        <p class="hint">투명 배경 PNG 권장 · 없어도 실행됨</p>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>이름</label>
+          <input type="text" id="name" value="은경">
+        </div>
+        <div class="field">
+          <label>나이</label>
+          <input type="text" id="age" value="27살">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>키</label>
+          <input type="text" id="height_cm" value="171CM">
+        </div>
+        <div class="field">
+          <label>몸무게</label>
+          <input type="text" id="weight" value="49KG">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>컵 사이즈</label>
+        <input type="text" id="cup" value="B컵">
+      </div>
+
+      <div class="field">
+        <label>화질 프리셋</label>
+        <select id="preset">
+          <option value="ultra">🔥 최고화질 · 864px · 30fps (~18MB)</option>
+          <option value="high" selected>💎 고화질 · 720px · 20fps (~10MB)</option>
+          <option value="standard">✨ 표준 · 600px · 15fps (~5MB)</option>
+          <option value="light">🌱 경량 · 480px · 10fps (~2MB)</option>
+        </select>
+      </div>
+
+      <button id="generate-btn" class="primary" disabled>🎬 GIF 생성</button>
+
+      <div class="warn">
+        💡 <b>화질 팁</b>: 소스로 GIF보다 <b>MP4 영상</b>을 넣으세요. GIF는 이미 256색으로 압축돼 있어서 다시 GIF로 만들면 화질이 더 떨어집니다. 셀카 영상(3~8초)을 소스로 쓰면 결과물이 훨씬 선명해요.
+      </div>
+    </section>
+
+    <section>
+      <div class="preview-wrapper">
+        <canvas id="canvas" width="720" height="720"></canvas>
+        <div class="overlay" id="overlay-info">👈 왼쪽에서 영상/이미지를 업로드하세요</div>
+      </div>
+
+      <div class="progress" id="progress" style="display:none;">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <p id="progress-text">준비중...</p>
+      </div>
+
+      <div class="info" id="result-info" style="display:none;">
+        <p>📦 파일 크기: <span id="filesize">-</span></p>
+        <p>🎞️ 프레임: <span id="framecount">-</span></p>
+        <p>📐 해상도: <span id="resolution">-</span></p>
+      </div>
+
+      <button id="download-btn" class="primary" disabled>💾 GIF 다운로드</button>
+    </section>
+  </div>
+</div>
+
+<video id="hidden-video" style="display:none;" muted playsinline crossorigin="anonymous"></video>
+<img id="hidden-image" style="display:none;" crossorigin="anonymous">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<script>
+  const PRESETS = {
+    ultra:    { size: 864, fps: 30, quality: 1,  maxFrames: 120 },
+    high:     { size: 720, fps: 20, quality: 5,  maxFrames: 100 },
+    standard: { size: 600, fps: 15, quality: 10, maxFrames: 80  },
+    light:    { size: 480, fps: 10, quality: 15, maxFrames: 60  },
+  };
+
+  // State
+  let sourceType = null;     // 'video' | 'image'
+  let sourceLoaded = false;
+  let logoImage = null;
+  let generatedBlob = null;
+  let workerScriptUrl = null;
+
+  const videoEl = document.getElementById('hidden-video');
+  const imageEl = document.getElementById('hidden-image');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const overlayInfo = document.getElementById('overlay-info');
+  const genBtn = document.getElementById('generate-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const progressEl = document.getElementById('progress');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const resultInfo = document.getElementById('result-info');
+
+  // ─── 텍스트 필드 실시간 미리보기 ───
+  ['name','age','height_cm','weight','cup'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      if (sourceLoaded) renderPreview();
+    });
+  });
+  document.getElementById('preset').addEventListener('change', () => {
+    if (sourceLoaded) renderPreview();
+  });
+
+  // ─── 원본 파일 로드 ───
+  document.getElementById('video-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith('video/')) {
+      sourceType = 'video';
+      videoEl.src = url;
+      await new Promise((resolve, reject) => {
+        videoEl.onloadedmetadata = resolve;
+        videoEl.onerror = () => reject(new Error('영상을 불러오지 못했습니다.'));
+      });
+      videoEl.currentTime = 0;
+      await new Promise(r => videoEl.onseeked = r);
+    } else {
+      sourceType = 'image';
+      imageEl.src = url;
+      await new Promise((resolve, reject) => {
+        imageEl.onload = resolve;
+        imageEl.onerror = () => reject(new Error('이미지를 불러오지 못했습니다.'));
+      });
+    }
+
+    sourceLoaded = true;
+    overlayInfo.classList.add('hidden');
+    genBtn.disabled = false;
+    downloadBtn.disabled = true;
+    generatedBlob = null;
+    resultInfo.style.display = 'none';
+    renderPreview();
+  });
+
+  // ─── 로고 로드 ───
+  document.getElementById('logo-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    logoImage = new Image();
+    logoImage.src = url;
+    await new Promise(r => logoImage.onload = r);
+    if (sourceLoaded) renderPreview();
+  });
+
+  // ─── 프레임 그리기 (미리보기 & 렌더링 공통) ───
+  function drawFrame(target, targetSize) {
+    const c = target || canvas;
+    const size = targetSize || parseInt(c.width);
+    if (c.width !== size || c.height !== size) {
+      c.width = size;
+      c.height = size;
+    }
+    const cx = c.getContext('2d');
+    cx.imageSmoothingEnabled = true;
+    cx.imageSmoothingQuality = 'high';
+
+    // 1. 원본 프레임 정사각형 중앙 크롭
+    const src = sourceType === 'video' ? videoEl : imageEl;
+    const sw = sourceType === 'video' ? videoEl.videoWidth : imageEl.naturalWidth;
+    const sh = sourceType === 'video' ? videoEl.videoHeight : imageEl.naturalHeight;
+    if (!sw || !sh) return;
+    const cropSize = Math.min(sw, sh);
+    const sx = (sw - cropSize) / 2;
+    const sy = (sh - cropSize) / 2;
+    cx.drawImage(src, sx, sy, cropSize, cropSize, 0, 0, size, size);
+
+    // 2. 로고 (좌상단)
+    if (logoImage && logoImage.complete) {
+      const logoW = size * 0.28;
+      const logoH = logoImage.height * (logoW / logoImage.width);
+      const logoX = size * 0.035;
+      const logoY = size * 0.025;
+      cx.drawImage(logoImage, logoX, logoY, logoW, logoH);
+    }
+
+    // 3. 이름 뱃지 (좌하단 흰색 둥근 사각형)
+    const name = document.getElementById('name').value || '';
+    const badgeW = size * 0.22;
+    const badgeH = size * 0.09;
+    const badgeX = size * 0.035;
+    const badgeY = size - badgeH - size * 0.095;
+    const radius = size * 0.018;
+
+    cx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    roundedRect(cx, badgeX, badgeY, badgeW, badgeH, radius);
+    cx.fill();
+
+    cx.fillStyle = '#111';
+    cx.font = `900 ${Math.floor(size * 0.051)}px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`;
+    cx.textAlign = 'center';
+    cx.textBaseline = 'middle';
+    cx.fillText(name, badgeX + badgeW/2, badgeY + badgeH/2);
+
+    // 4. 스탯 텍스트 (뱃지 오른쪽)
+    const age    = document.getElementById('age').value || '';
+    const height = document.getElementById('height_cm').value || '';
+    const weight = document.getElementById('weight').value || '';
+    const cup    = document.getElementById('cup').value || '';
+    const line1 = `${age}    ${height}`;
+    const line2 = `${weight}    ${cup}`;
+    const statsX = badgeX + badgeW + size * 0.028;
+    const statsY1 = badgeY + size * 0.013;
+    const statsY2 = badgeY + size * 0.048;
+
+    cx.font = `800 ${Math.floor(size * 0.040)}px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`;
+    cx.textAlign = 'left';
+    cx.textBaseline = 'top';
+
+    // 그림자
+    cx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    cx.fillText(line1, statsX + 2, statsY1 + 2);
+    cx.fillText(line2, statsX + 2, statsY2 + 2);
+    // 본문
+    cx.fillStyle = '#fff';
+    cx.fillText(line1, statsX, statsY1);
+    cx.fillText(line2, statsX, statsY2);
+  }
+
+  function roundedRect(cx, x, y, w, h, r) {
+    cx.beginPath();
+    cx.moveTo(x + r, y);
+    cx.arcTo(x + w, y,     x + w, y + h, r);
+    cx.arcTo(x + w, y + h, x,     y + h, r);
+    cx.arcTo(x,     y + h, x,     y,     r);
+    cx.arcTo(x,     y,     x + w, y,     r);
+    cx.closePath();
+  }
+
+  function renderPreview() {
+    drawFrame(canvas, canvas.width);
+  }
+
+  // ─── gif.js worker 스크립트 준비 (CORS 우회를 위해 Blob URL 로 변환) ───
+  async function prepareWorkerScript() {
+    if (workerScriptUrl) return workerScriptUrl;
+    const res = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
+    const text = await res.text();
+    const blob = new Blob([text], { type: 'application/javascript' });
+    workerScriptUrl = URL.createObjectURL(blob);
+    return workerScriptUrl;
+  }
+
+  // ─── GIF 생성 ───
+  genBtn.addEventListener('click', async () => {
+    if (!sourceLoaded) return;
+    genBtn.disabled = true;
+    downloadBtn.disabled = true;
+    resultInfo.style.display = 'none';
+    progressEl.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = '워커 스크립트 준비 중...';
+
+    try {
+      const workerUrl = await prepareWorkerScript();
+      const presetKey = document.getElementById('preset').value;
+      const preset = PRESETS[presetKey];
+
+      // 렌더링용 오프스크린 캔버스
+      const off = document.createElement('canvas');
+      off.width = preset.size;
+      off.height = preset.size;
+      const offCtx = off.getContext('2d');
+
+      // 프레임 수집
+      const frames = [];
+      let frameDelay;
+
+      if (sourceType === 'video') {
+        const duration = Math.min(videoEl.duration, 10); // 최대 10초로 제한
+        const totalFrames = Math.min(Math.floor(duration * preset.fps), preset.maxFrames);
+        frameDelay = Math.round(1000 / preset.fps);
+        progressText.textContent = `프레임 추출 중... (0 / ${totalFrames})`;
+
+        for (let i = 0; i < totalFrames; i++) {
+          const t = (i / totalFrames) * duration;
+          videoEl.currentTime = t;
+          await new Promise(r => {
+            videoEl.onseeked = () => r();
+          });
+          drawFrame(off, preset.size);
+          // 캔버스 데이터 스냅샷 저장 (video 재사용을 위해 즉시 캡처)
+          const snap = document.createElement('canvas');
+          snap.width = preset.size;
+          snap.height = preset.size;
+          snap.getContext('2d').drawImage(off, 0, 0);
+          frames.push(snap);
+          progressFill.style.width = `${((i + 1) / totalFrames) * 45}%`;
+          progressText.textContent = `프레임 추출 중... (${i + 1} / ${totalFrames})`;
+        }
+      } else {
+        // 이미지: 단일 프레임 (짧게 재생)
+        drawFrame(off, preset.size);
+        const snap = document.createElement('canvas');
+        snap.width = preset.size;
+        snap.height = preset.size;
+        snap.getContext('2d').drawImage(off, 0, 0);
+        frames.push(snap);
+        frameDelay = 500;
+      }
+
+      // gif.js 인코더
+      progressText.textContent = 'GIF 인코딩 중...';
+      progressFill.style.width = '50%';
+
+      const gif = new GIF({
+        workers: 4,
+        quality: preset.quality,
+        width: preset.size,
+        height: preset.size,
+        workerScript: workerUrl,
+        dither: 'FloydSteinberg',
+      });
+
+      frames.forEach(f => gif.addFrame(f, { delay: frameDelay, copy: false }));
+
+      gif.on('progress', p => {
+        progressFill.style.width = `${50 + p * 50}%`;
+        progressText.textContent = `인코딩 중... ${Math.round(p * 100)}%`;
+      });
+
+      const blob = await new Promise((resolve, reject) => {
+        gif.on('finished', resolve);
+        gif.on('abort', () => reject(new Error('인코딩 취소됨')));
+        gif.render();
+      });
+
+      generatedBlob = blob;
+      const mb = (blob.size / (1024 * 1024)).toFixed(2);
+      document.getElementById('filesize').textContent = `${mb} MB`;
+      document.getElementById('framecount').textContent = `${frames.length} 개`;
+      document.getElementById('resolution').textContent = `${preset.size} × ${preset.size}`;
+      resultInfo.style.display = 'block';
+      downloadBtn.disabled = false;
+      progressFill.style.width = '100%';
+      progressText.textContent = `✅ 완료! (${mb} MB)`;
+
+      if (blob.size > 20 * 1024 * 1024) {
+        progressText.textContent += ' · ⚠️ 20MB 초과 - 다음 프리셋으로 낮춰보세요';
+      }
+    } catch (err) {
+      progressText.textContent = `❌ 오류: ${err.message}`;
+      console.error(err);
+    } finally {
+      genBtn.disabled = false;
+    }
+  });
+
+  // ─── 다운로드 ───
+  downloadBtn.addEventListener('click', () => {
+    if (!generatedBlob) return;
+    const name = document.getElementById('name').value || 'profile';
+    const age = document.getElementById('age').value.replace(/[^0-9]/g, '') || '00';
+    const filename = `${age}_${name}.gif`;
+
+    const url = URL.createObjectURL(generatedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  });
+
+  // 초기 미리보기 (빈 캔버스에 텍스트만)
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+</script>
+</body>
+</html>
