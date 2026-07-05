@@ -2,269 +2,122 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>프로필 GIF 생성기 · 자동 20MB</title>
+<title>프로필 GIF 생성기 · 20MB 밀착</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #0a0a0a;
-    color: #eee;
-    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
-    padding: 20px;
-    min-height: 100vh;
-  }
+  body { background: #0a0a0a; color: #eee; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif; padding: 20px; min-height: 100vh; }
   .container { max-width: 1200px; margin: 0 auto; }
   header { text-align: center; margin-bottom: 24px; }
   h1 { font-size: 26px; color: #ffb347; margin-bottom: 6px; }
   .sub { color: #888; font-size: 13px; }
   .grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-  section {
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    padding: 20px;
-  }
+  section { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; }
   .field { margin-bottom: 16px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  label {
-    display: block;
-    font-size: 12px;
-    color: #ffb347;
-    font-weight: 700;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  input[type="text"] {
-    width: 100%;
-    background: #0a0a0a;
-    border: 1px solid #333;
-    color: #fff;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-  }
+  label { display: block; font-size: 12px; color: #ffb347; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  input[type="text"] { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-family: inherit; }
   input[type="text"]:focus { outline: none; border-color: #ffb347; }
-  input[type="file"] {
-    width: 100%;
-    background: #0a0a0a;
-    border: 1px dashed #444;
-    color: #999;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  input[type="file"]::file-selector-button {
-    background: #ffb347;
-    color: #000;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-right: 10px;
-    font-family: inherit;
-  }
+  input[type="file"] { width: 100%; background: #0a0a0a; border: 1px dashed #444; color: #999; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  input[type="file"]::file-selector-button { background: #ffb347; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-right: 10px; font-family: inherit; }
   .hint { font-size: 11px; color: #666; margin-top: 4px; }
-  button.primary {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #ffb347, #ff8c42);
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 900;
-    cursor: pointer;
-    margin-top: 8px;
-  }
+  button.primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffb347, #ff8c42); color: #000; border: none; border-radius: 8px; font-size: 15px; font-weight: 900; cursor: pointer; margin-top: 8px; }
   button.primary:disabled { background: #333; color: #666; cursor: not-allowed; }
   button.primary:not(:disabled):hover { opacity: 0.9; }
-  .preview-wrapper {
-    position: relative;
-    aspect-ratio: 1;
-    max-width: 600px;
-    margin: 0 auto 16px;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-  }
+  .preview-wrapper { position: relative; aspect-ratio: 1; max-width: 600px; margin: 0 auto 16px; background: #000; border-radius: 8px; overflow: hidden; }
   canvas { width: 100%; height: 100%; display: block; }
-  .overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #555;
-    font-size: 14px;
-    background: rgba(0,0,0,0.5);
-    pointer-events: none;
-    text-align: center;
-    padding: 20px;
-  }
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #555; font-size: 14px; background: rgba(0,0,0,0.5); pointer-events: none; text-align: center; padding: 20px; }
   .overlay.hidden { display: none; }
-  .progress {
-    margin: 16px 0;
-    padding: 12px;
-    background: #0a0a0a;
-    border-radius: 8px;
-    border: 1px solid #2a2a2a;
-  }
-  .progress-bar {
-    height: 8px;
-    background: #222;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ffb347, #ff8c42);
-    width: 0%;
-    transition: width 0.2s;
-  }
+  .progress { margin: 16px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #2a2a2a; }
+  .progress-bar { height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #ffb347, #ff8c42); width: 0%; transition: width 0.2s; }
   #progress-text { font-size: 12px; color: #999; text-align: center; }
-  .info {
-    background: #0a0a0a;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    font-size: 13px;
-  }
+  .info { background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; font-size: 13px; }
   .info p { margin: 4px 0; color: #aaa; }
   .info span { color: #ffb347; font-weight: 700; }
-  .warn {
-    background: rgba(255,179,71,0.08);
-    border: 1px solid rgba(255,179,71,0.2);
-    color: #ffb347;
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-top: 12px;
-    line-height: 1.5;
-  }
-  .badge {
-    display: inline-block;
-    background: rgba(255,179,71,0.15);
-    color: #ffb347;
-    padding: 3px 10px;
-    border-radius: 100px;
-    font-size: 11px;
-    font-weight: 700;
-    margin-left: 6px;
-  }
+  .warn { background: rgba(255,179,71,0.08); border: 1px solid rgba(255,179,71,0.2); color: #ffb347; padding: 10px 12px; border-radius: 6px; font-size: 12px; margin-top: 12px; line-height: 1.5; }
+  .badge { display: inline-block; background: rgba(255,179,71,0.15); color: #ffb347; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-left: 6px; }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <h1>💎 프로필 GIF 생성기 <span class="badge">AUTO 20MB · 최고화질</span></h1>
-    <p class="sub">MP4 업로드 → 앞부분 자동 커팅 → 20MB 딱 맞는 최고화질 GIF</p>
+    <h1>💎 프로필 GIF 생성기 <span class="badge">20MB 밀착 · 최고화질</span></h1>
+    <p class="sub">MP4 업로드 → 20MB에 최대한 밀착시켜 최고화질 GIF 생성</p>
   </header>
-
   <div class="grid">
     <section>
       <div class="field">
         <label>1️⃣ 원본 MP4 영상</label>
         <input type="file" accept="video/*,image/*" id="video-input">
-        <p class="hint">MP4/MOV/WebM 어떤 길이든 OK · 앞부분만 자동 사용</p>
+        <p class="hint">MP4/MOV/WebM · 앞부분만 자동 사용</p>
       </div>
-
       <div class="field">
         <label>2️⃣ 로고 (선택)</label>
         <input type="file" accept="image/png,image/*" id="logo-input">
         <p class="hint">투명 배경 PNG 권장</p>
       </div>
-
       <div class="row">
-        <div class="field">
-          <label>이름</label>
-          <input type="text" id="name" value="은경">
-        </div>
-        <div class="field">
-          <label>나이</label>
-          <input type="text" id="age" value="27살">
-        </div>
+        <div class="field"><label>이름</label><input type="text" id="name" value="은경"></div>
+        <div class="field"><label>나이</label><input type="text" id="age" value="27살"></div>
       </div>
-
       <div class="row">
-        <div class="field">
-          <label>키</label>
-          <input type="text" id="height_cm" value="171CM">
-        </div>
-        <div class="field">
-          <label>몸무게</label>
-          <input type="text" id="weight" value="49KG">
-        </div>
+        <div class="field"><label>키</label><input type="text" id="height_cm" value="171CM"></div>
+        <div class="field"><label>몸무게</label><input type="text" id="weight" value="49KG"></div>
       </div>
-
-      <div class="field">
-        <label>컵 사이즈</label>
-        <input type="text" id="cup" value="B컵">
-      </div>
-
-      <button id="generate-btn" class="primary" disabled>🎬 최고화질 GIF 생성</button>
-
+      <div class="field"><label>컵 사이즈</label><input type="text" id="cup" value="B컵"></div>
+      <button id="generate-btn" class="primary" disabled>🎬 20MB 밀착 GIF 생성</button>
       <div class="warn">
-        ⚙️ <b>고정 설정</b>: 864px 정사각형 · 30fps · quality=1(최고) · Floyd-Steinberg 디더링<br>
-        📏 <b>자동 커팅</b>: 20MB 안 넘도록 영상 앞부분만 사용 (몇 초 담겼는지 결과창에 표시)
+        ⚙️ <b>고정 설정</b>: 864px 정사각형 · 30fps · quality=1 · Floyd-Steinberg 디더링<br>
+        📏 <b>밀착 방식</b>: 프로브 인코딩 → 실제 인코딩 → 남는 용량 계산 → 프레임 추가/제거 후 재인코딩 (최대 3회, 19.5~20MB 사이 진입 시 종료)
       </div>
     </section>
-
     <section>
       <div class="preview-wrapper">
         <canvas id="canvas" width="720" height="720"></canvas>
         <div class="overlay" id="overlay-info">👈 왼쪽에서 MP4 영상을 업로드하세요</div>
       </div>
-
       <div class="progress" id="progress" style="display:none;">
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
         <p id="progress-text">준비중...</p>
       </div>
-
       <div class="info" id="result-info" style="display:none;">
         <p>📦 최종 크기: <span id="filesize">-</span></p>
         <p>⏱️ 사용된 구간: <span id="duration-used">-</span> <span id="duration-ratio" style="color:#666;font-size:11px;"></span></p>
         <p>🎞️ 프레임: <span id="framecount">-</span></p>
         <p>📐 해상도: <span id="resolution">864 × 864</span></p>
+        <p>🔁 인코딩 횟수: <span id="iterations">-</span></p>
       </div>
-
       <button id="download-btn" class="primary" disabled>💾 GIF 다운로드</button>
     </section>
   </div>
 </div>
-
 <video id="hidden-video" style="display:none;" muted playsinline crossorigin="anonymous"></video>
 <img id="hidden-image" style="display:none;" crossorigin="anonymous">
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 <script>
   // ═════════════════════════════════════════════════════════════
-  // 고정 설정 - "최고 화질 + 20MB"
+  // 20MB 밀착 최고화질 설정
   // ═════════════════════════════════════════════════════════════
-  const TARGET_SIZE = 864;         // 정사각형 픽셀
-  const TARGET_FPS = 30;           // 초당 프레임
-  const TARGET_QUALITY = 1;        // gif.js quality (낮을수록 좋음, 1이 최고)
-  const TARGET_BYTES = 19.5 * 1024 * 1024;  // 20MB 근처 (여유 500KB)
-  const GIF_OVERHEAD = 300 * 1024; // 파일 헤더/팔레트 오버헤드 추정
+  const TARGET_SIZE = 864;
+  const TARGET_FPS = 30;
+  const TARGET_QUALITY = 1;
+  const MAX_BYTES = 20 * 1024 * 1024;             // 절대 상한
+  const MIN_ACCEPTABLE = 19.5 * 1024 * 1024;      // 이 아래로 남으면 밀착 시도
+  const FIRST_TARGET = 19.7 * 1024 * 1024;        // 첫 시도 목표
+  const GIF_OVERHEAD = 200 * 1024;
+  const MAX_TOTAL_ITER = 3;                        // 실제 인코딩 최대 3회
 
-  // 프로브(측정용) 설정
-  const PROBE_SIZE = 432;
-  const PROBE_FRAMES = 15;
+  const PROBE_SIZE = 500;
+  const PROBE_FRAMES = 25;
   const PROBE_QUALITY = 10;
 
-  // 상태
-  let sourceType = null;      // 'video' | 'image'
+  let sourceType = null;
   let sourceLoaded = false;
   let logoImage = null;
   let generatedBlob = null;
   let workerScriptUrl = null;
 
-  // DOM
   const videoEl = document.getElementById('hidden-video');
   const imageEl = document.getElementById('hidden-image');
   const canvas = document.getElementById('canvas');
@@ -277,36 +130,25 @@
   const progressText = document.getElementById('progress-text');
   const resultInfo = document.getElementById('result-info');
 
-  // 텍스트 필드 실시간 미리보기
   ['name','age','height_cm','weight','cup'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => {
-      if (sourceLoaded) renderPreview();
-    });
+    document.getElementById(id).addEventListener('input', () => { if (sourceLoaded) renderPreview(); });
   });
 
-  // ─── 원본 파일 로드 ───
   document.getElementById('video-input').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-
     try {
       if (file.type.startsWith('video/')) {
         sourceType = 'video';
         videoEl.src = url;
-        await new Promise((resolve, reject) => {
-          videoEl.onloadedmetadata = resolve;
-          videoEl.onerror = () => reject(new Error('영상을 불러오지 못했습니다.'));
-        });
+        await new Promise((res, rej) => { videoEl.onloadedmetadata = res; videoEl.onerror = () => rej(new Error('영상을 불러오지 못했습니다.')); });
         videoEl.currentTime = 0;
         await new Promise(r => videoEl.onseeked = r);
       } else {
         sourceType = 'image';
         imageEl.src = url;
-        await new Promise((resolve, reject) => {
-          imageEl.onload = resolve;
-          imageEl.onerror = () => reject(new Error('이미지를 불러오지 못했습니다.'));
-        });
+        await new Promise((res, rej) => { imageEl.onload = res; imageEl.onerror = () => rej(new Error('이미지를 불러오지 못했습니다.')); });
       }
       sourceLoaded = true;
       overlayInfo.classList.add('hidden');
@@ -315,146 +157,111 @@
       generatedBlob = null;
       resultInfo.style.display = 'none';
       renderPreview();
-    } catch (err) {
-      overlayInfo.textContent = `❌ ${err.message}`;
-    }
+    } catch (err) { overlayInfo.textContent = `❌ ${err.message}`; }
   });
 
-  // ─── 로고 로드 ───
   document.getElementById('logo-input').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
     logoImage = new Image();
-    logoImage.src = url;
+    logoImage.src = URL.createObjectURL(file);
     await new Promise(r => logoImage.onload = r);
     if (sourceLoaded) renderPreview();
   });
 
-  // ─── 한 프레임 그리기 (미리보기 & 실제 렌더링 공통) ───
   function drawFrame(target, size) {
-    if (target.width !== size || target.height !== size) {
-      target.width = size;
-      target.height = size;
-    }
+    if (target.width !== size || target.height !== size) { target.width = size; target.height = size; }
     const cx = target.getContext('2d');
     cx.imageSmoothingEnabled = true;
     cx.imageSmoothingQuality = 'high';
-
-    // 1. 원본 정사각형 중앙 크롭
     const src = sourceType === 'video' ? videoEl : imageEl;
     const sw = sourceType === 'video' ? videoEl.videoWidth : imageEl.naturalWidth;
     const sh = sourceType === 'video' ? videoEl.videoHeight : imageEl.naturalHeight;
     if (!sw || !sh) return;
     const crop = Math.min(sw, sh);
-    const sx = (sw - crop) / 2;
-    const sy = (sh - crop) / 2;
-    cx.drawImage(src, sx, sy, crop, crop, 0, 0, size, size);
+    cx.drawImage(src, (sw-crop)/2, (sh-crop)/2, crop, crop, 0, 0, size, size);
 
-    // 2. 로고 (좌상단)
     if (logoImage && logoImage.complete) {
       const logoW = size * 0.28;
       const logoH = logoImage.height * (logoW / logoImage.width);
-      cx.drawImage(logoImage, size * 0.035, size * 0.025, logoW, logoH);
+      cx.drawImage(logoImage, size*0.035, size*0.025, logoW, logoH);
     }
 
-    // 3. 이름 뱃지 (좌하단)
     const name = document.getElementById('name').value || '';
-    const badgeW = size * 0.22;
-    const badgeH = size * 0.09;
-    const badgeX = size * 0.035;
-    const badgeY = size - badgeH - size * 0.095;
-    const r = size * 0.018;
-
-    cx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    const badgeW = size*0.22, badgeH = size*0.09;
+    const badgeX = size*0.035, badgeY = size - badgeH - size*0.095;
+    const r = size*0.018;
+    cx.fillStyle = 'rgba(255,255,255,0.95)';
     roundedRect(cx, badgeX, badgeY, badgeW, badgeH, r);
     cx.fill();
-
     cx.fillStyle = '#111';
-    cx.font = `900 ${Math.floor(size * 0.051)}px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`;
+    cx.font = `900 ${Math.floor(size*0.051)}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;
     cx.textAlign = 'center';
     cx.textBaseline = 'middle';
     cx.fillText(name, badgeX + badgeW/2, badgeY + badgeH/2);
 
-    // 4. 스탯 텍스트 (뱃지 오른쪽)
-    const age    = document.getElementById('age').value || '';
-    const h      = document.getElementById('height_cm').value || '';
+    const age = document.getElementById('age').value || '';
+    const h = document.getElementById('height_cm').value || '';
     const weight = document.getElementById('weight').value || '';
-    const cup    = document.getElementById('cup').value || '';
-    const line1 = `${age}    ${h}`;
-    const line2 = `${weight}    ${cup}`;
-    const statsX = badgeX + badgeW + size * 0.028;
-    const statsY1 = badgeY + size * 0.013;
-    const statsY2 = badgeY + size * 0.048;
-
-    cx.font = `800 ${Math.floor(size * 0.040)}px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`;
+    const cup = document.getElementById('cup').value || '';
+    const statsX = badgeX + badgeW + size*0.028;
+    const statsY1 = badgeY + size*0.013;
+    const statsY2 = badgeY + size*0.048;
+    cx.font = `800 ${Math.floor(size*0.040)}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;
     cx.textAlign = 'left';
     cx.textBaseline = 'top';
-
-    cx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-    cx.fillText(line1, statsX + 2, statsY1 + 2);
-    cx.fillText(line2, statsX + 2, statsY2 + 2);
+    cx.fillStyle = 'rgba(0,0,0,0.75)';
+    cx.fillText(`${age}    ${h}`, statsX+2, statsY1+2);
+    cx.fillText(`${weight}    ${cup}`, statsX+2, statsY2+2);
     cx.fillStyle = '#fff';
-    cx.fillText(line1, statsX, statsY1);
-    cx.fillText(line2, statsX, statsY2);
+    cx.fillText(`${age}    ${h}`, statsX, statsY1);
+    cx.fillText(`${weight}    ${cup}`, statsX, statsY2);
   }
 
   function roundedRect(cx, x, y, w, h, r) {
     cx.beginPath();
-    cx.moveTo(x + r, y);
-    cx.arcTo(x + w, y,     x + w, y + h, r);
-    cx.arcTo(x + w, y + h, x,     y + h, r);
-    cx.arcTo(x,     y + h, x,     y,     r);
-    cx.arcTo(x,     y,     x + w, y,     r);
+    cx.moveTo(x+r, y);
+    cx.arcTo(x+w, y, x+w, y+h, r);
+    cx.arcTo(x+w, y+h, x, y+h, r);
+    cx.arcTo(x, y+h, x, y, r);
+    cx.arcTo(x, y, x+w, y, r);
     cx.closePath();
   }
 
-  function renderPreview() {
-    drawFrame(canvas, canvas.width);
-  }
+  function renderPreview() { drawFrame(canvas, canvas.width); }
 
-  // ─── gif.js worker 준비 (CORS 우회) ───
   async function prepareWorkerScript() {
     if (workerScriptUrl) return workerScriptUrl;
     const res = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
     const text = await res.text();
-    const blob = new Blob([text], { type: 'application/javascript' });
-    workerScriptUrl = URL.createObjectURL(blob);
+    workerScriptUrl = URL.createObjectURL(new Blob([text], { type: 'application/javascript' }));
     return workerScriptUrl;
   }
 
-  // ─── 영상에서 프레임 추출 ───
-  async function extractFrames(count, size, duration, onProgress) {
+  // 프레임 추출 (인덱스 리스트를 받아서 그 시각들만 뽑음)
+  async function extractFramesAtIndices(indices, size, onProgress) {
     const frames = [];
     const off = document.createElement('canvas');
-    off.width = size;
-    off.height = size;
-
-    for (let i = 0; i < count; i++) {
-      const t = count === 1 ? 0 : (i / (count - 1)) * duration;
+    off.width = size; off.height = size;
+    for (let i = 0; i < indices.length; i++) {
+      const t = indices[i] / TARGET_FPS;
       videoEl.currentTime = t;
       await new Promise(r => { videoEl.onseeked = () => r(); });
       drawFrame(off, size);
       const snap = document.createElement('canvas');
-      snap.width = size;
-      snap.height = size;
+      snap.width = size; snap.height = size;
       snap.getContext('2d').drawImage(off, 0, 0);
       frames.push(snap);
-      if (onProgress) onProgress((i + 1) / count);
+      if (onProgress) onProgress((i+1) / indices.length);
     }
     return frames;
   }
 
-  // ─── GIF 인코딩 ───
   async function encodeGif(frames, size, quality, delay, onProgress) {
     const workerUrl = await prepareWorkerScript();
     const gif = new GIF({
-      workers: 4,
-      quality,
-      width: size,
-      height: size,
-      workerScript: workerUrl,
-      dither: 'FloydSteinberg',
+      workers: 4, quality, width: size, height: size,
+      workerScript: workerUrl, dither: 'FloydSteinberg',
     });
     frames.forEach(f => gif.addFrame(f, { delay, copy: false }));
     gif.on('progress', onProgress || (() => {}));
@@ -465,7 +272,9 @@
     });
   }
 
-  // ─── 메인: 자동 20MB 최고화질 인코딩 ───
+  // ═════════════════════════════════════════════════════════════
+  // 메인: 20MB 밀착 인코딩 (최대 3회 반복)
+  // ═════════════════════════════════════════════════════════════
   genBtn.addEventListener('click', async () => {
     if (!sourceLoaded) return;
     genBtn.disabled = true;
@@ -476,99 +285,142 @@
 
     try {
       const frameDelay = Math.round(1000 / TARGET_FPS);
-      let finalBlob, finalFrameCount, finalDuration;
+      let finalBlob, finalFrameCount, finalDuration, iterCount = 0;
 
       if (sourceType === 'image') {
         progressText.textContent = '이미지 인코딩 중...';
         const off = document.createElement('canvas');
-        off.width = TARGET_SIZE;
-        off.height = TARGET_SIZE;
+        off.width = TARGET_SIZE; off.height = TARGET_SIZE;
         drawFrame(off, TARGET_SIZE);
         finalBlob = await encodeGif([off], TARGET_SIZE, TARGET_QUALITY, 500, p => {
-          progressFill.style.width = `${p * 100}%`;
-          progressText.textContent = `인코딩 중... ${Math.round(p * 100)}%`;
+          progressFill.style.width = `${p*100}%`;
+          progressText.textContent = `인코딩 중... ${Math.round(p*100)}%`;
         });
         finalFrameCount = 1;
         finalDuration = 0;
+        iterCount = 1;
       } else {
-        // 1단계: 프로브 인코딩
-        progressText.textContent = `📏 화질 측정 중... (프레임 추출)`;
-        const probeDuration = PROBE_FRAMES / TARGET_FPS;
-        const probeFrames = await extractFrames(PROBE_FRAMES, PROBE_SIZE, probeDuration, p => {
-          progressFill.style.width = `${p * 15}%`;
+        // ─── 1단계: 프로브 ───
+        progressText.textContent = `📏 화질 측정 중... (프로브 프레임 추출)`;
+        const probeIndices = [];
+        for (let i = 0; i < PROBE_FRAMES; i++) probeIndices.push(i);
+        const probeDurationOK = probeIndices[probeIndices.length-1] / TARGET_FPS < videoEl.duration;
+        if (!probeDurationOK) {
+          // 영상이 너무 짧으면 인덱스 재분배
+          for (let i = 0; i < PROBE_FRAMES; i++) probeIndices[i] = Math.floor(i * videoEl.duration * TARGET_FPS / PROBE_FRAMES);
+        }
+        const probeFrames = await extractFramesAtIndices(probeIndices, PROBE_SIZE, p => {
+          progressFill.style.width = `${p*10}%`;
         });
-        progressText.textContent = `📏 화질 측정 중... (인코딩)`;
+        progressText.textContent = `📏 화질 측정 중... (프로브 인코딩)`;
         const probeBlob = await encodeGif(probeFrames, PROBE_SIZE, PROBE_QUALITY, frameDelay, p => {
-          progressFill.style.width = `${15 + p * 10}%`;
+          progressFill.style.width = `${10 + p*10}%`;
         });
 
-        // 프레임당 크기 추정
-        const probeBytesPerFrame = probeBlob.size / PROBE_FRAMES;
+        const bytesPerProbeFrame = probeBlob.size / PROBE_FRAMES;
         const pixelScale = (TARGET_SIZE / PROBE_SIZE) ** 2;
         const qualityScale = 1.2;
-        const estBytesPerFrame = probeBytesPerFrame * pixelScale * qualityScale;
+        let estBytesPerFrame = bytesPerProbeFrame * pixelScale * qualityScale;
 
-        const maxFramesForBudget = Math.floor((TARGET_BYTES - GIF_OVERHEAD) / estBytesPerFrame);
-        const maxFramesForVideo = Math.floor(videoEl.duration * TARGET_FPS);
-        const targetFrames = Math.max(15, Math.min(maxFramesForBudget, maxFramesForVideo));
-        const targetDuration = targetFrames / TARGET_FPS;
+        // ─── 2단계: 반복 인코딩 (최대 MAX_TOTAL_ITER 회) ───
+        const maxVideoFrames = Math.floor(videoEl.duration * TARGET_FPS);
+        let currentFrameCount = Math.max(15, Math.min(
+          Math.floor((FIRST_TARGET - GIF_OVERHEAD) / estBytesPerFrame),
+          maxVideoFrames
+        ));
+        let currentBlob = null;
+        let previouslyExtractedFrames = []; // 캐시
 
-        console.log(`프로브: ${(probeBlob.size / 1024).toFixed(0)}KB / ${PROBE_FRAMES}frame = ${(probeBytesPerFrame / 1024).toFixed(1)}KB/frame`);
-        console.log(`추정 최고화질: ${(estBytesPerFrame / 1024).toFixed(1)}KB/frame`);
-        console.log(`목표 프레임 수: ${targetFrames} (${targetDuration.toFixed(2)}초)`);
+        for (let iter = 0; iter < MAX_TOTAL_ITER; iter++) {
+          iterCount++;
+          const startPct = 20 + (iter * 60 / MAX_TOTAL_ITER);
+          const endPct = 20 + ((iter+1) * 60 / MAX_TOTAL_ITER);
 
-        // 2단계: 실제 최고화질 인코딩
-        progressText.textContent = `🎬 프레임 추출 중... (${targetFrames}프레임 · ${targetDuration.toFixed(1)}초)`;
-        const realFrames = await extractFrames(targetFrames, TARGET_SIZE, targetDuration, p => {
-          progressFill.style.width = `${25 + p * 40}%`;
-          progressText.textContent = `🎬 프레임 추출 중... ${Math.round(p * 100)}% (${Math.floor(p * targetFrames)}/${targetFrames})`;
-        });
+          // 필요한 프레임 인덱스 (0 부터 currentFrameCount-1)
+          const neededIndices = [];
+          for (let i = 0; i < currentFrameCount; i++) neededIndices.push(i);
 
-        progressText.textContent = `🎨 최고화질 인코딩 중...`;
-        let realBlob = await encodeGif(realFrames, TARGET_SIZE, TARGET_QUALITY, frameDelay, p => {
-          progressFill.style.width = `${65 + p * 30}%`;
-          progressText.textContent = `🎨 인코딩 중... ${Math.round(p * 100)}%`;
-        });
+          // 캐시된 프레임 재사용 + 부족한 것만 추가 추출
+          let framesForEncode;
+          if (previouslyExtractedFrames.length >= currentFrameCount) {
+            framesForEncode = previouslyExtractedFrames.slice(0, currentFrameCount);
+            progressText.textContent = `🎨 [${iter+1}회차] 인코딩 중... (${currentFrameCount}프레임 · ${(currentFrameCount/TARGET_FPS).toFixed(2)}초)`;
+          } else {
+            const toExtract = [];
+            for (let i = previouslyExtractedFrames.length; i < currentFrameCount; i++) toExtract.push(i);
+            progressText.textContent = `🎬 [${iter+1}회차] 추가 프레임 추출... (${toExtract.length}개)`;
+            const newFrames = await extractFramesAtIndices(toExtract, TARGET_SIZE, p => {
+              progressFill.style.width = `${startPct + p * (endPct-startPct) * 0.4}%`;
+            });
+            previouslyExtractedFrames = previouslyExtractedFrames.concat(newFrames);
+            framesForEncode = previouslyExtractedFrames.slice(0, currentFrameCount);
+            progressText.textContent = `🎨 [${iter+1}회차] 최고화질 인코딩 중...`;
+          }
 
-        finalBlob = realBlob;
-        finalFrameCount = targetFrames;
-        finalDuration = targetDuration;
-
-        // 3단계: 20MB 초과 시 재조정
-        if (realBlob.size > 20 * 1024 * 1024) {
-          const overshot = realBlob.size / (20 * 1024 * 1024);
-          const adjustedFrames = Math.max(15, Math.floor(targetFrames / overshot * 0.95));
-          const adjustedDuration = adjustedFrames / TARGET_FPS;
-
-          progressText.textContent = `⚠️ 초과 감지, 재조정 중... (${adjustedFrames}프레임)`;
-          progressFill.style.width = '50%';
-
-          const adjFrames = await extractFrames(adjustedFrames, TARGET_SIZE, adjustedDuration, p => {
-            progressFill.style.width = `${50 + p * 20}%`;
+          currentBlob = await encodeGif(framesForEncode, TARGET_SIZE, TARGET_QUALITY, frameDelay, p => {
+            progressFill.style.width = `${startPct + (endPct-startPct) * (0.4 + p * 0.6)}%`;
+            progressText.textContent = `🎨 [${iter+1}회차] 인코딩 중... ${Math.round(p*100)}%`;
           });
-          const adjBlob = await encodeGif(adjFrames, TARGET_SIZE, TARGET_QUALITY, frameDelay, p => {
-            progressFill.style.width = `${70 + p * 30}%`;
-          });
-          finalBlob = adjBlob;
-          finalFrameCount = adjustedFrames;
-          finalDuration = adjustedDuration;
+
+          const sizeMB = currentBlob.size / (1024*1024);
+          console.log(`[${iter+1}회차] ${currentFrameCount}프레임 → ${sizeMB.toFixed(2)}MB`);
+
+          // 성공 조건: 19.5MB ~ 20MB 사이면 종료
+          if (currentBlob.size >= MIN_ACCEPTABLE && currentBlob.size <= MAX_BYTES) {
+            console.log(`✅ 목표 범위 (19.5~20MB) 진입, 종료`);
+            break;
+          }
+
+          // 마지막 반복이면 그대로 종료 (조정 안 함)
+          if (iter === MAX_TOTAL_ITER - 1) {
+            console.log(`⏱ 최대 반복 도달, 종료`);
+            break;
+          }
+
+          // 다음 반복용 프레임 수 재계산 (실측 데이터로 보정)
+          const actualBytesPerFrame = (currentBlob.size - GIF_OVERHEAD) / currentFrameCount;
+          estBytesPerFrame = actualBytesPerFrame; // 실측값으로 업데이트
+
+          if (currentBlob.size > MAX_BYTES) {
+            // 초과 → 프레임 줄이기
+            const targetBytes = 19.7 * 1024 * 1024;
+            const newFrameCount = Math.max(15, Math.floor((targetBytes - GIF_OVERHEAD) / actualBytesPerFrame));
+            if (newFrameCount >= currentFrameCount) {
+              currentFrameCount = Math.max(15, currentFrameCount - 5);
+            } else {
+              currentFrameCount = newFrameCount;
+            }
+          } else {
+            // 미달 → 프레임 늘리기
+            const remainingBytes = 19.8 * 1024 * 1024 - currentBlob.size;
+            const framesToAdd = Math.max(1, Math.floor(remainingBytes / actualBytesPerFrame * 0.95));
+            const newFrameCount = Math.min(maxVideoFrames, currentFrameCount + framesToAdd);
+            if (newFrameCount === currentFrameCount) {
+              console.log(`⏸ 영상 길이 한계 도달, 종료`);
+              break;
+            }
+            currentFrameCount = newFrameCount;
+          }
         }
+
+        finalBlob = currentBlob;
+        finalFrameCount = currentFrameCount;
+        finalDuration = currentFrameCount / TARGET_FPS;
       }
 
-      // 결과 표시
       generatedBlob = finalBlob;
-      const mb = (finalBlob.size / (1024 * 1024)).toFixed(2);
+      const mb = (finalBlob.size / (1024*1024)).toFixed(2);
       const ratio = sourceType === 'video' ? ` (원본 ${videoEl.duration.toFixed(1)}초 중)` : '';
 
       document.getElementById('filesize').textContent = `${mb} MB / 20 MB`;
       document.getElementById('duration-used').textContent = `${finalDuration.toFixed(2)} 초`;
       document.getElementById('duration-ratio').textContent = ratio;
       document.getElementById('framecount').textContent = `${finalFrameCount} 개 @ ${TARGET_FPS}fps`;
+      document.getElementById('iterations').textContent = `${iterCount} 회`;
       resultInfo.style.display = 'block';
       downloadBtn.disabled = false;
       progressFill.style.width = '100%';
-      progressText.textContent = `✅ 완료! (${mb} MB)`;
-
+      progressText.textContent = `✅ 완료! (${mb} MB, ${iterCount}회 인코딩)`;
     } catch (err) {
       progressText.textContent = `❌ 오류: ${err.message}`;
       console.error(err);
@@ -577,24 +429,17 @@
     }
   });
 
-  // 다운로드
   downloadBtn.addEventListener('click', () => {
     if (!generatedBlob) return;
     const name = document.getElementById('name').value || 'profile';
     const age = document.getElementById('age').value.replace(/[^0-9]/g, '') || '00';
-    const filename = `${age}_${name}.gif`;
-
     const url = URL.createObjectURL(generatedBlob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = `${age}_${name}.gif`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 100);
   });
 
-  // 초기 검은 캔버스
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 </script>
