@@ -126,7 +126,7 @@
         <div id="slideshow-list" style="max-height:260px; overflow-y:auto;"></div>
         <div class="trim-duration" id="slideshow-total-disp" style="margin-top:8px;">총 길이: 0.0초</div>
         <p class="hint-warn" id="slideshow-warning">⏱️ 전체 길이가 깁니다. 처리 시간이 오래 걸릴 수 있어요 — 사진당 길이를 줄이는 걸 추천해요.</p>
-        <p class="hint" style="margin-top:6px;">🖱️ 썸네일을 클릭하면 오른쪽 프리뷰에서 그 사진을 볼 수 있고 개별 조절이 가능해요</p>
+        <p class="hint" style="margin-top:6px;">🖱️ 썸네일을 클릭하면 오른쪽 프리뷰에서 그 사진을 볼 수 있어요</p>
       </div>
 
       <div class="divider"></div>
@@ -345,7 +345,7 @@ function NeuQuant(pixels, samplefac) {
 }
 function LZWEncoder(width, height, pixels, colorDepth) {
   var EOF = -1, BITS = 12, HSIZE = 5003;
-  var masks = [0x0000,0x0001,0x0003,0x0007,0x000F,0x001F,0x003F,0x007F,0x00FF,0x01FF,0x03FF,0x07FF,0x0FFF,0x1FFF,0x3FFF,0x7FFF,0xFFFF];
+  var masks = [0x0000,0x0001,0x0003,0x0007,0x000F,0x001F,0x003F,0x007F,0x00FF,0x01FF,0x03FF,0x07FF,0x0FFF,0x1FFF,0x3FFF,0x7FFF,xFFFF];
   var initCodeSize = Math.max(2, colorDepth);
   var accum = new Uint8Array(256); var htab = new Int32Array(HSIZE); var codetab = new Int32Array(HSIZE);
   var cur_accum, cur_bits = 0; var a_count; var free_ent = 0; var maxcode; var clear_flg = false;
@@ -538,7 +538,6 @@ const LOGO_X_OVERFLOW=15;
 const badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
 let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
 
-// ★ 각 사진별로 상태(배율, 위치)를 따로 저장하도록 변경
 let slideshowPhotos=[];
 let previewSlideIndex=0;
 
@@ -656,25 +655,26 @@ async function generateThumbnails(n=12){
   renderPreview();
 }
 
-// ★ 슬라이더 조정 시 현재 사진 객체에도 값 저장
 mediaScaleSlider.addEventListener('input',()=>{
-  mediaScale=parseInt(mediaScaleSlider.value)/100;
-  mediaScaleVal.textContent=mediaScaleSlider.value+'%';
-  if (sourceType === 'slideshow' && slideshowPhotos[previewSlideIndex]) {
-    slideshowPhotos[previewSlideIndex].scale = mediaScale;
+  const val=parseInt(mediaScaleSlider.value)/100;
+  if(sourceType==='slideshow' && slideshowPhotos[previewSlideIndex]){
+    slideshowPhotos[previewSlideIndex].scale = val;
+  } else {
+    mediaScale = val;
   }
+  mediaScaleVal.textContent=mediaScaleSlider.value+'%';
   if(sourceLoaded)renderPreview();
 });
 
-// ★ 초기화 시 현재 사진 객체 값도 리셋
 document.getElementById('reset-media').addEventListener('click',()=>{
-  mediaScale=1;mediaOffsetX=0;mediaOffsetY=0;
-  mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';
-  if (sourceType === 'slideshow' && slideshowPhotos[previewSlideIndex]) {
-    slideshowPhotos[previewSlideIndex].scale = 1;
+  if(sourceType==='slideshow' && slideshowPhotos[previewSlideIndex]){
+    slideshowPhotos[previewSlideIndex].scale = 1.0;
     slideshowPhotos[previewSlideIndex].offsetX = 0;
     slideshowPhotos[previewSlideIndex].offsetY = 0;
+  } else {
+    mediaScale=1;mediaOffsetX=0;mediaOffsetY=0;
   }
+  mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';
   if(sourceLoaded)renderPreview();
 });
 
@@ -700,13 +700,16 @@ function onPreviewDown(e){
     dragStart={clientX:p.clientX, clientY:p.clientY, startX:logoPosX, startY:logoPosY};
   } else {
     dragMode='media';
-    dragStart={clientX:p.clientX, clientY:p.clientY, startX:mediaOffsetX, startY:mediaOffsetY};
+    if(sourceType==='slideshow' && slideshowPhotos[previewSlideIndex]){
+      const currentPhoto = slideshowPhotos[previewSlideIndex];
+      dragStart={clientX:p.clientX, clientY:p.clientY, startX:currentPhoto.offsetX, startY:currentPhoto.offsetY};
+    } else {
+      dragStart={clientX:p.clientX, clientY:p.clientY, startX:mediaOffsetX, startY:mediaOffsetY};
+    }
   }
   previewWrapper.classList.add('dragging');
   e.preventDefault();
 }
-
-// ★ 드래그 이동 시 현재 사진 객체에도 값 저장
 function onPreviewMove(e){
   if(!dragMode) return;
   const rect=previewWrapper.getBoundingClientRect();
@@ -717,11 +720,12 @@ function onPreviewMove(e){
   const dypix=(clientY-dragStart.clientY)*scY;
   const size=canvas.width;
   if(dragMode==='media'){
-    mediaOffsetX=dragStart.startX+dxpix;
-    mediaOffsetY=dragStart.startY+dypix;
-    if (sourceType === 'slideshow' && slideshowPhotos[previewSlideIndex]) {
-      slideshowPhotos[previewSlideIndex].offsetX = mediaOffsetX;
-      slideshowPhotos[previewSlideIndex].offsetY = mediaOffsetY;
+    if(sourceType==='slideshow' && slideshowPhotos[previewSlideIndex]){
+      slideshowPhotos[previewSlideIndex].offsetX = dragStart.startX+dxpix;
+      slideshowPhotos[previewSlideIndex].offsetY = dragStart.startY+dypix;
+    } else {
+      mediaOffsetX=dragStart.startX+dxpix;
+      mediaOffsetY=dragStart.startY+dypix;
     }
   } else if(dragMode==='logo'){
     let nx=dragStart.startX+dxpix/size, ny=dragStart.startY+dypix/size;
@@ -825,14 +829,9 @@ function renderSlideshowList(){
     img.className='slide-thumb';
     img.src=p.thumbUrl;
     img.style.border = (i===previewSlideIndex) ? '2px solid #ffb347' : '2px solid transparent';
-    
-    // ★ 썸네일 클릭 시, 해당 사진에 저장된 설정값을 불러옴
     img.addEventListener('click',()=>{ 
       previewSlideIndex=i; 
-      mediaScale = p.scale;
-      mediaOffsetX = p.offsetX;
-      mediaOffsetY = p.offsetY;
-      mediaScaleSlider.value = Math.round(mediaScale * 100);
+      mediaScaleSlider.value = Math.round(p.scale * 100);
       mediaScaleVal.textContent = mediaScaleSlider.value + '%';
       renderSlideshowList(); 
       renderPreview(); 
@@ -857,16 +856,6 @@ function renderSlideshowList(){
     removeBtn.addEventListener('click',()=>{
       slideshowPhotos.splice(i,1);
       if(previewSlideIndex>=slideshowPhotos.length) previewSlideIndex=Math.max(0,slideshowPhotos.length-1);
-      
-      // 삭제 후 남은 사진이 있으면 슬라이더 UI 갱신
-      if (slideshowPhotos.length > 0) {
-        mediaScale = slideshowPhotos[previewSlideIndex].scale;
-        mediaOffsetX = slideshowPhotos[previewSlideIndex].offsetX;
-        mediaOffsetY = slideshowPhotos[previewSlideIndex].offsetY;
-        mediaScaleSlider.value = Math.round(mediaScale * 100);
-        mediaScaleVal.textContent = mediaScaleSlider.value + '%';
-      }
-
       renderSlideshowList();
       updateSlideshowSummary();
       if(slideshowPhotos.length===0){
@@ -874,7 +863,14 @@ function renderSlideshowList(){
         overlayInfo.classList.remove('hidden');
         overlayInfo.textContent='👈 영상 또는 사진들을 업로드하세요';
         slideshowBox.style.display='none';
-      } else { renderPreview(); }
+      } else { 
+        if(slideshowPhotos[previewSlideIndex]){
+          const nextP = slideshowPhotos[previewSlideIndex];
+          mediaScaleSlider.value = Math.round(nextP.scale * 100);
+          mediaScaleVal.textContent = mediaScaleSlider.value + '%';
+        }
+        renderPreview(); 
+      }
     });
 
     row.appendChild(img); row.appendChild(rangeWrap); row.appendChild(valSpan); row.appendChild(removeBtn);
@@ -899,8 +895,7 @@ document.getElementById('slideshow-input').addEventListener('change', async (e)=
     const img=new Image();
     try{
       await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error('사진 로드 실패')); img.src=url; });
-      // ★ 객체에 개별 scale, offsetX, offsetY 초기값 추가
-      slideshowPhotos.push({img, thumbUrl:url, duration:1.0, scale:1, offsetX:0, offsetY:0});
+      slideshowPhotos.push({img, thumbUrl:url, duration:1.0, scale:1.0, offsetX:0, offsetY:0});
     }catch(err){ console.warn(err); }
   }
   if(!slideshowPhotos.length) return;
@@ -911,13 +906,7 @@ document.getElementById('slideshow-input').addEventListener('change', async (e)=
   trimBox.classList.remove('visible');
   slideshowBox.style.display='block';
   
-  // ★ 첫 번째 사진의 설정값을 UI에 반영
-  mediaScale=slideshowPhotos[0].scale;
-  mediaOffsetX=slideshowPhotos[0].offsetX;
-  mediaOffsetY=slideshowPhotos[0].offsetY;
-  mediaScaleSlider.value=Math.round(mediaScale*100);
-  mediaScaleVal.textContent=mediaScaleSlider.value+'%';
-
+  mediaScaleSlider.value=100; mediaScaleVal.textContent='100%';
   overlayInfo.classList.add('hidden');
   document.getElementById('media-controls').style.display='block';
   document.getElementById('drag-hint').classList.add('visible');
@@ -940,20 +929,32 @@ document.getElementById('clear-slideshow').addEventListener('click',()=>{
   }
 });
 
-function drawFrame(target,size,overrideImg){
+function drawFrame(target,size,overrideImg,slideshowIndex){
   if(target.width!==size||target.height!==size){target.width=size;target.height=size;}
   const cx=target.getContext('2d');cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';
   let src, sw, sh;
+  let currentScale = mediaScale;
+  let currentOffsetX = mediaOffsetX;
+  let currentOffsetY = mediaOffsetY;
+
   if(overrideImg){
     src=overrideImg; sw=overrideImg.naturalWidth; sh=overrideImg.naturalHeight;
+    if(sourceType==='slideshow'){
+      const idx = (typeof slideshowIndex !== 'undefined') ? slideshowIndex : previewSlideIndex;
+      if(slideshowPhotos[idx]){
+        currentScale = slideshowPhotos[idx].scale;
+        currentOffsetX = slideshowPhotos[idx].offsetX;
+        currentOffsetY = slideshowPhotos[idx].offsetY;
+      }
+    }
   } else {
     src=sourceType==='video'?videoEl:imageEl;
     sw=sourceType==='video'?videoEl.videoWidth:imageEl.naturalWidth;
     sh=sourceType==='video'?videoEl.videoHeight:imageEl.naturalHeight;
   }
   if(!sw||!sh)return;
-  const crop=Math.min(sw,sh),drawSz=size*mediaScale;
-  const bx=(size-drawSz)/2+mediaOffsetX,by=(size-drawSz)/2+mediaOffsetY;
+  const crop=Math.min(sw,sh),drawSz=size*currentScale;
+  const bx=(size-drawSz)/2+currentOffsetX,by=(size-drawSz)/2+currentOffsetY;
   cx.fillStyle='#000';cx.fillRect(0,0,size,size);
   cx.drawImage(src,(sw-crop)/2,(sh-crop)/2,crop,crop,bx,by,drawSz,drawSz);
 
@@ -986,10 +987,10 @@ function drawFrame(target,size,overrideImg){
   cx.save();cx.font='900 '+cfs+'px "Malgun Gothic",sans-serif';cx.textAlign='right';cx.textBaseline='bottom';cx.fillStyle='#fff';cx.shadowColor='rgba(0,0,0,0.5)';cx.shadowBlur=size*0.008;
   cx.fillText(ctxt,cx2,cy2-(ch-cfs*1.2)/2);cx.restore();
 }
-function rr(cx,x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+function rr(cx,x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y+w,x+w,y,r);cx.closePath();}
 function renderPreview(){
-  if(sourceType==='slideshow' && slideshowPhotos.length){
-    drawFrame(canvas, canvas.width, slideshowPhotos[previewSlideIndex].img);
+  if(sourceType==='slideshow' && slideshowPhotos[previewSlideIndex]){
+    drawFrame(canvas, canvas.width, slideshowPhotos[previewSlideIndex].img, previewSlideIndex);
   } else {
     drawFrame(canvas, canvas.width);
   }
@@ -1022,42 +1023,20 @@ function buildSlideshowCounts(totalFrames){
   }
   return counts;
 }
-
-// ★ GIF 추출 시 개별 사진의 저장된 값을 전역 변수에 잠시 대입해 렌더링
 async function extractFramesSlideshow(totalFrameCount,size){
   const counts=buildSlideshowCounts(totalFrameCount);
   const frames=[];
-  
-  // 기존에 선택된 화면의 상태값을 백업
-  const backupScale = mediaScale;
-  const backupOx = mediaOffsetX;
-  const backupOy = mediaOffsetY;
-
   for(let i=0;i<slideshowPhotos.length;i++){
     const off=document.createElement('canvas'); off.width=size; off.height=size;
-    
-    // 이 사진을 그릴 때만 해당 사진의 설정값으로 세팅
-    mediaScale = slideshowPhotos[i].scale;
-    mediaOffsetX = slideshowPhotos[i].offsetX;
-    mediaOffsetY = slideshowPhotos[i].offsetY;
-
-    drawFrame(off,size,slideshowPhotos[i].img);
-    
+    drawFrame(off,size,slideshowPhotos[i].img, i);
     for(let k=0;k<counts[i];k++){
       const snap=document.createElement('canvas'); snap.width=size; snap.height=size;
       snap.getContext('2d').drawImage(off,0,0);
       frames.push(snap);
     }
   }
-  
-  // 원래 상태로 복원
-  mediaScale = backupScale;
-  mediaOffsetX = backupOx;
-  mediaOffsetY = backupOy;
-  
   return frames;
 }
-
 function extractFrames(count,size){
   if(sourceType==='slideshow') return extractFramesSlideshow(count,size);
   return extractFramesInRange(count,size);
@@ -1132,39 +1111,45 @@ genBtn.addEventListener('click',async()=>{
         if(curBlob.size>=MIN_ACCEPTABLE&&curBlob.size<=MAX_BYTES)break;
         if(it===MAX_TOTAL_ITER-1)break;
         const aBPF=(curBlob.size-GIF_OVERHEAD)/curFC;estBPF=aBPF;
-        if(curBlob.size>MAX_BYTES){const nf=Math.max(10,Math.floor((FIRST_TARGET-GIF_OVERHEAD)/estBPF));curFC=nf;}
-        else{curFC=Math.min(maxVF,Math.floor((FIRST_TARGET-GIF_OVERHEAD)/estBPF));}
+        if(curBlob.size>MAX_BYTES){const nf=Math.max(10,Math.floor((19.7*1024*1024-GIF_OVERHEAD)/aBPF));curFC=nf>=curFC?Math.max(10,curFC-5):nf;}
+        else{const add=Math.max(1,Math.floor((19.8*1024*1024-curBlob.size)/aBPF*0.9));const nf=Math.min(maxVF,curFC+add);if(nf===curFC)break;curFC=nf;}
       }
-      finalBlob=curBlob;finalFrameCount=curFC;finalDuration=totalDurationMs/1000;
+      finalBlob=curBlob;finalFrameCount=curFC;
+      finalDuration = totalDurationMs/1000;
     }
 
-    progressText.textContent='✅ 완료!';
-    progressFill.style.width='100%';
-    setTimeout(()=>{progressEl.style.display='none';},1000);
     generatedBlob=finalBlob;
-    document.getElementById('filesize').textContent=(finalBlob.size/(1024*1024)).toFixed(2)+' MB';
-    document.getElementById('duration-used').textContent=finalDuration>0?finalDuration.toFixed(1)+'초':'-';
-    document.getElementById('framecount').textContent=finalFrameCount;
-    document.getElementById('iterations').textContent=iterCount+'회';
-    resultInfo.style.display='block';
-    gifPreviewImg.src=URL.createObjectURL(finalBlob);
+    const mb=(finalBlob.size/(1024*1024)).toFixed(2);
+    document.getElementById('filesize').textContent=mb+' MB / 20 MB';
+    document.getElementById('duration-used').textContent = sourceType==='video'
+      ? finalDuration.toFixed(2)+'초 ('+trimStart.toFixed(2)+'s ~ '+trimEnd.toFixed(2)+'s)'
+      : (sourceType==='slideshow' ? finalDuration.toFixed(2)+'초 (사진 '+slideshowPhotos.length+'장)' : '-');
+    document.getElementById('framecount').textContent=finalFrameCount+' 개 @ '+TARGET_FPS+'fps';
+    document.getElementById('iterations').textContent=iterCount+' 회';
+    resultInfo.style.display='block';downloadBtn.disabled=false;
+    progressFill.style.width='100%';progressText.textContent='✅ 완료! ('+mb+' MB)';
+
+    const previewUrl=URL.createObjectURL(finalBlob);
+    gifPreviewImg.src=previewUrl;
     gifPreviewWrap.style.display='block';
-    downloadBtn.disabled=false;
   }catch(err){
-    progressEl.style.display='none';
-    showError(err.message);
-  }finally{
-    genBtn.disabled=false;
-  }
+    progressText.textContent='❌ 오류 발생';
+    showError(err.message || String(err));
+    console.error(err);
+  }finally{genBtn.disabled=false;}
 });
 
 downloadBtn.addEventListener('click',()=>{
   if(!generatedBlob)return;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(generatedBlob);
-  a.download='profile_'+Date.now()+'.gif';
+  const name=document.getElementById('name').value||'profile';
+  const age=document.getElementById('age').value.replace(/[^0-9]/g,'')||'00';
+  const url=URL.createObjectURL(generatedBlob);
+  const a=document.createElement('a');a.href=url;a.download=age+'_'+name+'.gif';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),100);
 });
+
+ctx.fillStyle='#111';ctx.fillRect(0,0,canvas.width,canvas.height);
 </script>
 </body>
 </html>
