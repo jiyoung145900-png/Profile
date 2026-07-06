@@ -2,13 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>프로필 GIF 생성기 · 20MB 밀착</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0a0a0a; color: #eee; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif; padding: 20px; min-height: 100vh; }
+  body { background: #0a0a0a; color: #eee; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; padding: 20px; }
   .container { max-width: 1200px; margin: 0 auto; }
   header { text-align: center; margin-bottom: 24px; }
-  h1 { font-size: 26px; color: #ffb347; margin-bottom: 6px; }
+  h1 { font-size: 24px; color: #ffb347; margin-bottom: 6px; }
   .sub { color: #888; font-size: 13px; }
   .grid { display: grid; grid-template-columns: 420px 1fr; gap: 24px; }
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
@@ -19,12 +18,11 @@
   input[type="text"] { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-family: inherit; }
   input[type="text"]:focus { outline: none; border-color: #ffb347; }
   input[type="file"] { width: 100%; background: #0a0a0a; border: 1px dashed #444; color: #999; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
-  input[type="file"]::file-selector-button { background: #ffb347; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-right: 10px; font-family: inherit; }
+  input[type="file"]::file-selector-button { background: #ffb347; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-right: 10px; }
   .hint { font-size: 11px; color: #666; margin-top: 4px; }
   button.primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffb347, #ff8c42); color: #000; border: none; border-radius: 8px; font-size: 15px; font-weight: 900; cursor: pointer; margin-top: 8px; }
   button.primary:disabled { background: #333; color: #666; cursor: not-allowed; }
   button.primary:not(:disabled):hover { opacity: 0.9; }
-
   .controls-box { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
   .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .slider-row:last-child { margin-bottom: 0; }
@@ -32,30 +30,26 @@
   .slider-val { font-size: 11px; color: #aaa; width: 38px; text-align: right; flex-shrink: 0; }
   input[type="range"] { flex: 1; -webkit-appearance: none; height: 4px; background: #333; border-radius: 2px; outline: none; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #ffb347; border-radius: 50%; cursor: pointer; }
-
   .logo-controls { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; margin-top: 10px; display: none; }
   .logo-controls.visible { display: block; }
-
-  /* ── 구간 선택 타임라인 ── */
   .trim-box { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; margin-top: 10px; display: none; }
   .trim-box.visible { display: block; }
   .trim-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .trim-title { font-size: 12px; color: #ffb347; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .trim-title { font-size: 12px; color: #ffb347; font-weight: 700; text-transform: uppercase; }
   .trim-times { font-size: 12px; color: #aaa; }
   .trim-times span { color: #fff; font-weight: 700; }
   .timeline-wrap { position: relative; height: 48px; border-radius: 6px; overflow: visible; cursor: pointer; user-select: none; }
   .timeline-bg { position: absolute; inset: 0; background: #1a1a1a; border-radius: 6px; border: 1px solid #333; overflow: hidden; }
   .thumb-strip { position: absolute; top: 0; left: 0; height: 100%; display: flex; gap: 1px; pointer-events: none; }
-  .thumb-strip canvas { height: 100%; width: auto; flex-shrink: 0; border-radius: 0; }
-  .trim-selected { position: absolute; top: 0; height: 100%; background: rgba(255,179,71,0.18); border-left: 2px solid #ffb347; border-right: 2px solid #ffb347; pointer-events: none; border-radius: 0; }
-  .trim-handle { position: absolute; top: 50%; transform: translateY(-50%); width: 14px; height: 34px; background: #ffb347; border-radius: 4px; cursor: ew-resize; z-index: 10; display: flex; align-items: center; justify-content: center; }
-  .trim-handle::after { content: ''; display: block; width: 2px; height: 16px; background: rgba(0,0,0,0.4); border-radius: 1px; box-shadow: 4px 0 0 rgba(0,0,0,0.4); }
-  .handle-start { left: 0; transform: translate(-50%, -50%); }
-  .handle-end { right: 0; transform: translate(50%, -50%); }
-  .playhead { position: absolute; top: 0; width: 2px; height: 100%; background: #fff; opacity: 0.6; pointer-events: none; z-index: 5; }
-  .trim-info { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #555; }
+  .thumb-strip img { height: 100%; width: auto; flex-shrink: 0; object-fit: cover; }
+  .trim-selected { position: absolute; top: 0; height: 100%; background: rgba(255,179,71,0.18); border-left: 2px solid #ffb347; border-right: 2px solid #ffb347; pointer-events: none; }
+  .trim-handle { position: absolute; top: 50%; width: 16px; height: 36px; background: #ffb347; border-radius: 4px; cursor: ew-resize; z-index: 10; display: flex; align-items: center; justify-content: center; }
+  .trim-handle::after { content:''; display:block; width:2px; height:16px; background:rgba(0,0,0,0.4); border-radius:1px; box-shadow:4px 0 0 rgba(0,0,0,0.4); }
+  .handle-start { transform: translate(-50%, -50%); }
+  .handle-end { transform: translate(50%, -50%); }
+  .playhead { position: absolute; top: 0; width: 2px; height: 100%; background: #fff; opacity: 0.7; pointer-events: none; z-index: 5; }
+  .trim-info { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #555; }
   .trim-duration { text-align: center; font-size: 11px; color: #ffb347; margin-top: 4px; font-weight: 700; }
-
   .preview-wrapper { position: relative; aspect-ratio: 1; max-width: 560px; margin: 0 auto 10px; background: #000; border-radius: 8px; overflow: hidden; cursor: grab; user-select: none; }
   .preview-wrapper.dragging { cursor: grabbing; }
   canvas#canvas { width: 100%; height: 100%; display: block; }
@@ -72,49 +66,41 @@
   .info span { color: #ffb347; font-weight: 700; }
   .warn { background: rgba(255,179,71,0.08); border: 1px solid rgba(255,179,71,0.2); color: #ffb347; padding: 10px 12px; border-radius: 6px; font-size: 12px; margin-top: 12px; line-height: 1.5; }
   .badge { display: inline-block; background: rgba(255,179,71,0.15); color: #ffb347; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-left: 6px; }
-  .reset-btn { background: #1a1a1a; border: 1px solid #333; color: #888; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; float: right; margin-top: -2px; }
+  .reset-btn { background: #1a1a1a; border: 1px solid #333; color: #888; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; float: right; }
   .reset-btn:hover { color: #ffb347; border-color: #ffb347; }
+  .err-box { background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.3); color: #ff8080; padding: 10px 12px; border-radius: 6px; font-size: 12px; margin-top: 10px; display: none; line-height: 1.5; }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
     <h1>💎 프로필 GIF 생성기 <span class="badge">20MB 밀착 · 최고화질</span></h1>
-    <p class="sub">MP4 업로드 → 구간 선택 → 20MB 밀착 최고화질 GIF 생성</p>
+    <p class="sub">MP4 업로드 → 구간 선택 → 20MB 밀착 GIF 생성</p>
   </header>
   <div class="grid">
     <section>
       <div class="field">
-        <label>1️⃣ 원본 MP4 영상</label>
+        <label>1️⃣ 원본 영상 / 사진</label>
         <input type="file" accept="video/*,image/*" id="video-input">
-        <p class="hint">MP4/MOV/WebM</p>
+        <p class="hint">MP4 / MOV / WebM</p>
       </div>
 
-      <!-- ── 구간 선택 타임라인 ── -->
       <div class="trim-box" id="trim-box">
         <div class="trim-label-row">
           <span class="trim-title">✂️ 구간 선택</span>
-          <span class="trim-times">
-            <span id="trim-start-disp">0.00</span>s ~ <span id="trim-end-disp">0.00</span>s
-          </span>
+          <span class="trim-times"><span id="trim-start-disp">0.00</span>s ~ <span id="trim-end-disp">0.00</span>s</span>
         </div>
         <div class="timeline-wrap" id="timeline-wrap">
-          <div class="timeline-bg">
-            <div class="thumb-strip" id="thumb-strip"></div>
-          </div>
+          <div class="timeline-bg"><div class="thumb-strip" id="thumb-strip"></div></div>
           <div class="trim-selected" id="trim-selected"></div>
           <div class="playhead" id="playhead" style="left:0%"></div>
           <div class="trim-handle handle-start" id="handle-start"></div>
           <div class="trim-handle handle-end" id="handle-end"></div>
         </div>
-        <div class="trim-info">
-          <span>0:00</span>
-          <span id="trim-total-disp">0:00</span>
-        </div>
+        <div class="trim-info"><span>0:00</span><span id="trim-total-disp">0:00</span></div>
         <div class="trim-duration" id="trim-duration-disp">선택 구간: 0.0초</div>
       </div>
 
-      <!-- 영상/사진 크기 조절 -->
       <div class="controls-box" id="media-controls" style="display:none; margin-top:14px;">
         <label style="margin-bottom:8px;">🎞️ 영상/사진 크기 <button class="reset-btn" id="reset-media">초기화</button></label>
         <div class="slider-row">
@@ -122,30 +108,18 @@
           <input type="range" id="media-scale" min="50" max="300" value="100" step="1">
           <span class="slider-val" id="media-scale-val">100%</span>
         </div>
-        <p class="hint" style="margin-top:4px;">🖱️ 프리뷰 위에서 드래그하면 위치 이동</p>
+        <p class="hint" style="margin-top:4px;">🖱️ 프리뷰 위 드래그 = 위치 이동</p>
       </div>
 
       <div class="field" style="margin-top:14px;">
         <label>2️⃣ 로고 (선택)</label>
-        <input type="file" accept="image/png,image/*" id="logo-input">
+        <input type="file" accept="image/*" id="logo-input">
         <p class="hint">투명 배경 PNG 권장</p>
         <div class="logo-controls" id="logo-controls">
           <label style="margin-bottom:8px;">🖼️ 로고 조절 <button class="reset-btn" id="reset-logo">초기화</button></label>
-          <div class="slider-row">
-            <span class="slider-label">크기</span>
-            <input type="range" id="logo-size" min="5" max="60" value="28" step="1">
-            <span class="slider-val" id="logo-size-val">28%</span>
-          </div>
-          <div class="slider-row">
-            <span class="slider-label">X축</span>
-            <input type="range" id="logo-x" min="0" max="90" value="3" step="1">
-            <span class="slider-val" id="logo-x-val">3%</span>
-          </div>
-          <div class="slider-row">
-            <span class="slider-label">Y축</span>
-            <input type="range" id="logo-y" min="0" max="90" value="2" step="1">
-            <span class="slider-val" id="logo-y-val">2%</span>
-          </div>
+          <div class="slider-row"><span class="slider-label">크기</span><input type="range" id="logo-size" min="5" max="60" value="28" step="1"><span class="slider-val" id="logo-size-val">28%</span></div>
+          <div class="slider-row"><span class="slider-label">X축</span><input type="range" id="logo-x" min="0" max="90" value="3" step="1"><span class="slider-val" id="logo-x-val">3%</span></div>
+          <div class="slider-row"><span class="slider-label">Y축</span><input type="range" id="logo-y" min="0" max="90" value="2" step="1"><span class="slider-val" id="logo-y-val">2%</span></div>
         </div>
       </div>
 
@@ -159,14 +133,15 @@
       </div>
       <div class="field"><label>컵 사이즈</label><input type="text" id="cup" value="B컵"></div>
       <button id="generate-btn" class="primary" disabled>🎬 20MB 밀착 GIF 생성</button>
-      <div class="warn">⚙️ 864px · 30fps · quality=1 · Floyd-Steinberg · 최대 3회 밀착 인코딩</div>
+      <div class="warn">⚙️ 864px · 30fps · quality=1 · Floyd-Steinberg · 최대 3회 밀착</div>
+      <div class="err-box" id="err-box"></div>
     </section>
 
     <section>
-      <p class="drag-hint" id="drag-hint">🖱️ 드래그로 영상 위치 이동 · 슬라이더로 확대/축소</p>
+      <p class="drag-hint" id="drag-hint">🖱️ 드래그로 위치 이동 · 슬라이더로 확대/축소</p>
       <div class="preview-wrapper" id="preview-wrapper">
         <canvas id="canvas" width="720" height="720"></canvas>
-        <div class="overlay" id="overlay-info">👈 왼쪽에서 영상을 업로드하세요</div>
+        <div class="overlay" id="overlay-info">👈 영상을 업로드하세요</div>
       </div>
       <div class="progress" id="progress" style="display:none;">
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -174,9 +149,9 @@
       </div>
       <div class="info" id="result-info" style="display:none;">
         <p>📦 최종 크기: <span id="filesize">-</span></p>
-        <p>⏱️ 사용된 구간: <span id="duration-used">-</span></p>
+        <p>⏱️ 사용 구간: <span id="duration-used">-</span></p>
         <p>🎞️ 프레임: <span id="framecount">-</span></p>
-        <p>📐 해상도: <span id="resolution">864 × 864</span></p>
+        <p>📐 해상도: <span>864 × 864</span></p>
         <p>🔁 인코딩 횟수: <span id="iterations">-</span></p>
       </div>
       <button id="download-btn" class="primary" disabled>💾 GIF 다운로드</button>
@@ -191,485 +166,328 @@
 const TARGET_SIZE = 864, TARGET_FPS = 30, TARGET_QUALITY = 1;
 const MAX_BYTES = 20*1024*1024, MIN_ACCEPTABLE = 19.5*1024*1024;
 const FIRST_TARGET = 19.7*1024*1024, GIF_OVERHEAD = 200*1024, MAX_TOTAL_ITER = 3;
-const PROBE_SIZE = 500, PROBE_FRAMES = 25, PROBE_QUALITY = 10;
+const PROBE_SIZE = 400, PROBE_FRAMES = 20, PROBE_QUALITY = 15;
 
-let sourceType = null, sourceLoaded = false, logoImage = null;
-let generatedBlob = null, workerScriptUrl = null;
-let mediaScale = 1.0, mediaOffsetX = 0, mediaOffsetY = 0;
-let logoSizePct = 0.28, logoPosX = 0.035, logoPosY = 0.025;
-let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartOffsetX = 0, dragStartOffsetY = 0;
-
-// 구간 선택
-let trimStart = 0, trimEnd = 0, videoDuration = 0;
-let draggingHandle = null, timelineDown = false;
-
-const videoEl = document.getElementById('hidden-video');
-const imageEl = document.getElementById('hidden-image');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const overlayInfo = document.getElementById('overlay-info');
-const genBtn = document.getElementById('generate-btn');
-const downloadBtn = document.getElementById('download-btn');
-const progressEl = document.getElementById('progress');
-const progressFill = document.getElementById('progress-fill');
-const progressText = document.getElementById('progress-text');
-const resultInfo = document.getElementById('result-info');
-const logoControls = document.getElementById('logo-controls');
-const mediaControlsEl = document.getElementById('media-controls');
-const previewWrapper = document.getElementById('preview-wrapper');
-const dragHint = document.getElementById('drag-hint');
-const trimBox = document.getElementById('trim-box');
-const timelineWrap = document.getElementById('timeline-wrap');
-const trimSelected = document.getElementById('trim-selected');
-const handleStart = document.getElementById('handle-start');
-const handleEnd = document.getElementById('handle-end');
-const playheadEl = document.getElementById('playhead');
-const thumbStrip = document.getElementById('thumb-strip');
-
-// ── 타임라인 업데이트 ──
-function updateTimeline() {
-  if (!videoDuration) return;
-  const startPct = (trimStart / videoDuration) * 100;
-  const endPct = (trimEnd / videoDuration) * 100;
-  trimSelected.style.left = startPct + '%';
-  trimSelected.style.width = (endPct - startPct) + '%';
-  handleStart.style.left = startPct + '%';
-  handleEnd.style.left = endPct + '%';
-  document.getElementById('trim-start-disp').textContent = trimStart.toFixed(2);
-  document.getElementById('trim-end-disp').textContent = trimEnd.toFixed(2);
-  document.getElementById('trim-duration-disp').textContent = '선택 구간: ' + (trimEnd - trimStart).toFixed(1) + '초 (' + Math.floor((trimEnd - trimStart) * TARGET_FPS) + '프레임)';
-}
-
-function timelineXToTime(clientX) {
-  const rect = timelineWrap.getBoundingClientRect();
-  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-  return ratio * videoDuration;
-}
-
-function getClientX(e) {
-  return e.touches ? e.touches[0].clientX : e.clientX;
-}
-
-timelineWrap.addEventListener('mousedown', onTimelineDown);
-timelineWrap.addEventListener('touchstart', onTimelineDown, { passive: false });
-
-function onTimelineDown(e) {
-  if (!videoDuration) return;
-  const cx = getClientX(e);
-  const rect = timelineWrap.getBoundingClientRect();
-  const startPx = rect.left + (trimStart / videoDuration) * rect.width;
-  const endPx = rect.left + (trimEnd / videoDuration) * rect.width;
-  if (Math.abs(cx - startPx) < 18) {
-    draggingHandle = 'start';
-  } else if (Math.abs(cx - endPx) < 18) {
-    draggingHandle = 'end';
-  } else {
-    draggingHandle = 'seek';
-    const t = timelineXToTime(cx);
-    videoEl.currentTime = t;
-    playheadEl.style.left = ((t / videoDuration) * 100) + '%';
-    renderPreview();
-  }
-  e.preventDefault();
-}
-
-window.addEventListener('mousemove', onTimelineMove);
-window.addEventListener('touchmove', onTimelineMove, { passive: false });
-function onTimelineMove(e) {
-  if (!draggingHandle) return;
-  const cx = getClientX(e);
-  const t = timelineXToTime(cx);
-  if (draggingHandle === 'start') {
-    trimStart = Math.max(0, Math.min(t, trimEnd - 0.5));
-  } else if (draggingHandle === 'end') {
-    trimEnd = Math.min(videoDuration, Math.max(t, trimStart + 0.5));
-  } else if (draggingHandle === 'seek') {
-    videoEl.currentTime = Math.max(0, Math.min(t, videoDuration));
-    playheadEl.style.left = ((Math.max(0, Math.min(t, videoDuration)) / videoDuration) * 100) + '%';
-    renderPreview();
-  }
-  updateTimeline();
-  if (draggingHandle !== 'seek') {
-    const seekT = draggingHandle === 'start' ? trimStart : trimEnd;
-    videoEl.currentTime = seekT;
-    renderPreview();
-  }
-  e.preventDefault();
-}
-window.addEventListener('mouseup', () => { draggingHandle = null; });
-window.addEventListener('touchend', () => { draggingHandle = null; });
-
-// ── 썸네일 스트립 생성 ──
-async function generateThumbnails(count = 12) {
-  thumbStrip.innerHTML = '';
-  const offC = document.createElement('canvas');
-  offC.width = 60; offC.height = 48;
-  const offCtx = offC.getContext('2d');
-  for (let i = 0; i < count; i++) {
-    const t = (i / count) * videoDuration;
-    videoEl.currentTime = t;
-    await new Promise(r => videoEl.onseeked = r);
-    const sw = videoEl.videoWidth, sh = videoEl.videoHeight;
-    const crop = Math.min(sw, sh);
-    offCtx.drawImage(videoEl, (sw-crop)/2, (sh-crop)/2, crop, crop, 0, 0, 60, 48);
-    const img = document.createElement('img');
-    img.src = offC.toDataURL('image/jpeg', 0.6);
-    img.style.cssText = 'height:100%;width:auto;flex-shrink:0;object-fit:cover;';
-    thumbStrip.appendChild(img);
-  }
-  videoEl.currentTime = trimStart;
-  await new Promise(r => videoEl.onseeked = r);
-  renderPreview();
-}
-
-// ── 미디어 스케일 슬라이더 ──
-const mediaScaleSlider = document.getElementById('media-scale');
-const mediaScaleVal = document.getElementById('media-scale-val');
-mediaScaleSlider.addEventListener('input', () => {
-  mediaScale = parseInt(mediaScaleSlider.value) / 100;
-  mediaScaleVal.textContent = mediaScaleSlider.value + '%';
-  if (sourceLoaded) renderPreview();
-});
-document.getElementById('reset-media').addEventListener('click', () => {
-  mediaScale = 1.0; mediaOffsetX = 0; mediaOffsetY = 0;
-  mediaScaleSlider.value = 100; mediaScaleVal.textContent = '100%';
-  if (sourceLoaded) renderPreview();
-});
-
-// ── 드래그 (마우스) ──
-previewWrapper.addEventListener('mousedown', (e) => {
-  if (!sourceLoaded) return;
-  isDragging = true;
-  previewWrapper.classList.add('dragging');
-  dragStartX = e.clientX; dragStartY = e.clientY;
-  dragStartOffsetX = mediaOffsetX; dragStartOffsetY = mediaOffsetY;
-  e.preventDefault();
-});
-window.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
-  const rect = previewWrapper.getBoundingClientRect();
-  const scale = canvas.width / rect.width;
-  mediaOffsetX = dragStartOffsetX + (e.clientX - dragStartX) * scale;
-  mediaOffsetY = dragStartOffsetY + (e.clientY - dragStartY) * scale;
-  renderPreview();
-});
-window.addEventListener('mouseup', () => { isDragging = false; previewWrapper.classList.remove('dragging'); });
-
-// ── 드래그 (터치) ──
-previewWrapper.addEventListener('touchstart', (e) => {
-  if (!sourceLoaded) return;
-  isDragging = true;
-  dragStartX = e.touches[0].clientX; dragStartY = e.touches[0].clientY;
-  dragStartOffsetX = mediaOffsetX; dragStartOffsetY = mediaOffsetY;
-  e.preventDefault();
-}, { passive: false });
-window.addEventListener('touchmove', (e) => {
-  if (!isDragging) return;
-  const rect = previewWrapper.getBoundingClientRect();
-  const scale = canvas.width / rect.width;
-  mediaOffsetX = dragStartOffsetX + (e.touches[0].clientX - dragStartX) * scale;
-  mediaOffsetY = dragStartOffsetY + (e.touches[0].clientY - dragStartY) * scale;
-  renderPreview();
-  e.preventDefault();
-}, { passive: false });
-window.addEventListener('touchend', () => { isDragging = false; });
-
-// ── 로고 슬라이더 ──
-function connectSlider(id, valId, suffix, onUpdate) {
-  const slider = document.getElementById(id);
-  const valEl = document.getElementById(valId);
-  slider.addEventListener('input', () => {
-    valEl.textContent = slider.value + suffix;
-    onUpdate(parseFloat(slider.value));
-    if (sourceLoaded) renderPreview();
-  });
-}
-connectSlider('logo-size', 'logo-size-val', '%', v => { logoSizePct = v/100; });
-connectSlider('logo-x', 'logo-x-val', '%', v => { logoPosX = v/100; });
-connectSlider('logo-y', 'logo-y-val', '%', v => { logoPosY = v/100; });
-document.getElementById('reset-logo').addEventListener('click', () => {
-  logoSizePct = 0.28; logoPosX = 0.035; logoPosY = 0.025;
-  document.getElementById('logo-size').value = 28; document.getElementById('logo-size-val').textContent = '28%';
-  document.getElementById('logo-x').value = 3; document.getElementById('logo-x-val').textContent = '3%';
-  document.getElementById('logo-y').value = 2; document.getElementById('logo-y-val').textContent = '2%';
-  if (sourceLoaded) renderPreview();
-});
-
-['name','age','height_cm','weight','cup'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => { if (sourceLoaded) renderPreview(); });
-});
-
-document.getElementById('video-input').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  try {
-    if (file.type.startsWith('video/')) {
-      sourceType = 'video';
-      videoEl.src = url;
-      await new Promise((res, rej) => { videoEl.onloadedmetadata = res; videoEl.onerror = () => rej(new Error('영상을 불러오지 못했습니다.')); });
-      videoEl.currentTime = 0;
-      await new Promise(r => videoEl.onseeked = r);
-      videoDuration = videoEl.duration;
-      trimStart = 0;
-      trimEnd = videoDuration;
-      const mm = Math.floor(videoDuration/60), ss = Math.floor(videoDuration%60);
-      document.getElementById('trim-total-disp').textContent = mm+':'+(ss<10?'0':'')+ss;
-      trimBox.classList.add('visible');
-      updateTimeline();
-      generateThumbnails(14);
-    } else {
-      sourceType = 'image';
-      imageEl.src = url;
-      await new Promise((res, rej) => { imageEl.onload = res; imageEl.onerror = () => rej(new Error('이미지를 불러오지 못했습니다.')); });
-      trimBox.classList.remove('visible');
-    }
-    sourceLoaded = true;
-    mediaOffsetX = 0; mediaOffsetY = 0; mediaScale = 1.0;
-    mediaScaleSlider.value = 100; mediaScaleVal.textContent = '100%';
-    overlayInfo.classList.add('hidden');
-    mediaControlsEl.style.display = 'block';
-    dragHint.classList.add('visible');
-    genBtn.disabled = false;
-    downloadBtn.disabled = true;
-    generatedBlob = null;
-    resultInfo.style.display = 'none';
-    renderPreview();
-  } catch (err) { overlayInfo.textContent = '❌ ' + err.message; }
-});
-
-document.getElementById('logo-input').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  logoImage = new Image();
-  logoImage.src = URL.createObjectURL(file);
-  await new Promise(r => logoImage.onload = r);
-  logoControls.classList.add('visible');
-  if (sourceLoaded) renderPreview();
-});
-
-function drawFrame(target, size) {
-  if (target.width !== size || target.height !== size) { target.width = size; target.height = size; }
-  const cx = target.getContext('2d');
-  cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
-  const src = sourceType === 'video' ? videoEl : imageEl;
-  const sw = sourceType === 'video' ? videoEl.videoWidth : imageEl.naturalWidth;
-  const sh = sourceType === 'video' ? videoEl.videoHeight : imageEl.naturalHeight;
-  if (!sw || !sh) return;
-  const crop = Math.min(sw, sh);
-  const drawSize = size * mediaScale;
-  const baseX = (size - drawSize) / 2 + mediaOffsetX;
-  const baseY = (size - drawSize) / 2 + mediaOffsetY;
-  cx.fillStyle = '#000';
-  cx.fillRect(0, 0, size, size);
-  cx.drawImage(src, (sw-crop)/2, (sh-crop)/2, crop, crop, baseX, baseY, drawSize, drawSize);
-
-  if (logoImage && logoImage.complete) {
-    const logoW = size * logoSizePct;
-    const logoH = logoImage.height * (logoW / logoImage.width);
-    cx.drawImage(logoImage, size * logoPosX, size * logoPosY, logoW, logoH);
-  }
-
-  const name = document.getElementById('name').value || '';
-  const badgeW = size*0.30, badgeH = size*0.115;
-  const badgeX = size*0.035, badgeY = size - badgeH - size*0.085;
-  const r = size*0.018;
-  cx.save(); cx.globalAlpha = 0.93;
-  roundedRect(cx, badgeX, badgeY, badgeW, badgeH, r);
-  cx.fillStyle = '#ff4f8b'; cx.fill(); cx.restore();
-  cx.save(); cx.strokeStyle = 'rgba(255,255,255,0.5)'; cx.lineWidth = size*0.003;
-  roundedRect(cx, badgeX, badgeY, badgeW, badgeH, r); cx.stroke(); cx.restore();
-  cx.fillStyle = '#fff';
-  cx.font = '900 ' + Math.floor(size*0.068) + 'px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
-  cx.textAlign = 'center'; cx.textBaseline = 'middle';
-  cx.shadowColor = 'rgba(0,0,0,0.4)'; cx.shadowBlur = size*0.01;
-  cx.fillText(name, badgeX+badgeW/2, badgeY+badgeH/2); cx.shadowBlur = 0;
-
-  const age = document.getElementById('age').value || '';
-  const h = document.getElementById('height_cm').value || '';
-  const weight = document.getElementById('weight').value || '';
-  const cup = document.getElementById('cup').value || '';
-  const statsX = badgeX+badgeW+size*0.022, statsY1 = badgeY+badgeH*0.18, statsY2 = badgeY+badgeH*0.18+size*0.062;
-  cx.font = '800 ' + Math.floor(size*0.052) + 'px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
-  cx.textAlign = 'left'; cx.textBaseline = 'top';
-  cx.shadowColor = 'rgba(0,0,0,0.85)'; cx.shadowBlur = size*0.014;
-  cx.shadowOffsetX = size*0.003; cx.shadowOffsetY = size*0.003;
-  cx.fillStyle = '#ffe066';
-  cx.fillText(age+'  '+h, statsX, statsY1);
-  cx.fillText(weight+'  '+cup, statsX, statsY2);
-  cx.shadowBlur = 0; cx.shadowOffsetX = 0; cx.shadowOffsetY = 0;
-
-  const certText = '100% 실물인증';
-  const certFontSize = Math.floor(size*0.042);
-  cx.font = '900 ' + certFontSize + 'px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
-  cx.textAlign = 'right'; cx.textBaseline = 'bottom';
-  const certX = size-size*0.035, certY = size-size*0.038;
-  const certMetrics = cx.measureText(certText);
-  const certW = certMetrics.width+size*0.04, certH = certFontSize*1.55;
-  const certBX = certX-certW+size*0.02, certBY = certY-certH;
-  cx.save(); cx.globalAlpha = 0.92;
-  roundedRect(cx, certBX, certBY, certW, certH, size*0.016);
-  cx.fillStyle = '#7c3aed'; cx.fill();
-  cx.strokeStyle = 'rgba(255,255,255,0.45)'; cx.lineWidth = size*0.003; cx.stroke(); cx.restore();
-  cx.save();
-  cx.font = '900 ' + certFontSize + 'px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
-  cx.textAlign = 'right'; cx.textBaseline = 'bottom';
-  cx.fillStyle = '#fff'; cx.shadowColor = 'rgba(0,0,0,0.5)'; cx.shadowBlur = size*0.008;
-  cx.fillText(certText, certX, certY-(certH-certFontSize*1.2)/2); cx.restore();
-}
-
-function roundedRect(cx, x, y, w, h, r) {
-  cx.beginPath(); cx.moveTo(x+r,y);
-  cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r);
-  cx.arcTo(x,y+h,x,y,r); cx.arcTo(x,y,x+w,y,r); cx.closePath();
-}
-
-function renderPreview() { drawFrame(canvas, canvas.width); }
-
-async function prepareWorkerScript() {
+// ══════════════════════════════════════════════
+// 워커 스크립트: importScripts 방식 (fetch() 대신)
+// - 브라우저가 <script> 태그처럼 직접 요청하므로
+//   샌드박스의 fetch 프록시 제한을 받지 않음
+// ══════════════════════════════════════════════
+let workerScriptUrl = null;
+function getWorkerScriptUrl() {
   if (workerScriptUrl) return workerScriptUrl;
-  const res = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
-  const text = await res.text();
-  workerScriptUrl = URL.createObjectURL(new Blob([text], { type: 'application/javascript' }));
+  const bootstrap = `
+    try {
+      importScripts('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
+    } catch (e1) {
+      try {
+        importScripts('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js');
+      } catch (e2) {
+        self.postMessage({ __bootstrap_error: (e1 && e1.message) + ' / ' + (e2 && e2.message) });
+      }
+    }
+  `;
+  const blob = new Blob([bootstrap], { type: 'application/javascript' });
+  workerScriptUrl = URL.createObjectURL(blob);
   return workerScriptUrl;
 }
 
-// ── 구간 기반 프레임 추출 ──
-async function extractFramesInRange(frameCount, size, onProgress) {
-  const frames = [];
-  const off = document.createElement('canvas');
-  off.width = size; off.height = size;
-  const rangeDuration = trimEnd - trimStart;
-  for (let i = 0; i < frameCount; i++) {
-    const t = trimStart + (i / (frameCount - 1 || 1)) * rangeDuration;
-    videoEl.currentTime = Math.min(t, trimEnd);
-    await new Promise(r => { videoEl.onseeked = () => r(); });
-    drawFrame(off, size);
-    const snap = document.createElement('canvas');
-    snap.width = size; snap.height = size;
-    snap.getContext('2d').drawImage(off, 0, 0);
-    frames.push(snap);
-    if (onProgress) onProgress((i+1)/frameCount);
+function showError(msg) {
+  const box = document.getElementById('err-box');
+  box.style.display = 'block';
+  box.textContent = '⚠️ ' + msg;
+}
+
+let sourceType=null,sourceLoaded=false,logoImage=null,generatedBlob=null;
+let mediaScale=1.0,mediaOffsetX=0,mediaOffsetY=0;
+let logoSizePct=0.28,logoPosX=0.035,logoPosY=0.025;
+let isDragging=false,dragStartX=0,dragStartY=0,dragStartOffsetX=0,dragStartOffsetY=0;
+let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
+
+const videoEl=document.getElementById('hidden-video');
+const imageEl=document.getElementById('hidden-image');
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+const overlayInfo=document.getElementById('overlay-info');
+const genBtn=document.getElementById('generate-btn');
+const downloadBtn=document.getElementById('download-btn');
+const progressEl=document.getElementById('progress');
+const progressFill=document.getElementById('progress-fill');
+const progressText=document.getElementById('progress-text');
+const resultInfo=document.getElementById('result-info');
+const trimBox=document.getElementById('trim-box');
+const timelineWrap=document.getElementById('timeline-wrap');
+const trimSelected=document.getElementById('trim-selected');
+const handleStart=document.getElementById('handle-start');
+const handleEnd=document.getElementById('handle-end');
+const playheadEl=document.getElementById('playhead');
+const thumbStrip=document.getElementById('thumb-strip');
+const previewWrapper=document.getElementById('preview-wrapper');
+const mediaScaleSlider=document.getElementById('media-scale');
+const mediaScaleVal=document.getElementById('media-scale-val');
+
+function updateTimeline(){
+  if(!videoDuration)return;
+  const sp=(trimStart/videoDuration)*100,ep=(trimEnd/videoDuration)*100;
+  trimSelected.style.left=sp+'%';trimSelected.style.width=(ep-sp)+'%';
+  handleStart.style.left=sp+'%';handleEnd.style.left=ep+'%';
+  document.getElementById('trim-start-disp').textContent=trimStart.toFixed(2);
+  document.getElementById('trim-end-disp').textContent=trimEnd.toFixed(2);
+  const dur=trimEnd-trimStart;
+  document.getElementById('trim-duration-disp').textContent='선택 구간: '+dur.toFixed(1)+'초 ('+Math.floor(dur*TARGET_FPS)+'프레임)';
+}
+function tlXtoT(cx){const r=timelineWrap.getBoundingClientRect();return Math.max(0,Math.min(1,(cx-r.left)/r.width))*videoDuration;}
+function gcx(e){return e.touches?e.touches[0].clientX:e.clientX;}
+timelineWrap.addEventListener('mousedown',onTlDown);
+timelineWrap.addEventListener('touchstart',onTlDown,{passive:false});
+function onTlDown(e){
+  if(!videoDuration)return;
+  const cx=gcx(e),r=timelineWrap.getBoundingClientRect();
+  const sp=r.left+(trimStart/videoDuration)*r.width,ep=r.left+(trimEnd/videoDuration)*r.width;
+  if(Math.abs(cx-sp)<20)draggingHandle='start';
+  else if(Math.abs(cx-ep)<20)draggingHandle='end';
+  else{draggingHandle='seek';const t=tlXtoT(cx);videoEl.currentTime=t;playheadEl.style.left=((t/videoDuration)*100)+'%';renderPreview();}
+  e.preventDefault();
+}
+window.addEventListener('mousemove',onTlMove);
+window.addEventListener('touchmove',onTlMove,{passive:false});
+function onTlMove(e){
+  if(!draggingHandle)return;
+  const t=tlXtoT(gcx(e));
+  if(draggingHandle==='start')trimStart=Math.max(0,Math.min(t,trimEnd-0.3));
+  else if(draggingHandle==='end')trimEnd=Math.min(videoDuration,Math.max(t,trimStart+0.3));
+  else{const ct=Math.max(0,Math.min(t,videoDuration));videoEl.currentTime=ct;playheadEl.style.left=((ct/videoDuration)*100)+'%';renderPreview();}
+  updateTimeline();
+  if(draggingHandle!=='seek'){videoEl.currentTime=draggingHandle==='start'?trimStart:trimEnd;renderPreview();}
+  e.preventDefault();
+}
+window.addEventListener('mouseup',()=>{draggingHandle=null;});
+window.addEventListener('touchend',()=>{draggingHandle=null;});
+
+async function generateThumbnails(n=12){
+  thumbStrip.innerHTML='';
+  const oc=document.createElement('canvas');oc.width=60;oc.height=48;
+  const octx=oc.getContext('2d');
+  for(let i=0;i<n;i++){
+    videoEl.currentTime=(i/n)*videoDuration;
+    await new Promise(r=>videoEl.onseeked=r);
+    const sw=videoEl.videoWidth,sh=videoEl.videoHeight,crop=Math.min(sw,sh);
+    octx.drawImage(videoEl,(sw-crop)/2,(sh-crop)/2,crop,crop,0,0,60,48);
+    const img=document.createElement('img');img.src=oc.toDataURL('image/jpeg',0.5);
+    img.style.cssText='height:100%;width:auto;flex-shrink:0;';
+    thumbStrip.appendChild(img);
+  }
+  videoEl.currentTime=trimStart;
+  await new Promise(r=>videoEl.onseeked=r);
+  renderPreview();
+}
+
+mediaScaleSlider.addEventListener('input',()=>{mediaScale=parseInt(mediaScaleSlider.value)/100;mediaScaleVal.textContent=mediaScaleSlider.value+'%';if(sourceLoaded)renderPreview();});
+document.getElementById('reset-media').addEventListener('click',()=>{mediaScale=1;mediaOffsetX=0;mediaOffsetY=0;mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';if(sourceLoaded)renderPreview();});
+
+previewWrapper.addEventListener('mousedown',(e)=>{if(!sourceLoaded)return;isDragging=true;previewWrapper.classList.add('dragging');dragStartX=e.clientX;dragStartY=e.clientY;dragStartOffsetX=mediaOffsetX;dragStartOffsetY=mediaOffsetY;e.preventDefault();});
+window.addEventListener('mousemove',(e)=>{if(!isDragging)return;const rect=previewWrapper.getBoundingClientRect(),sc=canvas.width/rect.width;mediaOffsetX=dragStartOffsetX+(e.clientX-dragStartX)*sc;mediaOffsetY=dragStartOffsetY+(e.clientY-dragStartY)*sc;renderPreview();});
+window.addEventListener('mouseup',()=>{isDragging=false;previewWrapper.classList.remove('dragging');});
+previewWrapper.addEventListener('touchstart',(e)=>{if(!sourceLoaded)return;isDragging=true;dragStartX=e.touches[0].clientX;dragStartY=e.touches[0].clientY;dragStartOffsetX=mediaOffsetX;dragStartOffsetY=mediaOffsetY;e.preventDefault();},{passive:false});
+window.addEventListener('touchmove',(e)=>{if(!isDragging)return;const rect=previewWrapper.getBoundingClientRect(),sc=canvas.width/rect.width;mediaOffsetX=dragStartOffsetX+(e.touches[0].clientX-dragStartX)*sc;mediaOffsetY=dragStartOffsetY+(e.touches[0].clientY-dragStartY)*sc;renderPreview();e.preventDefault();},{passive:false});
+
+['logo-size','logo-x','logo-y'].forEach(id=>{
+  const s=document.getElementById(id),v=document.getElementById(id+'-val');
+  s.addEventListener('input',()=>{
+    v.textContent=s.value+'%';
+    if(id==='logo-size')logoSizePct=s.value/100;
+    else if(id==='logo-x')logoPosX=s.value/100;
+    else logoPosY=s.value/100;
+    if(sourceLoaded)renderPreview();
+  });
+});
+document.getElementById('reset-logo').addEventListener('click',()=>{
+  logoSizePct=0.28;logoPosX=0.035;logoPosY=0.025;
+  document.getElementById('logo-size').value=28;document.getElementById('logo-size-val').textContent='28%';
+  document.getElementById('logo-x').value=3;document.getElementById('logo-x-val').textContent='3%';
+  document.getElementById('logo-y').value=2;document.getElementById('logo-y-val').textContent='2%';
+  if(sourceLoaded)renderPreview();
+});
+['name','age','height_cm','weight','cup'].forEach(id=>{document.getElementById(id).addEventListener('input',()=>{if(sourceLoaded)renderPreview();});});
+
+document.getElementById('logo-input').addEventListener('change',async(e)=>{
+  const f=e.target.files[0];if(!f)return;
+  logoImage=new Image();logoImage.src=URL.createObjectURL(f);
+  await new Promise(r=>logoImage.onload=r);
+  document.getElementById('logo-controls').classList.add('visible');
+  if(sourceLoaded)renderPreview();
+});
+
+document.getElementById('video-input').addEventListener('change',async(e)=>{
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('err-box').style.display='none';
+  const url=URL.createObjectURL(file);
+  try{
+    if(file.type.startsWith('video/')){
+      sourceType='video';videoEl.src=url;
+      await new Promise((res,rej)=>{videoEl.onloadedmetadata=res;videoEl.onerror=()=>rej(new Error('영상 로드 실패'));});
+      videoEl.currentTime=0;await new Promise(r=>videoEl.onseeked=r);
+      videoDuration=videoEl.duration;trimStart=0;trimEnd=videoDuration;
+      const mm=Math.floor(videoDuration/60),ss=Math.floor(videoDuration%60);
+      document.getElementById('trim-total-disp').textContent=mm+':'+(ss<10?'0':'')+ss;
+      trimBox.classList.add('visible');updateTimeline();
+      generateThumbnails(12);
+    }else{
+      sourceType='image';imageEl.src=url;
+      await new Promise((res,rej)=>{imageEl.onload=res;imageEl.onerror=()=>rej(new Error('이미지 로드 실패'));});
+      trimBox.classList.remove('visible');
+    }
+    sourceLoaded=true;mediaOffsetX=0;mediaOffsetY=0;mediaScale=1;
+    mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';
+    overlayInfo.classList.add('hidden');
+    document.getElementById('media-controls').style.display='block';
+    document.getElementById('drag-hint').classList.add('visible');
+    genBtn.disabled=false;downloadBtn.disabled=true;generatedBlob=null;resultInfo.style.display='none';
+    renderPreview();
+  }catch(err){overlayInfo.textContent='❌ '+err.message;}
+});
+
+function drawFrame(target,size){
+  if(target.width!==size||target.height!==size){target.width=size;target.height=size;}
+  const cx=target.getContext('2d');cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';
+  const src=sourceType==='video'?videoEl:imageEl;
+  const sw=sourceType==='video'?videoEl.videoWidth:imageEl.naturalWidth;
+  const sh=sourceType==='video'?videoEl.videoHeight:imageEl.naturalHeight;
+  if(!sw||!sh)return;
+  const crop=Math.min(sw,sh),drawSz=size*mediaScale;
+  const bx=(size-drawSz)/2+mediaOffsetX,by=(size-drawSz)/2+mediaOffsetY;
+  cx.fillStyle='#000';cx.fillRect(0,0,size,size);
+  cx.drawImage(src,(sw-crop)/2,(sh-crop)/2,crop,crop,bx,by,drawSz,drawSz);
+  if(logoImage&&logoImage.complete){const lw=size*logoSizePct,lh=logoImage.height*(lw/logoImage.width);cx.drawImage(logoImage,size*logoPosX,size*logoPosY,lw,lh);}
+  const name=document.getElementById('name').value||'';
+  const bw=size*0.30,bh=size*0.115,bx2=size*0.035,by2=size-bh-size*0.085,br=size*0.018;
+  cx.save();cx.globalAlpha=0.93;rr(cx,bx2,by2,bw,bh,br);cx.fillStyle='#ff4f8b';cx.fill();cx.restore();
+  cx.save();cx.strokeStyle='rgba(255,255,255,0.5)';cx.lineWidth=size*0.003;rr(cx,bx2,by2,bw,bh,br);cx.stroke();cx.restore();
+  cx.fillStyle='#fff';cx.font='900 '+Math.floor(size*0.068)+'px "Malgun Gothic",sans-serif';
+  cx.textAlign='center';cx.textBaseline='middle';cx.shadowColor='rgba(0,0,0,0.4)';cx.shadowBlur=size*0.01;
+  cx.fillText(name,bx2+bw/2,by2+bh/2);cx.shadowBlur=0;
+  const age=document.getElementById('age').value||'',ht=document.getElementById('height_cm').value||'',wt=document.getElementById('weight').value||'',cup=document.getElementById('cup').value||'';
+  const sx=bx2+bw+size*0.022,sy1=by2+bh*0.18,sy2=sy1+size*0.062;
+  cx.font='800 '+Math.floor(size*0.052)+'px "Malgun Gothic",sans-serif';
+  cx.textAlign='left';cx.textBaseline='top';cx.shadowColor='rgba(0,0,0,0.85)';cx.shadowBlur=size*0.014;cx.shadowOffsetX=size*0.003;cx.shadowOffsetY=size*0.003;
+  cx.fillStyle='#ffe066';cx.fillText(age+'  '+ht,sx,sy1);cx.fillText(wt+'  '+cup,sx,sy2);
+  cx.shadowBlur=0;cx.shadowOffsetX=0;cx.shadowOffsetY=0;
+  const ctxt='100% 실물인증',cfs=Math.floor(size*0.042);
+  cx.font='900 '+cfs+'px "Malgun Gothic",sans-serif';cx.textAlign='right';cx.textBaseline='bottom';
+  const cx2=size-size*0.035,cy2=size-size*0.038,cm=cx.measureText(ctxt),cw=cm.width+size*0.04,ch=cfs*1.55;
+  const cbx=cx2-cw+size*0.02,cby=cy2-ch;
+  cx.save();cx.globalAlpha=0.92;rr(cx,cbx,cby,cw,ch,size*0.016);cx.fillStyle='#7c3aed';cx.fill();cx.strokeStyle='rgba(255,255,255,0.45)';cx.lineWidth=size*0.003;cx.stroke();cx.restore();
+  cx.save();cx.font='900 '+cfs+'px "Malgun Gothic",sans-serif';cx.textAlign='right';cx.textBaseline='bottom';cx.fillStyle='#fff';cx.shadowColor='rgba(0,0,0,0.5)';cx.shadowBlur=size*0.008;
+  cx.fillText(ctxt,cx2,cy2-(ch-cfs*1.2)/2);cx.restore();
+}
+function rr(cx,x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+function renderPreview(){drawFrame(canvas,canvas.width);}
+
+async function extractFramesInRange(count,size){
+  const frames=[],off=document.createElement('canvas');off.width=size;off.height=size;
+  const rangeDur=trimEnd-trimStart;
+  for(let i=0;i<count;i++){
+    const t=trimStart+(i/Math.max(count-1,1))*rangeDur;
+    videoEl.currentTime=Math.min(t,trimEnd-0.01);
+    await new Promise(r=>{videoEl.onseeked=()=>r();});
+    drawFrame(off,size);
+    const snap=document.createElement('canvas');snap.width=size;snap.height=size;
+    snap.getContext('2d').drawImage(off,0,0);frames.push(snap);
   }
   return frames;
 }
 
-async function encodeGif(frames, size, quality, delay, onProgress) {
-  const workerUrl = await prepareWorkerScript();
-  const gif = new GIF({ workers: 4, quality, width: size, height: size, workerScript: workerUrl, dither: 'FloydSteinberg' });
-  frames.forEach(f => gif.addFrame(f, { delay, copy: false }));
-  gif.on('progress', onProgress || (() => {}));
-  return new Promise((resolve, reject) => {
-    gif.on('finished', resolve);
-    gif.on('abort', () => reject(new Error('인코딩 취소됨')));
-    gif.render();
+// ── 실제 gif.js 라이브러리로 인코딩 ──
+function encodeGif(frames,size,quality,delay,onProgress){
+  return new Promise((resolve,reject)=>{
+    let settled=false;
+    const timeoutId=setTimeout(()=>{
+      if(!settled){settled=true;reject(new Error('인코딩 시간 초과 (워커 로드 실패 가능성). 새로고침 후 다시 시도해주세요.'));}
+    },30000);
+    try{
+      const gif=new GIF({workers:3,quality,width:size,height:size,workerScript:getWorkerScriptUrl(),dither:'FloydSteinberg'});
+      frames.forEach(f=>gif.addFrame(f,{delay,copy:false}));
+      gif.on('progress',p=>{if(onProgress)onProgress(p);});
+      gif.on('finished',blob=>{
+        if(!settled){settled=true;clearTimeout(timeoutId);resolve(blob);}
+      });
+      gif.on('abort',()=>{
+        if(!settled){settled=true;clearTimeout(timeoutId);reject(new Error('인코딩 취소됨'));}
+      });
+      gif.render();
+    }catch(err){
+      if(!settled){settled=true;clearTimeout(timeoutId);reject(err);}
+    }
   });
 }
 
-genBtn.addEventListener('click', async () => {
-  if (!sourceLoaded) return;
-  genBtn.disabled = true; downloadBtn.disabled = true;
-  resultInfo.style.display = 'none';
-  progressEl.style.display = 'block';
-  progressFill.style.width = '0%';
-
-  try {
-    const frameDelay = Math.round(1000 / TARGET_FPS);
-    let finalBlob, finalFrameCount, finalDuration, iterCount = 0;
-
-    if (sourceType === 'image') {
-      progressText.textContent = '이미지 인코딩 중...';
-      const off = document.createElement('canvas');
-      off.width = TARGET_SIZE; off.height = TARGET_SIZE;
-      drawFrame(off, TARGET_SIZE);
-      finalBlob = await encodeGif([off], TARGET_SIZE, TARGET_QUALITY, 500, p => {
-        progressFill.style.width = (p*100)+'%';
-        progressText.textContent = '인코딩 중... '+Math.round(p*100)+'%';
-      });
-      finalFrameCount = 1; finalDuration = 0; iterCount = 1;
-    } else {
-      const rangeDuration = trimEnd - trimStart;
-      const maxVideoFrames = Math.floor(rangeDuration * TARGET_FPS);
-
-      progressText.textContent = '📏 화질 측정 중... (프로브)';
-      const probeCount = Math.min(PROBE_FRAMES, maxVideoFrames);
-      const probeFrames = await extractFramesInRange(probeCount, PROBE_SIZE, p => {
-        progressFill.style.width = (p*10)+'%';
-      });
-      const probeBlob = await encodeGif(probeFrames, PROBE_SIZE, PROBE_QUALITY, frameDelay, p => {
-        progressFill.style.width = (10+p*10)+'%';
-      });
-
-      const bytesPerProbeFrame = probeBlob.size / probeCount;
-      const pixelScale = (TARGET_SIZE / PROBE_SIZE) ** 2;
-      let estBytesPerFrame = bytesPerProbeFrame * pixelScale * 1.2;
-
-      let currentFrameCount = Math.max(15, Math.min(
-        Math.floor((FIRST_TARGET - GIF_OVERHEAD) / estBytesPerFrame), maxVideoFrames
-      ));
-      let currentBlob = null;
-
-      for (let iter = 0; iter < MAX_TOTAL_ITER; iter++) {
+genBtn.addEventListener('click',async()=>{
+  if(!sourceLoaded)return;
+  genBtn.disabled=true;downloadBtn.disabled=true;resultInfo.style.display='none';
+  document.getElementById('err-box').style.display='none';
+  progressEl.style.display='block';progressFill.style.width='0%';
+  try{
+    const frameDelay=Math.round(1000/TARGET_FPS);
+    let finalBlob,finalFrameCount,finalDuration,iterCount=0;
+    if(sourceType==='image'){
+      progressText.textContent='이미지 인코딩 중...';
+      const off=document.createElement('canvas');off.width=TARGET_SIZE;off.height=TARGET_SIZE;drawFrame(off,TARGET_SIZE);
+      finalBlob=await encodeGif([off],TARGET_SIZE,TARGET_QUALITY,500,p=>{progressFill.style.width=(p*100)+'%';progressText.textContent='인코딩 중... '+Math.round(p*100)+'%';});
+      finalFrameCount=1;finalDuration=0;iterCount=1;
+    }else{
+      const rangeDur=trimEnd-trimStart;
+      const maxVF=Math.floor(rangeDur*TARGET_FPS);
+      progressText.textContent='📏 화질 측정 중... (프로브)';
+      const pc=Math.min(PROBE_FRAMES,maxVF);
+      const pf=await extractFramesInRange(pc,PROBE_SIZE);
+      progressFill.style.width='5%';
+      const probeBlob=await encodeGif(pf,PROBE_SIZE,PROBE_QUALITY,frameDelay,p=>{progressFill.style.width=(5+p*10)+'%';});
+      const bpf=probeBlob.size/pc;
+      const ps=(TARGET_SIZE/PROBE_SIZE)**2;
+      let estBPF=bpf*ps*1.2;
+      let curFC=Math.max(10,Math.min(Math.floor((FIRST_TARGET-GIF_OVERHEAD)/estBPF),maxVF));
+      let curBlob=null;
+      for(let it=0;it<MAX_TOTAL_ITER;it++){
         iterCount++;
-        const startPct = 20 + iter * 60 / MAX_TOTAL_ITER;
-        const endPct = 20 + (iter+1) * 60 / MAX_TOTAL_ITER;
-        progressText.textContent = '🎬 ['+( iter+1)+'회차] 프레임 추출 중... ('+currentFrameCount+'프레임)';
-        const framesForEncode = await extractFramesInRange(currentFrameCount, TARGET_SIZE, p => {
-          progressFill.style.width = (startPct + p*(endPct-startPct)*0.4)+'%';
-        });
-        currentBlob = await encodeGif(framesForEncode, TARGET_SIZE, TARGET_QUALITY, frameDelay, p => {
-          progressFill.style.width = (startPct + (endPct-startPct)*(0.4+p*0.6))+'%';
-          progressText.textContent = '🎨 ['+(iter+1)+'회차] 인코딩 중... '+Math.round(p*100)+'%';
-        });
-        if (currentBlob.size >= MIN_ACCEPTABLE && currentBlob.size <= MAX_BYTES) break;
-        if (iter === MAX_TOTAL_ITER-1) break;
-        const actualBPF = (currentBlob.size - GIF_OVERHEAD) / currentFrameCount;
-        estBytesPerFrame = actualBPF;
-        if (currentBlob.size > MAX_BYTES) {
-          const nf = Math.max(15, Math.floor((19.7*1024*1024-GIF_OVERHEAD)/actualBPF));
-          currentFrameCount = nf >= currentFrameCount ? Math.max(15, currentFrameCount-5) : nf;
-        } else {
-          const add = Math.max(1, Math.floor((19.8*1024*1024-currentBlob.size)/actualBPF*0.95));
-          const nf = Math.min(maxVideoFrames, currentFrameCount+add);
-          if (nf === currentFrameCount) break;
-          currentFrameCount = nf;
-        }
+        const sp=20+it*60/MAX_TOTAL_ITER,ep=20+(it+1)*60/MAX_TOTAL_ITER;
+        progressText.textContent='🎬 ['+(it+1)+'회차] 프레임 추출... ('+curFC+'프레임)';
+        progressFill.style.width=sp+'%';
+        const fr=await extractFramesInRange(curFC,TARGET_SIZE);
+        curBlob=await encodeGif(fr,TARGET_SIZE,TARGET_QUALITY,frameDelay,p=>{progressFill.style.width=(sp+(ep-sp)*p)+'%';progressText.textContent='🎨 ['+(it+1)+'회차] 인코딩 중... '+Math.round(p*100)+'%';});
+        if(curBlob.size>=MIN_ACCEPTABLE&&curBlob.size<=MAX_BYTES)break;
+        if(it===MAX_TOTAL_ITER-1)break;
+        const aBPF=(curBlob.size-GIF_OVERHEAD)/curFC;estBPF=aBPF;
+        if(curBlob.size>MAX_BYTES){const nf=Math.max(10,Math.floor((19.7*1024*1024-GIF_OVERHEAD)/aBPF));curFC=nf>=curFC?Math.max(10,curFC-5):nf;}
+        else{const add=Math.max(1,Math.floor((19.8*1024*1024-curBlob.size)/aBPF*0.9));const nf=Math.min(maxVF,curFC+add);if(nf===curFC)break;curFC=nf;}
       }
-      finalBlob = currentBlob;
-      finalFrameCount = currentFrameCount;
-      finalDuration = trimEnd - trimStart;
+      finalBlob=curBlob;finalFrameCount=curFC;finalDuration=trimEnd-trimStart;
     }
-
-    generatedBlob = finalBlob;
-    const mb = (finalBlob.size/(1024*1024)).toFixed(2);
-    document.getElementById('filesize').textContent = mb+' MB / 20 MB';
-    document.getElementById('duration-used').textContent = finalDuration.toFixed(2)+'초 ('+trimStart.toFixed(2)+'s ~ '+trimEnd.toFixed(2)+'s)';
-    document.getElementById('framecount').textContent = finalFrameCount+' 개 @ '+TARGET_FPS+'fps';
-    document.getElementById('iterations').textContent = iterCount+' 회';
-    resultInfo.style.display = 'block';
-    downloadBtn.disabled = false;
-    progressFill.style.width = '100%';
-    progressText.textContent = '✅ 완료! ('+mb+' MB, '+iterCount+'회 인코딩)';
-  } catch (err) {
-    progressText.textContent = '❌ 오류: '+err.message;
-  } finally {
-    genBtn.disabled = false;
-  }
+    generatedBlob=finalBlob;
+    const mb=(finalBlob.size/(1024*1024)).toFixed(2);
+    document.getElementById('filesize').textContent=mb+' MB / 20 MB';
+    document.getElementById('duration-used').textContent=finalDuration.toFixed(2)+'초 ('+trimStart.toFixed(2)+'s ~ '+trimEnd.toFixed(2)+'s)';
+    document.getElementById('framecount').textContent=finalFrameCount+' 개 @ '+TARGET_FPS+'fps';
+    document.getElementById('iterations').textContent=iterCount+' 회';
+    resultInfo.style.display='block';downloadBtn.disabled=false;
+    progressFill.style.width='100%';progressText.textContent='✅ 완료! ('+mb+' MB)';
+  }catch(err){
+    progressText.textContent='❌ 오류 발생';
+    showError(err.message || String(err));
+    console.error(err);
+  }finally{genBtn.disabled=false;}
 });
 
-downloadBtn.addEventListener('click', () => {
-  if (!generatedBlob) return;
-  const name = document.getElementById('name').value || 'profile';
-  const age = document.getElementById('age').value.replace(/[^0-9]/g,'') || '00';
-  const url = URL.createObjectURL(generatedBlob);
-  const a = document.createElement('a');
-  a.href = url; a.download = age+'_'+name+'.gif';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 100);
+downloadBtn.addEventListener('click',()=>{
+  if(!generatedBlob)return;
+  const name=document.getElementById('name').value||'profile';
+  const age=document.getElementById('age').value.replace(/[^0-9]/g,'')||'00';
+  const url=URL.createObjectURL(generatedBlob);
+  const a=document.createElement('a');a.href=url;a.download=age+'_'+name+'.gif';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),100);
 });
 
-ctx.fillStyle = '#111';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle='#111';ctx.fillRect(0,0,canvas.width,canvas.height);
 </script>
 </body>
 </html>
