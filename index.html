@@ -285,6 +285,27 @@ function updateTimeline(){
 }
 function tlXtoT(cx){const r=timelineWrap.getBoundingClientRect();return Math.max(0,Math.min(1,(cx-r.left)/r.width))*videoDuration;}
 function gcx(e){return e.touches?e.touches[0].clientX:e.clientX;}
+
+// ★ [신규] 안전한 영상 탐색(seek) 헬퍼
+//   문제: currentTime을 지금과 거의 같은 값으로 설정하면 브라우저가 'seeked' 이벤트를
+//        아예 안 쏘는 경우가 있어서, 그걸 무한정 기다리면 GIF 생성이 그 자리에서 멈춰버림.
+//   해결: (1) 이미 목표 시점과 충분히 가까우면 이벤트를 기다리지 않고 바로 진행
+//         (2) 그래도 혹시 이벤트가 안 오면 800ms 후 강제로 진행 (영구 멈춤 방지)
+function seekVideo(t){
+  return new Promise((resolve)=>{
+    if(Math.abs(videoEl.currentTime - t) < 0.01){ resolve(); return; }
+    let done=false;
+    const finish=()=>{
+      if(done)return; done=true;
+      videoEl.removeEventListener('seeked',finish);
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer=setTimeout(finish,800); // 안전장치: 이벤트 누락 시에도 진행
+    videoEl.addEventListener('seeked',finish);
+    videoEl.currentTime=t;
+  });
+}
 timelineWrap.addEventListener('mousedown',onTlDown);
 timelineWrap.addEventListener('touchstart',onTlDown,{passive:false});
 function onTlDown(e){
@@ -316,16 +337,14 @@ async function generateThumbnails(n=12){
   const oc=document.createElement('canvas');oc.width=60;oc.height=48;
   const octx=oc.getContext('2d');
   for(let i=0;i<n;i++){
-    videoEl.currentTime=(i/n)*videoDuration;
-    await new Promise(r=>videoEl.onseeked=r);
+    await seekVideo((i/n)*videoDuration);
     const sw=videoEl.videoWidth,sh=videoEl.videoHeight,crop=Math.min(sw,sh);
     octx.drawImage(videoEl,(sw-crop)/2,(sh-crop)/2,crop,crop,0,0,60,48);
     const img=document.createElement('img');img.src=oc.toDataURL('image/jpeg',0.5);
     img.style.cssText='height:100%;width:auto;flex-shrink:0;';
     thumbStrip.appendChild(img);
   }
-  videoEl.currentTime=trimStart;
-  await new Promise(r=>videoEl.onseeked=r);
+  await seekVideo(trimStart);
   renderPreview();
 }
 
@@ -449,7 +468,7 @@ document.getElementById('video-input').addEventListener('change',async(e)=>{
     if(file.type.startsWith('video/')){
       sourceType='video';videoEl.src=url;
       await new Promise((res,rej)=>{videoEl.onloadedmetadata=res;videoEl.onerror=()=>rej(new Error('영상 로드 실패'));});
-      videoEl.currentTime=0;await new Promise(r=>videoEl.onseeked=r);
+      await seekVideo(0);
       videoDuration=videoEl.duration;trimStart=0;trimEnd=videoDuration;
       const mm=Math.floor(videoDuration/60),ss=Math.floor(videoDuration%60);
       document.getElementById('trim-total-disp').textContent=mm+':'+(ss<10?'0':'')+ss;
@@ -521,8 +540,7 @@ async function extractFramesInRange(count,size){
   const rangeDur=trimEnd-trimStart;
   for(let i=0;i<count;i++){
     const t=trimStart+(i/Math.max(count-1,1))*rangeDur;
-    videoEl.currentTime=Math.min(t,trimEnd-0.01);
-    await new Promise(r=>{videoEl.onseeked=()=>r();});
+    await seekVideo(Math.min(t,trimEnd-0.01));
     drawFrame(off,size);
     const snap=document.createElement('canvas');snap.width=size;snap.height=size;
     snap.getContext('2d').drawImage(off,0,0);frames.push(snap);
