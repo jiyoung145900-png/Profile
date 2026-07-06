@@ -209,10 +209,6 @@ const MAX_BYTES = 20*1024*1024, MIN_ACCEPTABLE = 19.5*1024*1024;
 const FIRST_TARGET = 19.7*1024*1024, GIF_OVERHEAD = 200*1024, MAX_TOTAL_ITER = 3;
 const PROBE_SIZE = 400, PROBE_FRAMES = 20, PROBE_QUALITY = 15;
 
-// ══════════════════════════════════════════════════════════════════
-// 워커 스크립트: 실제 gif.worker.js 원본 소스를 문자열로 통째로 내장
-// (네트워크 요청 없이 Blob으로 생성 → CDN/CORS 문제와 무관하게 항상 로드됨)
-// ══════════════════════════════════════════════════════════════════
 const GIF_WORKER_SOURCE = `
 function NeuQuant(pixels, samplefac) {
   var ncycles = 100, netsize = 256, maxnetpos = netsize - 1;
@@ -542,8 +538,7 @@ const LOGO_X_OVERFLOW=15;
 const badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
 let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
 
-// ── 슬라이드쇼(여러 장 사진) 전용 상태 - 다른 모드와 완전히 분리 ──
-let slideshowPhotos=[]; // {img, thumbUrl, duration(초)}
+let slideshowPhotos=[];
 let previewSlideIndex=0;
 
 let dragMode=null, dragStart=null;
@@ -764,12 +759,10 @@ document.getElementById('logo-input').addEventListener('change',async(e)=>{
   if(sourceLoaded)renderPreview();
 });
 
-// ── 1️⃣ 원본 영상 / 사진 1장 (기존 기능 그대로) ──
 document.getElementById('video-input').addEventListener('change',async(e)=>{
   const file=e.target.files[0];if(!file)return;
   document.getElementById('err-box').style.display='none';
   gifPreviewWrap.style.display='none';
-  // 슬라이드쇼 모드에서 넘어올 때 상태 정리 (슬라이드쇼에 영향 없음, 서로 배타적으로만 정리)
   slideshowPhotos=[]; slideshowBox.style.display='none';
   const url=URL.createObjectURL(file);
   try{
@@ -797,11 +790,6 @@ document.getElementById('video-input').addEventListener('change',async(e)=>{
   }catch(err){overlayInfo.textContent='❌ '+err.message;}
 });
 
-// ══════════════════════════════════════════════════════════════════
-// ★ [신규] 📷 여러 장 사진 슬라이드쇼 모드
-//   - 기존 video-input / trim / media 로직은 전혀 건드리지 않음
-//   - 오버레이(로고/이름배지)는 공통 drawFrame을 그대로 재사용해서 동일하게 표시
-// ══════════════════════════════════════════════════════════════════
 function renderSlideshowList(){
   slideshowListEl.innerHTML='';
   slideshowPhotos.forEach((p,i)=>{
@@ -869,7 +857,6 @@ document.getElementById('slideshow-input').addEventListener('change', async (e)=
   }
   if(!slideshowPhotos.length) return;
 
-  // 영상 모드 상태와 완전히 분리 - 슬라이드쇼로 전환
   sourceType='slideshow';
   sourceLoaded=true;
   previewSlideIndex=0;
@@ -899,7 +886,6 @@ document.getElementById('clear-slideshow').addEventListener('click',()=>{
   }
 });
 
-// ── 공통 드로우 (video / image / slideshow 모두 재사용) ──
 function drawFrame(target,size,overrideImg){
   if(target.width!==size||target.height!==size){target.width=size;target.height=size;}
   const cx=target.getContext('2d');cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';
@@ -955,7 +941,6 @@ function renderPreview(){
   }
 }
 
-// ── 영상 구간 프레임 추출 (기존 그대로) ──
 async function extractFramesInRange(count,size){
   const frames=[],off=document.createElement('canvas');off.width=size;off.height=size;
   const rangeDur=trimEnd-trimStart;
@@ -969,7 +954,6 @@ async function extractFramesInRange(count,size){
   return frames;
 }
 
-// ── ★ [신규] 슬라이드쇼 프레임 추출: 사진별 설정 길이 비율대로 프레임 배분 ──
 function buildSlideshowCounts(totalFrames){
   const n=slideshowPhotos.length;
   if(n===0) return [];
@@ -998,7 +982,6 @@ async function extractFramesSlideshow(totalFrameCount,size){
   }
   return frames;
 }
-// 소스 타입에 따라 올바른 추출기로 라우팅 (video 경로는 원본 그대로 호출됨)
 function extractFrames(count,size){
   if(sourceType==='slideshow') return extractFramesSlideshow(count,size);
   return extractFramesInRange(count,size);
@@ -1033,30 +1016,35 @@ genBtn.addEventListener('click',async()=>{
   document.getElementById('err-box').style.display='none';
   progressEl.style.display='block';progressFill.style.width='0%';
   try{
-    const frameDelay=Math.round(1000/TARGET_FPS);
     let finalBlob,finalFrameCount,finalDuration,iterCount=0;
 
     if(sourceType==='image'){
-      // ── 단일 사진 (기존 그대로) ──
       progressText.textContent='이미지 인코딩 중...';
       const off=document.createElement('canvas');off.width=TARGET_SIZE;off.height=TARGET_SIZE;drawFrame(off,TARGET_SIZE);
       finalBlob=await encodeGif([off],TARGET_SIZE,TARGET_QUALITY,500,p=>{progressFill.style.width=(p*100)+'%';progressText.textContent='인코딩 중... '+Math.round(p*100)+'%';});
       finalFrameCount=1;finalDuration=0;iterCount=1;
 
     } else {
-      // ── 영상 또는 슬라이드쇼: 동일한 20MB 밀착 반복 로직, extractFrames()로 소스만 분기 ──
-      let maxVF;
+      // ── 영상 또는 슬라이드쇼 ──
+      // ★ [핵심 수정] 프레임 딜레이를 "총 재생시간 ÷ 실제 프레임 수"로 동적 계산.
+      //   기존에는 딜레이가 33ms로 고정돼서, 20MB에 맞추려고 프레임 수를 줄이면
+      //   재생시간 자체가 짧아지는 버그가 있었음 (설정한 초 수와 실제 재생시간 불일치).
+      //   이제는 프레임을 줄여도 딜레이가 늘어나서 항상 설정한 실제 초 수만큼 재생됨.
+      let maxVF, totalDurationMs;
       if(sourceType==='video'){
         const rangeDur=trimEnd-trimStart;
         maxVF=Math.floor(rangeDur*TARGET_FPS);
+        totalDurationMs=rangeDur*1000;
       } else {
         maxVF=slideshowPhotos.reduce((s,p)=>s+Math.max(1,Math.round(p.duration*TARGET_FPS)),0);
+        totalDurationMs=slideshowPhotos.reduce((s,p)=>s+p.duration,0)*1000;
       }
       progressText.textContent='📏 화질 측정 중... (프로브)';
       const pc=Math.min(PROBE_FRAMES,maxVF);
+      const probeDelay=Math.max(20,Math.round(totalDurationMs/pc));
       const pf=await extractFrames(pc,PROBE_SIZE);
       progressFill.style.width='5%';
-      const probeBlob=await encodeGif(pf,PROBE_SIZE,PROBE_QUALITY,frameDelay,p=>{progressFill.style.width=(5+p*10)+'%';});
+      const probeBlob=await encodeGif(pf,PROBE_SIZE,PROBE_QUALITY,probeDelay,p=>{progressFill.style.width=(5+p*10)+'%';});
       const bpf=probeBlob.size/pc;
       const ps=(TARGET_SIZE/PROBE_SIZE)**2;
       let estBPF=bpf*ps*1.2;
@@ -1068,7 +1056,8 @@ genBtn.addEventListener('click',async()=>{
         progressText.textContent='🎬 ['+(it+1)+'회차] 프레임 추출... ('+curFC+'프레임)';
         progressFill.style.width=sp+'%';
         const fr=await extractFrames(curFC,TARGET_SIZE);
-        curBlob=await encodeGif(fr,TARGET_SIZE,TARGET_QUALITY,frameDelay,p=>{progressFill.style.width=(sp+(ep-sp)*p)+'%';progressText.textContent='🎨 ['+(it+1)+'회차] 인코딩 중... '+Math.round(p*100)+'%';});
+        const iterDelay=Math.max(20,Math.round(totalDurationMs/curFC));
+        curBlob=await encodeGif(fr,TARGET_SIZE,TARGET_QUALITY,iterDelay,p=>{progressFill.style.width=(sp+(ep-sp)*p)+'%';progressText.textContent='🎨 ['+(it+1)+'회차] 인코딩 중... '+Math.round(p*100)+'%';});
         if(curBlob.size>=MIN_ACCEPTABLE&&curBlob.size<=MAX_BYTES)break;
         if(it===MAX_TOTAL_ITER-1)break;
         const aBPF=(curBlob.size-GIF_OVERHEAD)/curFC;estBPF=aBPF;
@@ -1076,7 +1065,7 @@ genBtn.addEventListener('click',async()=>{
         else{const add=Math.max(1,Math.floor((19.8*1024*1024-curBlob.size)/aBPF*0.9));const nf=Math.min(maxVF,curFC+add);if(nf===curFC)break;curFC=nf;}
       }
       finalBlob=curBlob;finalFrameCount=curFC;
-      finalDuration = sourceType==='video' ? (trimEnd-trimStart) : (curFC/TARGET_FPS);
+      finalDuration = totalDurationMs/1000; // 딜레이 보정 덕분에 항상 원래 설정한 길이와 일치
     }
 
     generatedBlob=finalBlob;
