@@ -20,9 +20,12 @@
   input[type="file"] { width: 100%; background: #0a0a0a; border: 1px dashed #444; color: #999; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
   input[type="file"]::file-selector-button { background: #ffb347; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-right: 10px; }
   .hint { font-size: 11px; color: #666; margin-top: 4px; }
+  .hint-warn { font-size: 11px; color: #ffb347; margin-top: 6px; display: none; line-height: 1.5; }
   button.primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffb347, #ff8c42); color: #000; border: none; border-radius: 8px; font-size: 15px; font-weight: 900; cursor: pointer; margin-top: 8px; }
   button.primary:disabled { background: #333; color: #666; cursor: not-allowed; }
   button.primary:not(:disabled):hover { opacity: 0.9; }
+  button.secondary { width: 100%; padding: 11px; background: #1a1a1a; color: #ffb347; border: 1px solid #ffb347; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  button.secondary:hover { background: rgba(255,179,71,0.1); }
   .controls-box { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
   .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .slider-row:last-child { margin-bottom: 0; }
@@ -32,6 +35,9 @@
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #ffb347; border-radius: 50%; cursor: pointer; }
   .logo-controls { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; margin-top: 10px; display: none; }
   .logo-controls.visible { display: block; }
+  .corner-btns { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 8px; }
+  .corner-btn { background: #1a1a1a; border: 1px solid #333; color: #aaa; font-size: 10px; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+  .corner-btn:hover { color: #ffb347; border-color: #ffb347; }
   .trim-box { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; margin-top: 10px; display: none; }
   .trim-box.visible { display: block; }
   .trim-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -69,6 +75,9 @@
   .reset-btn { background: #1a1a1a; border: 1px solid #333; color: #888; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; float: right; }
   .reset-btn:hover { color: #ffb347; border-color: #ffb347; }
   .err-box { background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.3); color: #ff8080; padding: 10px 12px; border-radius: 6px; font-size: 12px; margin-top: 10px; display: none; line-height: 1.5; }
+  .gif-preview-wrap { display: none; margin-bottom: 12px; }
+  .gif-preview-wrap img { width: 100%; border-radius: 8px; border: 1px solid #2a2a2a; display: block; }
+  .gif-preview-label { font-size: 11px; color: #ffb347; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
 </style>
 </head>
 <body>
@@ -99,6 +108,7 @@
         </div>
         <div class="trim-info"><span>0:00</span><span id="trim-total-disp">0:00</span></div>
         <div class="trim-duration" id="trim-duration-disp">선택 구간: 0.0초</div>
+        <p class="hint-warn" id="length-warning">⏱️ 영상이 깁니다. 처리 시간이 오래 걸릴 수 있어요 — 구간을 15초 이내로 선택하는 걸 추천해요.</p>
       </div>
 
       <div class="controls-box" id="media-controls" style="display:none; margin-top:14px;">
@@ -108,7 +118,15 @@
           <input type="range" id="media-scale" min="50" max="300" value="100" step="1">
           <span class="slider-val" id="media-scale-val">100%</span>
         </div>
-        <p class="hint" style="margin-top:4px;">🖱️ 프리뷰 위 드래그 = 위치 이동</p>
+        <p class="hint" style="margin-top:4px;">🖱️ 프리뷰의 빈 영역을 드래그하면 위치 이동</p>
+      </div>
+
+      <div class="controls-box" id="badge-controls" style="display:none; margin-top:14px;">
+        <label style="margin-bottom:8px;">📛 이름 배지 위치/크기 <button class="reset-btn" id="reset-badge">초기화</button></label>
+        <div class="slider-row"><span class="slider-label">크기</span><input type="range" id="badge-scale" min="60" max="150" value="100" step="1"><span class="slider-val" id="badge-scale-val">100%</span></div>
+        <div class="slider-row"><span class="slider-label">X축</span><input type="range" id="badge-x" min="0" max="70" value="3" step="1"><span class="slider-val" id="badge-x-val">3%</span></div>
+        <div class="slider-row"><span class="slider-label">Y축</span><input type="range" id="badge-y" min="0" max="88" value="80" step="1"><span class="slider-val" id="badge-y-val">80%</span></div>
+        <p class="hint" style="margin-top:4px;">🖱️ 프리뷰에서 이름 배지를 직접 드래그해도 이동돼요</p>
       </div>
 
       <div class="field" style="margin-top:14px;">
@@ -118,8 +136,15 @@
         <div class="logo-controls" id="logo-controls">
           <label style="margin-bottom:8px;">🖼️ 로고 조절 <button class="reset-btn" id="reset-logo">초기화</button></label>
           <div class="slider-row"><span class="slider-label">크기</span><input type="range" id="logo-size" min="5" max="60" value="28" step="1"><span class="slider-val" id="logo-size-val">28%</span></div>
-          <div class="slider-row"><span class="slider-label">X축</span><input type="range" id="logo-x" min="0" max="90" value="3" step="1"><span class="slider-val" id="logo-x-val">3%</span></div>
-          <div class="slider-row"><span class="slider-label">Y축</span><input type="range" id="logo-y" min="0" max="90" value="2" step="1"><span class="slider-val" id="logo-y-val">2%</span></div>
+          <div class="slider-row"><span class="slider-label">X축</span><input type="range" id="logo-x" min="0" max="72" value="3" step="1"><span class="slider-val" id="logo-x-val">3%</span></div>
+          <div class="slider-row"><span class="slider-label">Y축</span><input type="range" id="logo-y" min="0" max="72" value="2" step="1"><span class="slider-val" id="logo-y-val">2%</span></div>
+          <div class="corner-btns">
+            <button class="corner-btn" data-corner="tl">↖ 좌상단</button>
+            <button class="corner-btn" data-corner="tr">↗ 우상단</button>
+            <button class="corner-btn" data-corner="bl">↙ 좌하단</button>
+            <button class="corner-btn" data-corner="br">↘ 우하단</button>
+          </div>
+          <p class="hint" style="margin-top:8px;">🖱️ 프리뷰에서 로고를 직접 드래그해도 이동돼요</p>
         </div>
       </div>
 
@@ -138,7 +163,7 @@
     </section>
 
     <section>
-      <p class="drag-hint" id="drag-hint">🖱️ 드래그로 위치 이동 · 슬라이더로 확대/축소</p>
+      <p class="drag-hint" id="drag-hint">🖱️ 로고/이름배지는 직접 드래그, 빈 곳 드래그는 영상 위치 이동</p>
       <div class="preview-wrapper" id="preview-wrapper">
         <canvas id="canvas" width="720" height="720"></canvas>
         <div class="overlay" id="overlay-info">👈 영상을 업로드하세요</div>
@@ -154,6 +179,10 @@
         <p>📐 해상도: <span>864 × 864</span></p>
         <p>🔁 인코딩 횟수: <span id="iterations">-</span></p>
       </div>
+      <div class="gif-preview-wrap" id="gif-preview-wrap">
+        <div class="gif-preview-label">✅ 완성된 GIF 미리보기</div>
+        <img id="gif-preview-img" alt="GIF preview">
+      </div>
       <button id="download-btn" class="primary" disabled>💾 GIF 다운로드</button>
     </section>
   </div>
@@ -168,11 +197,6 @@ const MAX_BYTES = 20*1024*1024, MIN_ACCEPTABLE = 19.5*1024*1024;
 const FIRST_TARGET = 19.7*1024*1024, GIF_OVERHEAD = 200*1024, MAX_TOTAL_ITER = 3;
 const PROBE_SIZE = 400, PROBE_FRAMES = 20, PROBE_QUALITY = 15;
 
-// ══════════════════════════════════════════════
-// 워커 스크립트: importScripts 방식 (fetch() 대신)
-// - 브라우저가 <script> 태그처럼 직접 요청하므로
-//   샌드박스의 fetch 프록시 제한을 받지 않음
-// ══════════════════════════════════════════════
 let workerScriptUrl = null;
 function getWorkerScriptUrl() {
   if (workerScriptUrl) return workerScriptUrl;
@@ -191,7 +215,6 @@ function getWorkerScriptUrl() {
   workerScriptUrl = URL.createObjectURL(blob);
   return workerScriptUrl;
 }
-
 function showError(msg) {
   const box = document.getElementById('err-box');
   box.style.display = 'block';
@@ -201,8 +224,11 @@ function showError(msg) {
 let sourceType=null,sourceLoaded=false,logoImage=null,generatedBlob=null;
 let mediaScale=1.0,mediaOffsetX=0,mediaOffsetY=0;
 let logoSizePct=0.28,logoPosX=0.035,logoPosY=0.025;
-let isDragging=false,dragStartX=0,dragStartY=0,dragStartOffsetX=0,dragStartOffsetY=0;
+let badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
 let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
+
+// 통합 드래그 상태 (미디어 / 로고 / 배지)
+let dragMode=null, dragStart=null;
 
 const videoEl=document.getElementById('hidden-video');
 const imageEl=document.getElementById('hidden-image');
@@ -225,6 +251,42 @@ const thumbStrip=document.getElementById('thumb-strip');
 const previewWrapper=document.getElementById('preview-wrapper');
 const mediaScaleSlider=document.getElementById('media-scale');
 const mediaScaleVal=document.getElementById('media-scale-val');
+const logoXSlider=document.getElementById('logo-x');
+const logoYSlider=document.getElementById('logo-y');
+const logoXVal=document.getElementById('logo-x-val');
+const logoYVal=document.getElementById('logo-y-val');
+const logoSizeSlider=document.getElementById('logo-size');
+const badgeScaleSlider=document.getElementById('badge-scale');
+const badgeXSlider=document.getElementById('badge-x');
+const badgeYSlider=document.getElementById('badge-y');
+const badgeScaleVal=document.getElementById('badge-scale-val');
+const badgeXVal=document.getElementById('badge-x-val');
+const badgeYVal=document.getElementById('badge-y-val');
+const lengthWarning=document.getElementById('length-warning');
+const gifPreviewWrap=document.getElementById('gif-preview-wrap');
+const gifPreviewImg=document.getElementById('gif-preview-img');
+
+function updateLogoBounds(){
+  if(!logoImage) return;
+  const wRatio = logoSizePct;
+  const hRatio = logoSizePct * (logoImage.height / logoImage.width);
+  const maxXPct = Math.max(0, Math.round((1 - wRatio) * 100));
+  const maxYPct = Math.max(0, Math.round((1 - hRatio) * 100));
+  logoXSlider.max = maxXPct;
+  logoYSlider.max = maxYPct;
+  if(parseFloat(logoXSlider.value) > maxXPct){ logoXSlider.value = maxXPct; logoPosX = maxXPct/100; logoXVal.textContent = maxXPct+'%'; }
+  if(parseFloat(logoYSlider.value) > maxYPct){ logoYSlider.value = maxYPct; logoPosY = maxYPct/100; logoYVal.textContent = maxYPct+'%'; }
+}
+function badgeMaxX(){ return Math.max(0, 1 - 0.60*badgeScale); }
+function badgeMaxY(){ return Math.max(0, 1 - 0.115*badgeScale - 0.02); }
+function updateBadgeBounds(){
+  const maxXPct = Math.round(badgeMaxX()*100);
+  const maxYPct = Math.round(badgeMaxY()*100);
+  badgeXSlider.max = maxXPct;
+  badgeYSlider.max = maxYPct;
+  if(parseFloat(badgeXSlider.value) > maxXPct){ badgeXSlider.value=maxXPct; badgePosXPct=maxXPct/100; badgeXVal.textContent=maxXPct+'%'; }
+  if(parseFloat(badgeYSlider.value) > maxYPct){ badgeYSlider.value=maxYPct; badgePosYPct=maxYPct/100; badgeYVal.textContent=maxYPct+'%'; }
+}
 
 function updateTimeline(){
   if(!videoDuration)return;
@@ -234,7 +296,9 @@ function updateTimeline(){
   document.getElementById('trim-start-disp').textContent=trimStart.toFixed(2);
   document.getElementById('trim-end-disp').textContent=trimEnd.toFixed(2);
   const dur=trimEnd-trimStart;
-  document.getElementById('trim-duration-disp').textContent='선택 구간: '+dur.toFixed(1)+'초 ('+Math.floor(dur*TARGET_FPS)+'프레임)';
+  let txt='선택 구간: '+dur.toFixed(1)+'초 ('+Math.floor(dur*TARGET_FPS)+'프레임)';
+  document.getElementById('trim-duration-disp').textContent=txt;
+  lengthWarning.style.display = dur>15 ? 'block' : 'none';
 }
 function tlXtoT(cx){const r=timelineWrap.getBoundingClientRect();return Math.max(0,Math.min(1,(cx-r.left)/r.width))*videoDuration;}
 function gcx(e){return e.touches?e.touches[0].clientX:e.clientX;}
@@ -285,29 +349,134 @@ async function generateThumbnails(n=12){
 mediaScaleSlider.addEventListener('input',()=>{mediaScale=parseInt(mediaScaleSlider.value)/100;mediaScaleVal.textContent=mediaScaleSlider.value+'%';if(sourceLoaded)renderPreview();});
 document.getElementById('reset-media').addEventListener('click',()=>{mediaScale=1;mediaOffsetX=0;mediaOffsetY=0;mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';if(sourceLoaded)renderPreview();});
 
-previewWrapper.addEventListener('mousedown',(e)=>{if(!sourceLoaded)return;isDragging=true;previewWrapper.classList.add('dragging');dragStartX=e.clientX;dragStartY=e.clientY;dragStartOffsetX=mediaOffsetX;dragStartOffsetY=mediaOffsetY;e.preventDefault();});
-window.addEventListener('mousemove',(e)=>{if(!isDragging)return;const rect=previewWrapper.getBoundingClientRect(),sc=canvas.width/rect.width;mediaOffsetX=dragStartOffsetX+(e.clientX-dragStartX)*sc;mediaOffsetY=dragStartOffsetY+(e.clientY-dragStartY)*sc;renderPreview();});
-window.addEventListener('mouseup',()=>{isDragging=false;previewWrapper.classList.remove('dragging');});
-previewWrapper.addEventListener('touchstart',(e)=>{if(!sourceLoaded)return;isDragging=true;dragStartX=e.touches[0].clientX;dragStartY=e.touches[0].clientY;dragStartOffsetX=mediaOffsetX;dragStartOffsetY=mediaOffsetY;e.preventDefault();},{passive:false});
-window.addEventListener('touchmove',(e)=>{if(!isDragging)return;const rect=previewWrapper.getBoundingClientRect(),sc=canvas.width/rect.width;mediaOffsetX=dragStartOffsetX+(e.touches[0].clientX-dragStartX)*sc;mediaOffsetY=dragStartOffsetY+(e.touches[0].clientY-dragStartY)*sc;renderPreview();e.preventDefault();},{passive:false});
+// ══════════════════════════════════════════════
+// 통합 드래그: 로고 / 이름배지 / 미디어 우선순위 히트테스트
+// ══════════════════════════════════════════════
+function getPoint(e){
+  const rect=previewWrapper.getBoundingClientRect();
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  const scX=canvas.width/rect.width, scY=canvas.height/rect.height;
+  return { x:(clientX-rect.left)*scX, y:(clientY-rect.top)*scY, clientX, clientY };
+}
+function hitTestLogo(px,py){
+  if(!logoImage||!logoImage.complete) return false;
+  const size=canvas.width;
+  const lw=size*logoSizePct, lh=logoImage.height*(lw/logoImage.width);
+  const lx=size*logoPosX, ly=size*logoPosY;
+  return px>=lx && px<=lx+lw && py>=ly && py<=ly+lh;
+}
+function hitTestBadge(px,py){
+  const size=canvas.width;
+  const bw=size*0.30*badgeScale, bh=size*0.115*badgeScale;
+  const bx2=size*badgePosXPct, by2=size*badgePosYPct;
+  const extRight = bw + size*0.30*badgeScale; // 스탯 텍스트 영역까지 포함해서 여유있게 히트박스 지정
+  return px>=bx2-4 && px<=bx2+extRight && py>=by2-6 && py<=by2+bh+6;
+}
+function onPreviewDown(e){
+  if(!sourceLoaded) return;
+  const p=getPoint(e);
+  if(hitTestLogo(p.x,p.y)){
+    dragMode='logo';
+    dragStart={clientX:p.clientX, clientY:p.clientY, startX:logoPosX, startY:logoPosY};
+  } else if(hitTestBadge(p.x,p.y)){
+    dragMode='badge';
+    dragStart={clientX:p.clientX, clientY:p.clientY, startX:badgePosXPct, startY:badgePosYPct};
+  } else {
+    dragMode='media';
+    dragStart={clientX:p.clientX, clientY:p.clientY, startX:mediaOffsetX, startY:mediaOffsetY};
+  }
+  previewWrapper.classList.add('dragging');
+  e.preventDefault();
+}
+function onPreviewMove(e){
+  if(!dragMode) return;
+  const rect=previewWrapper.getBoundingClientRect();
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  const scX=canvas.width/rect.width, scY=canvas.height/rect.height;
+  const dxpix=(clientX-dragStart.clientX)*scX;
+  const dypix=(clientY-dragStart.clientY)*scY;
+  const size=canvas.width;
 
-['logo-size','logo-x','logo-y'].forEach(id=>{
-  const s=document.getElementById(id),v=document.getElementById(id+'-val');
-  s.addEventListener('input',()=>{
-    v.textContent=s.value+'%';
-    if(id==='logo-size')logoSizePct=s.value/100;
-    else if(id==='logo-x')logoPosX=s.value/100;
-    else logoPosY=s.value/100;
+  if(dragMode==='media'){
+    mediaOffsetX=dragStart.startX+dxpix;
+    mediaOffsetY=dragStart.startY+dypix;
+  } else if(dragMode==='logo'){
+    let nx=dragStart.startX+dxpix/size, ny=dragStart.startY+dypix/size;
+    const maxX=1-logoSizePct, maxY=1-logoSizePct*(logoImage.height/logoImage.width);
+    nx=Math.max(0,Math.min(nx,maxX)); ny=Math.max(0,Math.min(ny,maxY));
+    logoPosX=nx; logoPosY=ny;
+    logoXSlider.value=Math.round(nx*100); logoXVal.textContent=Math.round(nx*100)+'%';
+    logoYSlider.value=Math.round(ny*100); logoYVal.textContent=Math.round(ny*100)+'%';
+  } else if(dragMode==='badge'){
+    let nx=dragStart.startX+dxpix/size, ny=dragStart.startY+dypix/size;
+    const maxX=badgeMaxX(), maxY=badgeMaxY();
+    nx=Math.max(0,Math.min(nx,maxX)); ny=Math.max(0,Math.min(ny,maxY));
+    badgePosXPct=nx; badgePosYPct=ny;
+    badgeXSlider.value=Math.round(nx*100); badgeXVal.textContent=Math.round(nx*100)+'%';
+    badgeYSlider.value=Math.round(ny*100); badgeYVal.textContent=Math.round(ny*100)+'%';
+  }
+  renderPreview();
+  e.preventDefault();
+}
+function onPreviewUp(){ dragMode=null; previewWrapper.classList.remove('dragging'); }
+
+previewWrapper.addEventListener('mousedown', onPreviewDown);
+window.addEventListener('mousemove', onPreviewMove);
+window.addEventListener('mouseup', onPreviewUp);
+previewWrapper.addEventListener('touchstart', onPreviewDown, {passive:false});
+window.addEventListener('touchmove', onPreviewMove, {passive:false});
+window.addEventListener('touchend', onPreviewUp);
+
+// ── 로고 슬라이더 ──
+logoSizeSlider.addEventListener('input',()=>{
+  logoSizePct=logoSizeSlider.value/100;
+  document.getElementById('logo-size-val').textContent=logoSizeSlider.value+'%';
+  updateLogoBounds();
+  if(sourceLoaded)renderPreview();
+});
+logoXSlider.addEventListener('input',()=>{logoPosX=logoXSlider.value/100;logoXVal.textContent=logoXSlider.value+'%';if(sourceLoaded)renderPreview();});
+logoYSlider.addEventListener('input',()=>{logoPosY=logoYSlider.value/100;logoYVal.textContent=logoYSlider.value+'%';if(sourceLoaded)renderPreview();});
+document.querySelectorAll('.corner-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const c=btn.dataset.corner;
+    const maxX=parseFloat(logoXSlider.max), maxY=parseFloat(logoYSlider.max);
+    const x=(c==='tl'||c==='bl')?0:maxX, y=(c==='tl'||c==='tr')?0:maxY;
+    logoXSlider.value=x; logoYSlider.value=y;
+    logoPosX=x/100; logoPosY=y/100;
+    logoXVal.textContent=x+'%'; logoYVal.textContent=y+'%';
     if(sourceLoaded)renderPreview();
   });
 });
 document.getElementById('reset-logo').addEventListener('click',()=>{
-  logoSizePct=0.28;logoPosX=0.035;logoPosY=0.025;
-  document.getElementById('logo-size').value=28;document.getElementById('logo-size-val').textContent='28%';
-  document.getElementById('logo-x').value=3;document.getElementById('logo-x-val').textContent='3%';
-  document.getElementById('logo-y').value=2;document.getElementById('logo-y-val').textContent='2%';
+  logoSizePct=0.28;
+  logoSizeSlider.value=28;document.getElementById('logo-size-val').textContent='28%';
+  updateLogoBounds();
+  logoPosX=0.035;logoPosY=0.025;
+  logoXSlider.value=3;logoXVal.textContent='3%';
+  logoYSlider.value=2;logoYVal.textContent='2%';
   if(sourceLoaded)renderPreview();
 });
+
+// ── 배지 슬라이더 ──
+badgeScaleSlider.addEventListener('input',()=>{
+  badgeScale=badgeScaleSlider.value/100;
+  badgeScaleVal.textContent=badgeScaleSlider.value+'%';
+  updateBadgeBounds();
+  if(sourceLoaded)renderPreview();
+});
+badgeXSlider.addEventListener('input',()=>{badgePosXPct=badgeXSlider.value/100;badgeXVal.textContent=badgeXSlider.value+'%';if(sourceLoaded)renderPreview();});
+badgeYSlider.addEventListener('input',()=>{badgePosYPct=badgeYSlider.value/100;badgeYVal.textContent=badgeYSlider.value+'%';if(sourceLoaded)renderPreview();});
+document.getElementById('reset-badge').addEventListener('click',()=>{
+  badgeScale=1; badgeScaleSlider.value=100; badgeScaleVal.textContent='100%';
+  updateBadgeBounds();
+  badgePosXPct=0.035; badgePosYPct=0.80;
+  badgeXSlider.value=3; badgeXVal.textContent='3%';
+  badgeYSlider.value=80; badgeYVal.textContent='80%';
+  if(sourceLoaded)renderPreview();
+});
+
 ['name','age','height_cm','weight','cup'].forEach(id=>{document.getElementById(id).addEventListener('input',()=>{if(sourceLoaded)renderPreview();});});
 
 document.getElementById('logo-input').addEventListener('change',async(e)=>{
@@ -315,12 +484,14 @@ document.getElementById('logo-input').addEventListener('change',async(e)=>{
   logoImage=new Image();logoImage.src=URL.createObjectURL(f);
   await new Promise(r=>logoImage.onload=r);
   document.getElementById('logo-controls').classList.add('visible');
+  updateLogoBounds();
   if(sourceLoaded)renderPreview();
 });
 
 document.getElementById('video-input').addEventListener('change',async(e)=>{
   const file=e.target.files[0];if(!file)return;
   document.getElementById('err-box').style.display='none';
+  gifPreviewWrap.style.display='none';
   const url=URL.createObjectURL(file);
   try{
     if(file.type.startsWith('video/')){
@@ -341,6 +512,7 @@ document.getElementById('video-input').addEventListener('change',async(e)=>{
     mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';
     overlayInfo.classList.add('hidden');
     document.getElementById('media-controls').style.display='block';
+    document.getElementById('badge-controls').style.display='block';
     document.getElementById('drag-hint').classList.add('visible');
     genBtn.disabled=false;downloadBtn.disabled=true;generatedBlob=null;resultInfo.style.display='none';
     renderPreview();
@@ -358,20 +530,30 @@ function drawFrame(target,size){
   const bx=(size-drawSz)/2+mediaOffsetX,by=(size-drawSz)/2+mediaOffsetY;
   cx.fillStyle='#000';cx.fillRect(0,0,size,size);
   cx.drawImage(src,(sw-crop)/2,(sh-crop)/2,crop,crop,bx,by,drawSz,drawSz);
-  if(logoImage&&logoImage.complete){const lw=size*logoSizePct,lh=logoImage.height*(lw/logoImage.width);cx.drawImage(logoImage,size*logoPosX,size*logoPosY,lw,lh);}
+
+  if(logoImage&&logoImage.complete){
+    const lw=size*logoSizePct,lh=logoImage.height*(lw/logoImage.width);
+    cx.drawImage(logoImage,size*logoPosX,size*logoPosY,lw,lh);
+  }
+
+  // ── 이름 배지 (위치/크기 조절 가능) ──
   const name=document.getElementById('name').value||'';
-  const bw=size*0.30,bh=size*0.115,bx2=size*0.035,by2=size-bh-size*0.085,br=size*0.018;
+  const bw=size*0.30*badgeScale, bh=size*0.115*badgeScale;
+  const bx2=size*badgePosXPct, by2=size*badgePosYPct, br=size*0.018*badgeScale;
   cx.save();cx.globalAlpha=0.93;rr(cx,bx2,by2,bw,bh,br);cx.fillStyle='#ff4f8b';cx.fill();cx.restore();
   cx.save();cx.strokeStyle='rgba(255,255,255,0.5)';cx.lineWidth=size*0.003;rr(cx,bx2,by2,bw,bh,br);cx.stroke();cx.restore();
-  cx.fillStyle='#fff';cx.font='900 '+Math.floor(size*0.068)+'px "Malgun Gothic",sans-serif';
+  cx.fillStyle='#fff';cx.font='900 '+Math.floor(size*0.068*badgeScale)+'px "Malgun Gothic",sans-serif';
   cx.textAlign='center';cx.textBaseline='middle';cx.shadowColor='rgba(0,0,0,0.4)';cx.shadowBlur=size*0.01;
   cx.fillText(name,bx2+bw/2,by2+bh/2);cx.shadowBlur=0;
+
   const age=document.getElementById('age').value||'',ht=document.getElementById('height_cm').value||'',wt=document.getElementById('weight').value||'',cup=document.getElementById('cup').value||'';
-  const sx=bx2+bw+size*0.022,sy1=by2+bh*0.18,sy2=sy1+size*0.062;
-  cx.font='800 '+Math.floor(size*0.052)+'px "Malgun Gothic",sans-serif';
+  const sx=bx2+bw+size*0.022*badgeScale, sy1=by2+bh*0.18, sy2=sy1+size*0.062*badgeScale;
+  cx.font='800 '+Math.floor(size*0.052*badgeScale)+'px "Malgun Gothic",sans-serif';
   cx.textAlign='left';cx.textBaseline='top';cx.shadowColor='rgba(0,0,0,0.85)';cx.shadowBlur=size*0.014;cx.shadowOffsetX=size*0.003;cx.shadowOffsetY=size*0.003;
   cx.fillStyle='#ffe066';cx.fillText(age+'  '+ht,sx,sy1);cx.fillText(wt+'  '+cup,sx,sy2);
   cx.shadowBlur=0;cx.shadowOffsetX=0;cx.shadowOffsetY=0;
+
+  // ── 100% 실물인증 (고정) ──
   const ctxt='100% 실물인증',cfs=Math.floor(size*0.042);
   cx.font='900 '+cfs+'px "Malgun Gothic",sans-serif';cx.textAlign='right';cx.textBaseline='bottom';
   const cx2=size-size*0.035,cy2=size-size*0.038,cm=cx.measureText(ctxt),cw=cm.width+size*0.04,ch=cfs*1.55;
@@ -397,7 +579,6 @@ async function extractFramesInRange(count,size){
   return frames;
 }
 
-// ── 실제 gif.js 라이브러리로 인코딩 ──
 function encodeGif(frames,size,quality,delay,onProgress){
   return new Promise((resolve,reject)=>{
     let settled=false;
@@ -408,22 +589,17 @@ function encodeGif(frames,size,quality,delay,onProgress){
       const gif=new GIF({workers:3,quality,width:size,height:size,workerScript:getWorkerScriptUrl(),dither:'FloydSteinberg'});
       frames.forEach(f=>gif.addFrame(f,{delay,copy:false}));
       gif.on('progress',p=>{if(onProgress)onProgress(p);});
-      gif.on('finished',blob=>{
-        if(!settled){settled=true;clearTimeout(timeoutId);resolve(blob);}
-      });
-      gif.on('abort',()=>{
-        if(!settled){settled=true;clearTimeout(timeoutId);reject(new Error('인코딩 취소됨'));}
-      });
+      gif.on('finished',blob=>{ if(!settled){settled=true;clearTimeout(timeoutId);resolve(blob);} });
+      gif.on('abort',()=>{ if(!settled){settled=true;clearTimeout(timeoutId);reject(new Error('인코딩 취소됨'));} });
       gif.render();
-    }catch(err){
-      if(!settled){settled=true;clearTimeout(timeoutId);reject(err);}
-    }
+    }catch(err){ if(!settled){settled=true;clearTimeout(timeoutId);reject(err);} }
   });
 }
 
 genBtn.addEventListener('click',async()=>{
   if(!sourceLoaded)return;
   genBtn.disabled=true;downloadBtn.disabled=true;resultInfo.style.display='none';
+  gifPreviewWrap.style.display='none';
   document.getElementById('err-box').style.display='none';
   progressEl.style.display='block';progressFill.style.width='0%';
   try{
@@ -470,6 +646,11 @@ genBtn.addEventListener('click',async()=>{
     document.getElementById('iterations').textContent=iterCount+' 회';
     resultInfo.style.display='block';downloadBtn.disabled=false;
     progressFill.style.width='100%';progressText.textContent='✅ 완료! ('+mb+' MB)';
+
+    // ── GIF 미리보기 재생 ──
+    const previewUrl=URL.createObjectURL(finalBlob);
+    gifPreviewImg.src=previewUrl;
+    gifPreviewWrap.style.display='block';
   }catch(err){
     progressText.textContent='❌ 오류 발생';
     showError(err.message || String(err));
