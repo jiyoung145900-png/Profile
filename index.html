@@ -551,17 +551,26 @@ async function extractFramesInRange(count,size){
 function encodeGif(frames,size,quality,delay,onProgress){
   return new Promise((resolve,reject)=>{
     let settled=false;
-    const timeoutId=setTimeout(()=>{
-      if(!settled){settled=true;reject(new Error('인코딩 시간 초과 (워커 로드 실패 가능성). 새로고침 후 다시 시도해주세요.'));}
-    },30000);
+    // ★ [수정] 고정 30초 타임아웃 → 진행상황(progress) 기반 워치독으로 변경
+    //   이유: 864px 고화질 + 디더링은 원래 느려서, 정상 작동 중에도 30초를 넘길 수 있었음.
+    //   진행이 계속되는 한(progress 이벤트가 계속 들어오는 한) 타이머를 계속 늦춰주고,
+    //   정말로 25초 동안 아무 진행도 없을 때만 "멈췄다"고 판단해서 에러 처리함.
+    let watchdog;
+    const armWatchdog=()=>{
+      clearTimeout(watchdog);
+      watchdog=setTimeout(()=>{
+        if(!settled){settled=true;reject(new Error('인코딩이 25초 넘게 진행되지 않고 멈췄습니다. 새로고침 후 다시 시도해주세요.'));}
+      },25000);
+    };
+    armWatchdog();
     try{
       const gif=new GIF({workers:3,quality,width:size,height:size,workerScript:getWorkerScriptUrl(),dither:'FloydSteinberg'});
       frames.forEach(f=>gif.addFrame(f,{delay,copy:false}));
-      gif.on('progress',p=>{if(onProgress)onProgress(p);});
-      gif.on('finished',blob=>{ if(!settled){settled=true;clearTimeout(timeoutId);resolve(blob);} });
-      gif.on('abort',()=>{ if(!settled){settled=true;clearTimeout(timeoutId);reject(new Error('인코딩 취소됨'));} });
+      gif.on('progress',p=>{ armWatchdog(); if(onProgress)onProgress(p); });
+      gif.on('finished',blob=>{ if(!settled){settled=true;clearTimeout(watchdog);resolve(blob);} });
+      gif.on('abort',()=>{ if(!settled){settled=true;clearTimeout(watchdog);reject(new Error('인코딩 취소됨'));} });
       gif.render();
-    }catch(err){ if(!settled){settled=true;clearTimeout(timeoutId);reject(err);} }
+    }catch(err){ if(!settled){settled=true;clearTimeout(watchdog);reject(err);} }
   });
 }
 
