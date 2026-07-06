@@ -24,8 +24,6 @@
   button.primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffb347, #ff8c42); color: #000; border: none; border-radius: 8px; font-size: 15px; font-weight: 900; cursor: pointer; margin-top: 8px; }
   button.primary:disabled { background: #333; color: #666; cursor: not-allowed; }
   button.primary:not(:disabled):hover { opacity: 0.9; }
-  button.secondary { width: 100%; padding: 11px; background: #1a1a1a; color: #ffb347; border: 1px solid #ffb347; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-  button.secondary:hover { background: rgba(255,179,71,0.1); }
   .controls-box { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
   .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .slider-row:last-child { margin-bottom: 0; }
@@ -78,20 +76,25 @@
   .gif-preview-wrap { display: none; margin-bottom: 12px; }
   .gif-preview-wrap img { width: 100%; border-radius: 8px; border: 1px solid #2a2a2a; display: block; }
   .gif-preview-label { font-size: 11px; color: #ffb347; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
+  .divider { border-top: 1px dashed #2a2a2a; margin: 16px 0; }
+  .slide-row { display: flex; align-items: center; gap: 8px; background: #151515; border: 1px solid #262626; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; }
+  .slide-row:last-child { margin-bottom: 0; }
+  .slide-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
+  .slide-remove { flex-shrink: 0; padding: 4px 8px; font-size: 11px; }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
     <h1>💎 프로필 GIF 생성기 <span class="badge">20MB 밀착 · 최고화질</span></h1>
-    <p class="sub">MP4 업로드 → 구간 선택 → 20MB 밀착 GIF 생성</p>
+    <p class="sub">영상 또는 여러 장의 사진 → 구간/길이 선택 → 20MB 밀착 GIF 생성</p>
   </header>
   <div class="grid">
     <section>
       <div class="field">
-        <label>1️⃣ 원본 영상 / 사진</label>
+        <label>1️⃣ 원본 영상 / 사진 1장</label>
         <input type="file" accept="video/*,image/*" id="video-input">
-        <p class="hint">MP4 / MOV / WebM</p>
+        <p class="hint">MP4 / MOV / WebM 또는 사진 1장</p>
       </div>
 
       <div class="trim-box" id="trim-box">
@@ -111,7 +114,24 @@
         <p class="hint-warn" id="length-warning">⏱️ 영상이 깁니다. 처리 시간이 오래 걸릴 수 있어요 — 구간을 15초 이내로 선택하는 걸 추천해요.</p>
       </div>
 
-      <div class="controls-box" id="media-controls" style="display:none; margin-top:14px;">
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>📷 여러 장 사진으로 GIF 만들기 (선택)</label>
+        <input type="file" accept="image/*" id="slideshow-input" multiple>
+        <p class="hint">여러 장 선택 시 위 영상/사진 대신 이 사진들로 만들어져요 · 사진당 길이 직접 조절</p>
+      </div>
+      <div class="controls-box" id="slideshow-box" style="display:none;">
+        <label style="margin-bottom:8px;">🖼️ 사진 목록 (<span id="slideshow-count">0</span>장) <button class="reset-btn" id="clear-slideshow">전체삭제</button></label>
+        <div id="slideshow-list" style="max-height:260px; overflow-y:auto;"></div>
+        <div class="trim-duration" id="slideshow-total-disp" style="margin-top:8px;">총 길이: 0.0초</div>
+        <p class="hint-warn" id="slideshow-warning">⏱️ 전체 길이가 깁니다. 처리 시간이 오래 걸릴 수 있어요 — 사진당 길이를 줄이는 걸 추천해요.</p>
+        <p class="hint" style="margin-top:6px;">🖱️ 썸네일을 클릭하면 오른쪽 프리뷰에서 그 사진을 볼 수 있어요</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="controls-box" id="media-controls" style="display:none;">
         <label style="margin-bottom:8px;">🎞️ 영상/사진 크기 <button class="reset-btn" id="reset-media">초기화</button></label>
         <div class="slider-row">
           <span class="slider-label">확대</span>
@@ -155,10 +175,10 @@
     </section>
 
     <section>
-      <p class="drag-hint" id="drag-hint">🖱️ 로고는 직접 드래그, 빈 곳 드래그는 영상 위치 이동</p>
+      <p class="drag-hint" id="drag-hint">🖱️ 로고는 직접 드래그, 빈 곳 드래그는 영상/사진 위치 이동</p>
       <div class="preview-wrapper" id="preview-wrapper">
         <canvas id="canvas" width="720" height="720"></canvas>
-        <div class="overlay" id="overlay-info">👈 영상을 업로드하세요</div>
+        <div class="overlay" id="overlay-info">👈 영상 또는 사진들을 업로드하세요</div>
       </div>
       <div class="progress" id="progress" style="display:none;">
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -190,15 +210,10 @@ const FIRST_TARGET = 19.7*1024*1024, GIF_OVERHEAD = 200*1024, MAX_TOTAL_ITER = 3
 const PROBE_SIZE = 400, PROBE_FRAMES = 20, PROBE_QUALITY = 15;
 
 // ══════════════════════════════════════════════════════════════════
-// ★ [수정] 워커 스크립트: CDN importScripts 방식 → 실제 gif.worker.js
-//   원본 소스(GIFEncoder.js + LZWEncoder.js + TypedNeuQuant.js, gif.js
-//   공식 저장소 0.2.0 버전, 디더링/글로벌팔레트 포함 전체 기능)를
-//   문자열로 통째로 내장해서 Blob으로 생성.
-//   → 네트워크 요청 자체가 없으므로 CDN 장애/CORS/방화벽과 완전히 무관하게
-//     항상 100% 로드됨. (메인 gif.js는 기존처럼 <script> 태그로 그대로 로드)
+// 워커 스크립트: 실제 gif.worker.js 원본 소스를 문자열로 통째로 내장
+// (네트워크 요청 없이 Blob으로 생성 → CDN/CORS 문제와 무관하게 항상 로드됨)
 // ══════════════════════════════════════════════════════════════════
 const GIF_WORKER_SOURCE = `
-// ── NeuQuant (TypedNeuQuant.js) ── 색상 양자화(팔레트 256색 생성) 알고리즘
 function NeuQuant(pixels, samplefac) {
   var ncycles = 100, netsize = 256, maxnetpos = netsize - 1;
   var netbiasshift = 4, intbiasshift = 16, intbias = (1 << intbiasshift);
@@ -212,65 +227,36 @@ function NeuQuant(pixels, samplefac) {
   var alpharadbshift = (alphabiasshift + radbiasshift), alpharadbias = (1 << alpharadbshift);
   var prime1 = 499, prime2 = 491, prime3 = 487, prime4 = 503;
   var minpicturebytes = (3 * prime4);
-
   var network, netindex, bias, freq, radpower;
-
   function init() {
-    network = [];
-    netindex = new Int32Array(256);
-    bias = new Int32Array(netsize);
-    freq = new Int32Array(netsize);
-    radpower = new Int32Array(netsize >> 3);
+    network = []; netindex = new Int32Array(256); bias = new Int32Array(netsize);
+    freq = new Int32Array(netsize); radpower = new Int32Array(netsize >> 3);
     var i, v;
     for (i = 0; i < netsize; i++) {
       v = (i << (netbiasshift + 8)) / netsize;
       network[i] = new Float64Array([v, v, v, 0]);
-      freq[i] = intbias / netsize;
-      bias[i] = 0;
+      freq[i] = intbias / netsize; bias[i] = 0;
     }
   }
-
   function unbiasnet() {
-    for (var i = 0; i < netsize; i++) {
-      network[i][0] >>= netbiasshift;
-      network[i][1] >>= netbiasshift;
-      network[i][2] >>= netbiasshift;
-      network[i][3] = i;
-    }
+    for (var i = 0; i < netsize; i++) { network[i][0] >>= netbiasshift; network[i][1] >>= netbiasshift; network[i][2] >>= netbiasshift; network[i][3] = i; }
   }
-
   function altersingle(alpha, i, b, g, r) {
     network[i][0] -= (alpha * (network[i][0] - b)) / initalpha;
     network[i][1] -= (alpha * (network[i][1] - g)) / initalpha;
     network[i][2] -= (alpha * (network[i][2] - r)) / initalpha;
   }
-
   function alterneigh(radius, i, b, g, r) {
-    var lo = Math.abs(i - radius);
-    var hi = Math.min(i + radius, netsize);
+    var lo = Math.abs(i - radius); var hi = Math.min(i + radius, netsize);
     var j = i + 1, k = i - 1, m = 1, p, a;
     while ((j < hi) || (k > lo)) {
       a = radpower[m++];
-      if (j < hi) {
-        p = network[j++];
-        p[0] -= (a * (p[0] - b)) / alpharadbias;
-        p[1] -= (a * (p[1] - g)) / alpharadbias;
-        p[2] -= (a * (p[2] - r)) / alpharadbias;
-      }
-      if (k > lo) {
-        p = network[k--];
-        p[0] -= (a * (p[0] - b)) / alpharadbias;
-        p[1] -= (a * (p[1] - g)) / alpharadbias;
-        p[2] -= (a * (p[2] - r)) / alpharadbias;
-      }
+      if (j < hi) { p = network[j++]; p[0] -= (a * (p[0] - b)) / alpharadbias; p[1] -= (a * (p[1] - g)) / alpharadbias; p[2] -= (a * (p[2] - r)) / alpharadbias; }
+      if (k > lo) { p = network[k--]; p[0] -= (a * (p[0] - b)) / alpharadbias; p[1] -= (a * (p[1] - g)) / alpharadbias; p[2] -= (a * (p[2] - r)) / alpharadbias; }
     }
   }
-
   function contest(b, g, r) {
-    var bestd = ~(1 << 31);
-    var bestbiasd = bestd;
-    var bestpos = -1;
-    var bestbiaspos = bestpos;
+    var bestd = ~(1 << 31); var bestbiasd = bestd; var bestpos = -1; var bestbiaspos = bestpos;
     var i, n, dist, biasdist, betafreq;
     for (i = 0; i < netsize; i++) {
       n = network[i];
@@ -278,93 +264,55 @@ function NeuQuant(pixels, samplefac) {
       if (dist < bestd) { bestd = dist; bestpos = i; }
       biasdist = dist - ((bias[i]) >> (intbiasshift - netbiasshift));
       if (biasdist < bestbiasd) { bestbiasd = biasdist; bestbiaspos = i; }
-      betafreq = (freq[i] >> betashift);
-      freq[i] -= betafreq;
-      bias[i] += (betafreq << gammashift);
+      betafreq = (freq[i] >> betashift); freq[i] -= betafreq; bias[i] += (betafreq << gammashift);
     }
-    freq[bestpos] += beta;
-    bias[bestpos] -= betagamma;
-    return bestbiaspos;
+    freq[bestpos] += beta; bias[bestpos] -= betagamma; return bestbiaspos;
   }
-
   function inxbuild() {
     var i, j, p, q, smallpos, smallval, previouscol = 0, startpos = 0;
     for (i = 0; i < netsize; i++) {
-      p = network[i];
-      smallpos = i;
-      smallval = p[1];
-      for (j = i + 1; j < netsize; j++) {
-        q = network[j];
-        if (q[1] < smallval) { smallpos = j; smallval = q[1]; }
-      }
+      p = network[i]; smallpos = i; smallval = p[1];
+      for (j = i + 1; j < netsize; j++) { q = network[j]; if (q[1] < smallval) { smallpos = j; smallval = q[1]; } }
       q = network[smallpos];
-      if (i != smallpos) {
-        j = q[0]; q[0] = p[0]; p[0] = j;
-        j = q[1]; q[1] = p[1]; p[1] = j;
-        j = q[2]; q[2] = p[2]; p[2] = j;
-        j = q[3]; q[3] = p[3]; p[3] = j;
-      }
+      if (i != smallpos) { j = q[0]; q[0] = p[0]; p[0] = j; j = q[1]; q[1] = p[1]; p[1] = j; j = q[2]; q[2] = p[2]; p[2] = j; j = q[3]; q[3] = p[3]; p[3] = j; }
       if (smallval != previouscol) {
         netindex[previouscol] = (startpos + i) >> 1;
         for (j = previouscol + 1; j < smallval; j++) netindex[j] = i;
-        previouscol = smallval;
-        startpos = i;
+        previouscol = smallval; startpos = i;
       }
     }
     netindex[previouscol] = (startpos + maxnetpos) >> 1;
     for (j = previouscol + 1; j < 256; j++) netindex[j] = maxnetpos;
   }
-
   function inxsearch(b, g, r) {
-    var a, p, dist;
-    var bestd = 1000, best = -1;
+    var a, p, dist; var bestd = 1000, best = -1;
     var i = netindex[g], j = i - 1;
     while ((i < netsize) || (j >= 0)) {
       if (i < netsize) {
-        p = network[i];
-        dist = p[1] - g;
+        p = network[i]; dist = p[1] - g;
         if (dist >= bestd) i = netsize;
         else {
-          i++;
-          if (dist < 0) dist = -dist;
-          a = p[0] - b; if (a < 0) a = -a;
-          dist += a;
-          if (dist < bestd) {
-            a = p[2] - r; if (a < 0) a = -a;
-            dist += a;
-            if (dist < bestd) { bestd = dist; best = p[3]; }
-          }
+          i++; if (dist < 0) dist = -dist;
+          a = p[0] - b; if (a < 0) a = -a; dist += a;
+          if (dist < bestd) { a = p[2] - r; if (a < 0) a = -a; dist += a; if (dist < bestd) { bestd = dist; best = p[3]; } }
         }
       }
       if (j >= 0) {
-        p = network[j];
-        dist = g - p[1];
+        p = network[j]; dist = g - p[1];
         if (dist >= bestd) j = -1;
         else {
-          j--;
-          if (dist < 0) dist = -dist;
-          a = p[0] - b; if (a < 0) a = -a;
-          dist += a;
-          if (dist < bestd) {
-            a = p[2] - r; if (a < 0) a = -a;
-            dist += a;
-            if (dist < bestd) { bestd = dist; best = p[3]; }
-          }
+          j--; if (dist < 0) dist = -dist;
+          a = p[0] - b; if (a < 0) a = -a; dist += a;
+          if (dist < bestd) { a = p[2] - r; if (a < 0) a = -a; dist += a; if (dist < bestd) { bestd = dist; best = p[3]; } }
         }
       }
     }
     return best;
   }
-
   function learn() {
-    var i;
-    var lengthcount = pixels.length;
-    var alphadec = 30 + ((samplefac - 1) / 3);
-    var samplepixels = lengthcount / (3 * samplefac);
-    var delta = ~~(samplepixels / ncycles);
-    var alpha = initalpha;
-    var radius = initradius;
-    var rad = radius >> radiusbiasshift;
+    var i; var lengthcount = pixels.length; var alphadec = 30 + ((samplefac - 1) / 3);
+    var samplepixels = lengthcount / (3 * samplefac); var delta = ~~(samplepixels / ncycles);
+    var alpha = initalpha; var radius = initradius; var rad = radius >> radiusbiasshift;
     if (rad <= 1) rad = 0;
     for (i = 0; i < rad; i++) radpower[i] = alpha * (((rad * rad - i * i) * radbias) / (rad * rad));
     var step;
@@ -373,241 +321,123 @@ function NeuQuant(pixels, samplefac) {
     else if ((lengthcount % prime2) !== 0) step = 3 * prime2;
     else if ((lengthcount % prime3) !== 0) step = 3 * prime3;
     else step = 3 * prime4;
-    var b, g, r, j;
-    var pix = 0;
-    i = 0;
+    var b, g, r, j; var pix = 0; i = 0;
     while (i < samplepixels) {
-      b = (pixels[pix] & 0xff) << netbiasshift;
-      g = (pixels[pix + 1] & 0xff) << netbiasshift;
-      r = (pixels[pix + 2] & 0xff) << netbiasshift;
-      j = contest(b, g, r);
-      altersingle(alpha, j, b, g, r);
+      b = (pixels[pix] & 0xff) << netbiasshift; g = (pixels[pix + 1] & 0xff) << netbiasshift; r = (pixels[pix + 2] & 0xff) << netbiasshift;
+      j = contest(b, g, r); altersingle(alpha, j, b, g, r);
       if (rad !== 0) alterneigh(rad, j, b, g, r);
-      pix += step;
-      if (pix >= lengthcount) pix -= lengthcount;
-      i++;
+      pix += step; if (pix >= lengthcount) pix -= lengthcount; i++;
       if (delta === 0) delta = 1;
       if (i % delta === 0) {
-        alpha -= alpha / alphadec;
-        radius -= radius / radiusdec;
-        rad = radius >> radiusbiasshift;
+        alpha -= alpha / alphadec; radius -= radius / radiusdec; rad = radius >> radiusbiasshift;
         if (rad <= 1) rad = 0;
         for (j = 0; j < rad; j++) radpower[j] = alpha * (((rad * rad - j * j) * radbias) / (rad * rad));
       }
     }
   }
-
   function buildColormap() { init(); learn(); unbiasnet(); inxbuild(); }
   this.buildColormap = buildColormap;
-
   function getColormap() {
     var map = [], index = [];
     for (var i = 0; i < netsize; i++) index[network[i][3]] = i;
     var k = 0;
-    for (var l = 0; l < netsize; l++) {
-      var j = index[l];
-      map[k++] = (network[j][0]);
-      map[k++] = (network[j][1]);
-      map[k++] = (network[j][2]);
-    }
+    for (var l = 0; l < netsize; l++) { var j = index[l]; map[k++] = (network[j][0]); map[k++] = (network[j][1]); map[k++] = (network[j][2]); }
     return map;
   }
   this.getColormap = getColormap;
   this.lookupRGB = inxsearch;
 }
-
-// ── LZWEncoder.js ── GIF 픽셀 데이터 압축
 function LZWEncoder(width, height, pixels, colorDepth) {
   var EOF = -1, BITS = 12, HSIZE = 5003;
-  var masks = [0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F,
-    0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF,
-    0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF];
-
+  var masks = [0x0000,0x0001,0x0003,0x0007,0x000F,0x001F,0x003F,0x007F,0x00FF,0x01FF,0x03FF,0x07FF,0x0FFF,0x1FFF,0x3FFF,0x7FFF,0xFFFF];
   var initCodeSize = Math.max(2, colorDepth);
-  var accum = new Uint8Array(256);
-  var htab = new Int32Array(HSIZE);
-  var codetab = new Int32Array(HSIZE);
-  var cur_accum, cur_bits = 0;
-  var a_count;
-  var free_ent = 0;
-  var maxcode;
-  var clear_flg = false;
-  var g_init_bits, ClearCode, EOFCode;
-  var n_bits, remaining, curPixel;
-
+  var accum = new Uint8Array(256); var htab = new Int32Array(HSIZE); var codetab = new Int32Array(HSIZE);
+  var cur_accum, cur_bits = 0; var a_count; var free_ent = 0; var maxcode; var clear_flg = false;
+  var g_init_bits, ClearCode, EOFCode; var n_bits, remaining, curPixel;
   function char_out(c, outs) { accum[a_count++] = c; if (a_count >= 254) flush_char(outs); }
   function cl_block(outs) { cl_hash(HSIZE); free_ent = ClearCode + 2; clear_flg = true; output(ClearCode, outs); }
   function cl_hash(hsize) { for (var i = 0; i < hsize; ++i) htab[i] = -1; }
-
   function compress(init_bits, outs) {
     var fcode, c, i, ent, disp, hsize_reg, hshift;
-    g_init_bits = init_bits;
-    clear_flg = false;
-    n_bits = g_init_bits;
-    maxcode = MAXCODE(n_bits);
-    ClearCode = 1 << (init_bits - 1);
-    EOFCode = ClearCode + 1;
-    free_ent = ClearCode + 2;
-    a_count = 0;
-    ent = nextPixel();
-    hshift = 0;
+    g_init_bits = init_bits; clear_flg = false; n_bits = g_init_bits; maxcode = MAXCODE(n_bits);
+    ClearCode = 1 << (init_bits - 1); EOFCode = ClearCode + 1; free_ent = ClearCode + 2; a_count = 0;
+    ent = nextPixel(); hshift = 0;
     for (fcode = HSIZE; fcode < 65536; fcode *= 2) ++hshift;
-    hshift = 8 - hshift;
-    hsize_reg = HSIZE;
-    cl_hash(hsize_reg);
-    output(ClearCode, outs);
+    hshift = 8 - hshift; hsize_reg = HSIZE; cl_hash(hsize_reg); output(ClearCode, outs);
     outer_loop: while ((c = nextPixel()) != EOF) {
-      fcode = (c << BITS) + ent;
-      i = (c << hshift) ^ ent;
+      fcode = (c << BITS) + ent; i = (c << hshift) ^ ent;
       if (htab[i] === fcode) { ent = codetab[i]; continue; }
       else if (htab[i] >= 0) {
-        disp = hsize_reg - i;
-        if (i === 0) disp = 1;
-        do {
-          if ((i -= disp) < 0) i += hsize_reg;
-          if (htab[i] === fcode) { ent = codetab[i]; continue outer_loop; }
-        } while (htab[i] >= 0);
+        disp = hsize_reg - i; if (i === 0) disp = 1;
+        do { if ((i -= disp) < 0) i += hsize_reg; if (htab[i] === fcode) { ent = codetab[i]; continue outer_loop; } } while (htab[i] >= 0);
       }
-      output(ent, outs);
-      ent = c;
-      if (free_ent < 1 << BITS) { codetab[i] = free_ent++; htab[i] = fcode; }
-      else { cl_block(outs); }
+      output(ent, outs); ent = c;
+      if (free_ent < 1 << BITS) { codetab[i] = free_ent++; htab[i] = fcode; } else { cl_block(outs); }
     }
-    output(ent, outs);
-    output(EOFCode, outs);
+    output(ent, outs); output(EOFCode, outs);
   }
-
-  function encode(outs) {
-    outs.writeByte(initCodeSize);
-    remaining = width * height;
-    curPixel = 0;
-    compress(initCodeSize + 1, outs);
-    outs.writeByte(0);
-  }
-
+  function encode(outs) { outs.writeByte(initCodeSize); remaining = width * height; curPixel = 0; compress(initCodeSize + 1, outs); outs.writeByte(0); }
   function flush_char(outs) { if (a_count > 0) { outs.writeByte(a_count); outs.writeBytes(accum, 0, a_count); a_count = 0; } }
   function MAXCODE(n_bits) { return (1 << n_bits) - 1; }
   function nextPixel() { if (remaining === 0) return EOF; --remaining; var pix = pixels[curPixel++]; return pix & 0xff; }
-
   function output(code, outs) {
     cur_accum &= masks[cur_bits];
-    if (cur_bits > 0) cur_accum |= (code << cur_bits);
-    else cur_accum = code;
+    if (cur_bits > 0) cur_accum |= (code << cur_bits); else cur_accum = code;
     cur_bits += n_bits;
     while (cur_bits >= 8) { char_out((cur_accum & 0xff), outs); cur_accum >>= 8; cur_bits -= 8; }
     if (free_ent > maxcode || clear_flg) {
       if (clear_flg) { maxcode = MAXCODE(n_bits = g_init_bits); clear_flg = false; }
       else { ++n_bits; if (n_bits == BITS) maxcode = 1 << BITS; else maxcode = MAXCODE(n_bits); }
     }
-    if (code == EOFCode) {
-      while (cur_bits > 0) { char_out((cur_accum & 0xff), outs); cur_accum >>= 8; cur_bits -= 8; }
-      flush_char(outs);
-    }
+    if (code == EOFCode) { while (cur_bits > 0) { char_out((cur_accum & 0xff), outs); cur_accum >>= 8; cur_bits -= 8; } flush_char(outs); }
   }
-
   this.encode = encode;
 }
-
-// ── GIFEncoder.js ── GIF 파일 포맷 작성 (헤더, 팔레트, 디더링, 프레임)
 function ByteArray() { this.page = -1; this.pages = []; this.newPage(); }
-ByteArray.pageSize = 4096;
-ByteArray.charMap = {};
+ByteArray.pageSize = 4096; ByteArray.charMap = {};
 for (var __bi = 0; __bi < 256; __bi++) ByteArray.charMap[__bi] = String.fromCharCode(__bi);
-
 ByteArray.prototype.newPage = function() { this.pages[++this.page] = new Uint8Array(ByteArray.pageSize); this.cursor = 0; };
-ByteArray.prototype.getData = function() {
-  var rv = '';
-  for (var p = 0; p < this.pages.length; p++)
-    for (var i = 0; i < ByteArray.pageSize; i++) rv += ByteArray.charMap[this.pages[p][i]];
-  return rv;
-};
+ByteArray.prototype.getData = function() { var rv = ''; for (var p = 0; p < this.pages.length; p++) for (var i = 0; i < ByteArray.pageSize; i++) rv += ByteArray.charMap[this.pages[p][i]]; return rv; };
 ByteArray.prototype.writeByte = function(val) { if (this.cursor >= ByteArray.pageSize) this.newPage(); this.pages[this.page][this.cursor++] = val; };
 ByteArray.prototype.writeUTFBytes = function(string) { for (var l = string.length, i = 0; i < l; i++) this.writeByte(string.charCodeAt(i)); };
 ByteArray.prototype.writeBytes = function(array, offset, length) { for (var l = length || array.length, i = offset || 0; i < l; i++) this.writeByte(array[i]); };
-
 function GIFEncoder(width, height) {
-  this.width = ~~width;
-  this.height = ~~height;
-  this.transparent = null;
-  this.transIndex = 0;
-  this.repeat = -1;
-  this.delay = 0;
-  this.image = null;
-  this.pixels = null;
-  this.indexedPixels = null;
-  this.colorDepth = null;
-  this.colorTab = null;
-  this.neuQuant = null;
-  this.usedEntry = new Array();
-  this.palSize = 7;
-  this.dispose = -1;
-  this.firstFrame = true;
-  this.sample = 10;
-  this.dither = false;
-  this.globalPalette = false;
-  this.out = new ByteArray();
+  this.width = ~~width; this.height = ~~height; this.transparent = null; this.transIndex = 0; this.repeat = -1;
+  this.delay = 0; this.image = null; this.pixels = null; this.indexedPixels = null; this.colorDepth = null;
+  this.colorTab = null; this.neuQuant = null; this.usedEntry = new Array(); this.palSize = 7; this.dispose = -1;
+  this.firstFrame = true; this.sample = 10; this.dither = false; this.globalPalette = false; this.out = new ByteArray();
 }
-
 GIFEncoder.prototype.setDelay = function(milliseconds) { this.delay = Math.round(milliseconds / 10); };
 GIFEncoder.prototype.setFrameRate = function(fps) { this.delay = Math.round(100 / fps); };
 GIFEncoder.prototype.setDispose = function(disposalCode) { if (disposalCode >= 0) this.dispose = disposalCode; };
 GIFEncoder.prototype.setRepeat = function(repeat) { this.repeat = repeat; };
 GIFEncoder.prototype.setTransparent = function(color) { this.transparent = color; };
-
 GIFEncoder.prototype.addFrame = function(imageData) {
   this.image = imageData;
   this.colorTab = this.globalPalette && this.globalPalette.slice ? this.globalPalette : null;
-  this.getImagePixels();
-  this.analyzePixels();
+  this.getImagePixels(); this.analyzePixels();
   if (this.globalPalette === true) this.globalPalette = this.colorTab;
-  if (this.firstFrame) {
-    this.writeLSD();
-    this.writePalette();
-    if (this.repeat >= 0) this.writeNetscapeExt();
-  }
-  this.writeGraphicCtrlExt();
-  this.writeImageDesc();
+  if (this.firstFrame) { this.writeLSD(); this.writePalette(); if (this.repeat >= 0) this.writeNetscapeExt(); }
+  this.writeGraphicCtrlExt(); this.writeImageDesc();
   if (!this.firstFrame && !this.globalPalette) this.writePalette();
-  this.writePixels();
-  this.firstFrame = false;
+  this.writePixels(); this.firstFrame = false;
 };
-
 GIFEncoder.prototype.finish = function() { this.out.writeByte(0x3b); };
 GIFEncoder.prototype.setQuality = function(quality) { if (quality < 1) quality = 1; this.sample = quality; };
 GIFEncoder.prototype.setDither = function(dither) { if (dither === true) dither = 'FloydSteinberg'; this.dither = dither; };
 GIFEncoder.prototype.setGlobalPalette = function(palette) { this.globalPalette = palette; };
 GIFEncoder.prototype.getGlobalPalette = function() { return (this.globalPalette && this.globalPalette.slice && this.globalPalette.slice(0)) || this.globalPalette; };
 GIFEncoder.prototype.writeHeader = function() { this.out.writeUTFBytes("GIF89a"); };
-
 GIFEncoder.prototype.analyzePixels = function() {
-  if (!this.colorTab) {
-    this.neuQuant = new NeuQuant(this.pixels, this.sample);
-    this.neuQuant.buildColormap();
-    this.colorTab = this.neuQuant.getColormap();
-  }
-  if (this.dither) {
-    this.ditherPixels(this.dither.replace('-serpentine', ''), this.dither.match(/-serpentine/) !== null);
-  } else {
-    this.indexPixels();
-  }
-  this.pixels = null;
-  this.colorDepth = 8;
-  this.palSize = 7;
+  if (!this.colorTab) { this.neuQuant = new NeuQuant(this.pixels, this.sample); this.neuQuant.buildColormap(); this.colorTab = this.neuQuant.getColormap(); }
+  if (this.dither) { this.ditherPixels(this.dither.replace('-serpentine', ''), this.dither.match(/-serpentine/) !== null); } else { this.indexPixels(); }
+  this.pixels = null; this.colorDepth = 8; this.palSize = 7;
   if (this.transparent !== null) this.transIndex = this.findClosest(this.transparent, true);
 };
-
 GIFEncoder.prototype.indexPixels = function() {
-  var nPix = this.pixels.length / 3;
-  this.indexedPixels = new Uint8Array(nPix);
-  var k = 0;
-  for (var j = 0; j < nPix; j++) {
-    var index = this.findClosestRGB(this.pixels[k++] & 0xff, this.pixels[k++] & 0xff, this.pixels[k++] & 0xff);
-    this.usedEntry[index] = true;
-    this.indexedPixels[j] = index;
-  }
+  var nPix = this.pixels.length / 3; this.indexedPixels = new Uint8Array(nPix); var k = 0;
+  for (var j = 0; j < nPix; j++) { var index = this.findClosestRGB(this.pixels[k++] & 0xff, this.pixels[k++] & 0xff, this.pixels[k++] & 0xff); this.usedEntry[index] = true; this.indexedPixels[j] = index; }
 };
-
-// Floyd-Steinberg 등 디더링 (원본: http://jsbin.com/iXofIji/2/edit by PAEz)
 GIFEncoder.prototype.ditherPixels = function(kernel, serpentine) {
   var kernels = {
     FalseFloydSteinberg: [[3/8,1,0],[3/8,0,1],[2/8,1,1]],
@@ -616,28 +446,20 @@ GIFEncoder.prototype.ditherPixels = function(kernel, serpentine) {
     Atkinson: [[1/8,1,0],[1/8,2,0],[1/8,-1,1],[1/8,0,1],[1/8,1,1],[1/8,0,2]]
   };
   if (!kernel || !kernels[kernel]) throw 'Unknown dithering kernel: ' + kernel;
-  var ds = kernels[kernel];
-  var index = 0, height = this.height, width = this.width, data = this.pixels;
-  var direction = serpentine ? -1 : 1;
-  this.indexedPixels = new Uint8Array(this.pixels.length / 3);
+  var ds = kernels[kernel]; var index = 0, height = this.height, width = this.width, data = this.pixels;
+  var direction = serpentine ? -1 : 1; this.indexedPixels = new Uint8Array(this.pixels.length / 3);
   for (var y = 0; y < height; y++) {
     if (serpentine) direction = direction * -1;
     for (var x = (direction == 1 ? 0 : width - 1), xend = (direction == 1 ? width : 0); x !== xend; x += direction) {
-      index = (y * width) + x;
-      var idx = index * 3;
+      index = (y * width) + x; var idx = index * 3;
       var r1 = data[idx], g1 = data[idx+1], b1 = data[idx+2];
-      idx = this.findClosestRGB(r1, g1, b1);
-      this.usedEntry[idx] = true;
-      this.indexedPixels[index] = idx;
-      idx *= 3;
+      idx = this.findClosestRGB(r1, g1, b1); this.usedEntry[idx] = true; this.indexedPixels[index] = idx; idx *= 3;
       var r2 = this.colorTab[idx], g2 = this.colorTab[idx+1], b2 = this.colorTab[idx+2];
       var er = r1 - r2, eg = g1 - g2, eb = b1 - b2;
       for (var i = (direction == 1 ? 0 : ds.length-1), end = (direction == 1 ? ds.length : 0); i !== end; i += direction) {
         var x1 = ds[i][1], y1 = ds[i][2];
         if (x1+x >= 0 && x1+x < width && y1+y >= 0 && y1+y < height) {
-          var d = ds[i][0];
-          idx = index + x1 + (y1 * width);
-          idx *= 3;
+          var d = ds[i][0]; idx = index + x1 + (y1 * width); idx *= 3;
           data[idx]   = Math.max(0, Math.min(255, data[idx]   + er*d));
           data[idx+1] = Math.max(0, Math.min(255, data[idx+1] + eg*d));
           data[idx+2] = Math.max(0, Math.min(255, data[idx+2] + eb*d));
@@ -646,114 +468,57 @@ GIFEncoder.prototype.ditherPixels = function(kernel, serpentine) {
     }
   }
 };
-
-GIFEncoder.prototype.findClosest = function(c, used) {
-  return this.findClosestRGB((c & 0xFF0000) >> 16, (c & 0x00FF00) >> 8, (c & 0x0000FF), used);
-};
+GIFEncoder.prototype.findClosest = function(c, used) { return this.findClosestRGB((c & 0xFF0000) >> 16, (c & 0x00FF00) >> 8, (c & 0x0000FF), used); };
 GIFEncoder.prototype.findClosestRGB = function(r, g, b, used) {
   if (this.colorTab === null) return -1;
   if (this.neuQuant && !used) return this.neuQuant.lookupRGB(r, g, b);
   var minpos = 0, dmin = 256*256*256, len = this.colorTab.length;
   for (var i = 0, index = 0; i < len; index++) {
-    var dr = r - (this.colorTab[i++] & 0xff);
-    var dg = g - (this.colorTab[i++] & 0xff);
-    var db = b - (this.colorTab[i++] & 0xff);
+    var dr = r - (this.colorTab[i++] & 0xff); var dg = g - (this.colorTab[i++] & 0xff); var db = b - (this.colorTab[i++] & 0xff);
     var d = dr*dr + dg*dg + db*db;
     if ((!used || this.usedEntry[index]) && (d < dmin)) { dmin = d; minpos = index; }
   }
   return minpos;
 };
-
 GIFEncoder.prototype.getImagePixels = function() {
-  var w = this.width, h = this.height;
-  this.pixels = new Uint8Array(w * h * 3);
+  var w = this.width, h = this.height; this.pixels = new Uint8Array(w * h * 3);
   var data = this.image, srcPos = 0, count = 0;
-  for (var i = 0; i < h; i++)
-    for (var j = 0; j < w; j++) {
-      this.pixels[count++] = data[srcPos++];
-      this.pixels[count++] = data[srcPos++];
-      this.pixels[count++] = data[srcPos++];
-      srcPos++;
-    }
+  for (var i = 0; i < h; i++) for (var j = 0; j < w; j++) { this.pixels[count++] = data[srcPos++]; this.pixels[count++] = data[srcPos++]; this.pixels[count++] = data[srcPos++]; srcPos++; }
 };
-
 GIFEncoder.prototype.writeGraphicCtrlExt = function() {
   this.out.writeByte(0x21); this.out.writeByte(0xf9); this.out.writeByte(4);
   var transp, disp;
-  if (this.transparent === null) { transp = 0; disp = 0; }
-  else { transp = 1; disp = 2; }
-  if (this.dispose >= 0) disp = this.dispose & 7;
-  disp <<= 2;
-  this.out.writeByte(0 | disp | 0 | transp);
-  this.writeShort(this.delay);
-  this.out.writeByte(this.transIndex);
-  this.out.writeByte(0);
+  if (this.transparent === null) { transp = 0; disp = 0; } else { transp = 1; disp = 2; }
+  if (this.dispose >= 0) disp = this.dispose & 7; disp <<= 2;
+  this.out.writeByte(0 | disp | 0 | transp); this.writeShort(this.delay); this.out.writeByte(this.transIndex); this.out.writeByte(0);
 };
-
 GIFEncoder.prototype.writeImageDesc = function() {
-  this.out.writeByte(0x2c);
-  this.writeShort(0); this.writeShort(0);
-  this.writeShort(this.width); this.writeShort(this.height);
-  if (this.firstFrame || this.globalPalette) this.out.writeByte(0);
-  else this.out.writeByte(0x80 | 0 | 0 | 0 | this.palSize);
+  this.out.writeByte(0x2c); this.writeShort(0); this.writeShort(0); this.writeShort(this.width); this.writeShort(this.height);
+  if (this.firstFrame || this.globalPalette) this.out.writeByte(0); else this.out.writeByte(0x80 | 0 | 0 | 0 | this.palSize);
 };
-
 GIFEncoder.prototype.writeLSD = function() {
   this.writeShort(this.width); this.writeShort(this.height);
-  this.out.writeByte(0x80 | 0x70 | 0x00 | this.palSize);
-  this.out.writeByte(0); this.out.writeByte(0);
+  this.out.writeByte(0x80 | 0x70 | 0x00 | this.palSize); this.out.writeByte(0); this.out.writeByte(0);
 };
-
 GIFEncoder.prototype.writeNetscapeExt = function() {
   this.out.writeByte(0x21); this.out.writeByte(0xff); this.out.writeByte(11);
-  this.out.writeUTFBytes('NETSCAPE2.0');
-  this.out.writeByte(3); this.out.writeByte(1);
-  this.writeShort(this.repeat);
-  this.out.writeByte(0);
+  this.out.writeUTFBytes('NETSCAPE2.0'); this.out.writeByte(3); this.out.writeByte(1); this.writeShort(this.repeat); this.out.writeByte(0);
 };
-
-GIFEncoder.prototype.writePalette = function() {
-  this.out.writeBytes(this.colorTab);
-  var n = (3*256) - this.colorTab.length;
-  for (var i = 0; i < n; i++) this.out.writeByte(0);
-};
-
+GIFEncoder.prototype.writePalette = function() { this.out.writeBytes(this.colorTab); var n = (3*256) - this.colorTab.length; for (var i = 0; i < n; i++) this.out.writeByte(0); };
 GIFEncoder.prototype.writeShort = function(pValue) { this.out.writeByte(pValue & 0xFF); this.out.writeByte((pValue >> 8) & 0xFF); };
 GIFEncoder.prototype.writePixels = function() { var enc = new LZWEncoder(this.width, this.height, this.indexedPixels, this.colorDepth); enc.encode(this.out); };
 GIFEncoder.prototype.stream = function() { return this.out; };
-
-// ── gif.worker.coffee 컴파일 결과 (renderFrame + onmessage) ──
 function renderFrame(frame) {
   var encoder = new GIFEncoder(frame.width, frame.height);
-
-  if (frame.index === 0) encoder.writeHeader();
-  else encoder.firstFrame = false;
-
-  encoder.setTransparent(frame.transparent);
-  encoder.setRepeat(frame.repeat);
-  encoder.setDelay(frame.delay);
-  encoder.setQuality(frame.quality);
-  encoder.setDither(frame.dither);
-  encoder.setGlobalPalette(frame.globalPalette);
-  encoder.addFrame(frame.data);
-  if (frame.last) encoder.finish();
-
+  if (frame.index === 0) encoder.writeHeader(); else encoder.firstFrame = false;
+  encoder.setTransparent(frame.transparent); encoder.setRepeat(frame.repeat); encoder.setDelay(frame.delay);
+  encoder.setQuality(frame.quality); encoder.setDither(frame.dither); encoder.setGlobalPalette(frame.globalPalette);
+  encoder.addFrame(frame.data); if (frame.last) encoder.finish();
   if (frame.globalPalette === true) frame.globalPalette = encoder.getGlobalPalette();
-
-  var stream = encoder.stream();
-  frame.data = stream.pages;
-  frame.cursor = stream.cursor;
-  frame.pageSize = stream.constructor.pageSize;
-
-  if (frame.canTransfer) {
-    var transfer = [];
-    for (var i = 0; i < frame.data.length; i++) transfer.push(frame.data[i].buffer);
-    self.postMessage(frame, transfer);
-  } else {
-    self.postMessage(frame);
-  }
+  var stream = encoder.stream(); frame.data = stream.pages; frame.cursor = stream.cursor; frame.pageSize = stream.constructor.pageSize;
+  if (frame.canTransfer) { var transfer = []; for (var i = 0; i < frame.data.length; i++) transfer.push(frame.data[i].buffer); self.postMessage(frame, transfer); }
+  else { self.postMessage(frame); }
 }
-
 self.onmessage = function(event) { renderFrame(event.data); };
 `;
 
@@ -773,12 +538,14 @@ function showError(msg) {
 let sourceType=null,sourceLoaded=false,logoImage=null,generatedBlob=null;
 let mediaScale=1.0,mediaOffsetX=0,mediaOffsetY=0;
 let logoSizePct=0.28,logoPosX=0.035,logoPosY=0.025;
-const LOGO_X_OVERFLOW=15; // ★ [수정] 로고를 좌우로 더 여유있게 움직일 수 있도록 여백(%) 추가
-// 이름 배지는 위치/크기 고정값 사용 (조절 UI 제거됨)
+const LOGO_X_OVERFLOW=15;
 const badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
 let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
 
-// 통합 드래그 상태 (미디어 / 로고)
+// ── 슬라이드쇼(여러 장 사진) 전용 상태 - 다른 모드와 완전히 분리 ──
+let slideshowPhotos=[]; // {img, thumbUrl, duration(초)}
+let previewSlideIndex=0;
+
 let dragMode=null, dragStart=null;
 
 const videoEl=document.getElementById('hidden-video');
@@ -810,6 +577,9 @@ const logoSizeSlider=document.getElementById('logo-size');
 const lengthWarning=document.getElementById('length-warning');
 const gifPreviewWrap=document.getElementById('gif-preview-wrap');
 const gifPreviewImg=document.getElementById('gif-preview-img');
+const slideshowBox=document.getElementById('slideshow-box');
+const slideshowListEl=document.getElementById('slideshow-list');
+const slideshowWarning=document.getElementById('slideshow-warning');
 
 function updateLogoBounds(){
   if(!logoImage) return;
@@ -818,9 +588,7 @@ function updateLogoBounds(){
   const minXPct = -LOGO_X_OVERFLOW;
   const maxXPct = Math.round((1 - wRatio) * 100) + LOGO_X_OVERFLOW;
   const maxYPct = Math.max(0, Math.round((1 - hRatio) * 100));
-  logoXSlider.min = minXPct;
-  logoXSlider.max = maxXPct;
-  logoYSlider.max = maxYPct;
+  logoXSlider.min = minXPct; logoXSlider.max = maxXPct; logoYSlider.max = maxYPct;
   if(parseFloat(logoXSlider.value) > maxXPct){ logoXSlider.value = maxXPct; logoPosX = maxXPct/100; logoXVal.textContent = maxXPct+'%'; }
   if(parseFloat(logoXSlider.value) < minXPct){ logoXSlider.value = minXPct; logoPosX = minXPct/100; logoXVal.textContent = minXPct+'%'; }
   if(parseFloat(logoYSlider.value) > maxYPct){ logoYSlider.value = maxYPct; logoPosY = maxYPct/100; logoYVal.textContent = maxYPct+'%'; }
@@ -834,8 +602,7 @@ function updateTimeline(){
   document.getElementById('trim-start-disp').textContent=trimStart.toFixed(2);
   document.getElementById('trim-end-disp').textContent=trimEnd.toFixed(2);
   const dur=trimEnd-trimStart;
-  let txt='선택 구간: '+dur.toFixed(1)+'초 ('+Math.floor(dur*TARGET_FPS)+'프레임)';
-  document.getElementById('trim-duration-disp').textContent=txt;
+  document.getElementById('trim-duration-disp').textContent='선택 구간: '+dur.toFixed(1)+'초 ('+Math.floor(dur*TARGET_FPS)+'프레임)';
   lengthWarning.style.display = dur>15 ? 'block' : 'none';
 }
 function tlXtoT(cx){const r=timelineWrap.getBoundingClientRect();return Math.max(0,Math.min(1,(cx-r.left)/r.width))*videoDuration;}
@@ -845,12 +612,7 @@ function seekVideo(t){
   return new Promise((resolve)=>{
     if(Math.abs(videoEl.currentTime - t) < 0.01){ resolve(); return; }
     let done=false;
-    const finish=()=>{
-      if(done)return; done=true;
-      videoEl.removeEventListener('seeked',finish);
-      clearTimeout(timer);
-      resolve();
-    };
+    const finish=()=>{ if(done)return; done=true; videoEl.removeEventListener('seeked',finish); clearTimeout(timer); resolve(); };
     const timer=setTimeout(finish,800);
     videoEl.addEventListener('seeked',finish);
     videoEl.currentTime=t;
@@ -937,7 +699,6 @@ function onPreviewMove(e){
   const dxpix=(clientX-dragStart.clientX)*scX;
   const dypix=(clientY-dragStart.clientY)*scY;
   const size=canvas.width;
-
   if(dragMode==='media'){
     mediaOffsetX=dragStart.startX+dxpix;
     mediaOffsetY=dragStart.startY+dypix;
@@ -1003,10 +764,13 @@ document.getElementById('logo-input').addEventListener('change',async(e)=>{
   if(sourceLoaded)renderPreview();
 });
 
+// ── 1️⃣ 원본 영상 / 사진 1장 (기존 기능 그대로) ──
 document.getElementById('video-input').addEventListener('change',async(e)=>{
   const file=e.target.files[0];if(!file)return;
   document.getElementById('err-box').style.display='none';
   gifPreviewWrap.style.display='none';
+  // 슬라이드쇼 모드에서 넘어올 때 상태 정리 (슬라이드쇼에 영향 없음, 서로 배타적으로만 정리)
+  slideshowPhotos=[]; slideshowBox.style.display='none';
   const url=URL.createObjectURL(file);
   try{
     if(file.type.startsWith('video/')){
@@ -1033,12 +797,120 @@ document.getElementById('video-input').addEventListener('change',async(e)=>{
   }catch(err){overlayInfo.textContent='❌ '+err.message;}
 });
 
-function drawFrame(target,size){
+// ══════════════════════════════════════════════════════════════════
+// ★ [신규] 📷 여러 장 사진 슬라이드쇼 모드
+//   - 기존 video-input / trim / media 로직은 전혀 건드리지 않음
+//   - 오버레이(로고/이름배지)는 공통 drawFrame을 그대로 재사용해서 동일하게 표시
+// ══════════════════════════════════════════════════════════════════
+function renderSlideshowList(){
+  slideshowListEl.innerHTML='';
+  slideshowPhotos.forEach((p,i)=>{
+    const row=document.createElement('div');
+    row.className='slide-row';
+    const img=document.createElement('img');
+    img.className='slide-thumb';
+    img.src=p.thumbUrl;
+    img.style.border = (i===previewSlideIndex) ? '2px solid #ffb347' : '2px solid transparent';
+    img.addEventListener('click',()=>{ previewSlideIndex=i; renderSlideshowList(); renderPreview(); });
+
+    const rangeWrap=document.createElement('div'); rangeWrap.style.flex='1';
+    const range=document.createElement('input');
+    range.type='range'; range.min='2'; range.max='50'; range.step='1'; range.value=Math.round(p.duration*10);
+    const valSpan=document.createElement('span');
+    valSpan.style.cssText='font-size:11px;color:#ffb347;width:34px;text-align:right;flex-shrink:0;';
+    valSpan.textContent=p.duration.toFixed(1)+'s';
+    range.addEventListener('input',()=>{
+      p.duration=parseInt(range.value)/10;
+      valSpan.textContent=p.duration.toFixed(1)+'s';
+      updateSlideshowSummary();
+      if(i===previewSlideIndex) renderPreview();
+    });
+    rangeWrap.appendChild(range);
+
+    const removeBtn=document.createElement('button');
+    removeBtn.className='reset-btn slide-remove'; removeBtn.textContent='✕'; removeBtn.style.float='none';
+    removeBtn.addEventListener('click',()=>{
+      slideshowPhotos.splice(i,1);
+      if(previewSlideIndex>=slideshowPhotos.length) previewSlideIndex=Math.max(0,slideshowPhotos.length-1);
+      renderSlideshowList();
+      updateSlideshowSummary();
+      if(slideshowPhotos.length===0){
+        sourceLoaded=false; genBtn.disabled=true;
+        overlayInfo.classList.remove('hidden');
+        overlayInfo.textContent='👈 영상 또는 사진들을 업로드하세요';
+        slideshowBox.style.display='none';
+      } else { renderPreview(); }
+    });
+
+    row.appendChild(img); row.appendChild(rangeWrap); row.appendChild(valSpan); row.appendChild(removeBtn);
+    slideshowListEl.appendChild(row);
+  });
+  document.getElementById('slideshow-count').textContent = slideshowPhotos.length;
+}
+function updateSlideshowSummary(){
+  const total = slideshowPhotos.reduce((s,p)=>s+p.duration,0);
+  const frames = slideshowPhotos.reduce((s,p)=>s+Math.max(1,Math.round(p.duration*TARGET_FPS)),0);
+  document.getElementById('slideshow-total-disp').textContent = '총 길이: '+total.toFixed(1)+'초 ('+frames+'프레임)';
+  slideshowWarning.style.display = total>15 ? 'block' : 'none';
+}
+
+document.getElementById('slideshow-input').addEventListener('change', async (e)=>{
+  const files=Array.from(e.target.files||[]);
+  if(!files.length) return;
+  document.getElementById('err-box').style.display='none';
+  gifPreviewWrap.style.display='none';
+  for(const f of files){
+    const url=URL.createObjectURL(f);
+    const img=new Image();
+    try{
+      await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error('사진 로드 실패')); img.src=url; });
+      slideshowPhotos.push({img, thumbUrl:url, duration:1.0});
+    }catch(err){ console.warn(err); }
+  }
+  if(!slideshowPhotos.length) return;
+
+  // 영상 모드 상태와 완전히 분리 - 슬라이드쇼로 전환
+  sourceType='slideshow';
+  sourceLoaded=true;
+  previewSlideIndex=0;
+  trimBox.classList.remove('visible');
+  slideshowBox.style.display='block';
+  mediaOffsetX=0; mediaOffsetY=0; mediaScale=1;
+  mediaScaleSlider.value=100; mediaScaleVal.textContent='100%';
+  overlayInfo.classList.add('hidden');
+  document.getElementById('media-controls').style.display='block';
+  document.getElementById('drag-hint').classList.add('visible');
+  genBtn.disabled=false; downloadBtn.disabled=true; generatedBlob=null; resultInfo.style.display='none';
+
+  renderSlideshowList();
+  updateSlideshowSummary();
+  renderPreview();
+  e.target.value='';
+});
+
+document.getElementById('clear-slideshow').addEventListener('click',()=>{
+  slideshowPhotos=[];
+  slideshowBox.style.display='none';
+  if(sourceType==='slideshow'){
+    sourceLoaded=false; genBtn.disabled=true; downloadBtn.disabled=true;
+    overlayInfo.classList.remove('hidden');
+    overlayInfo.textContent='👈 영상 또는 사진들을 업로드하세요';
+    resultInfo.style.display='none'; gifPreviewWrap.style.display='none';
+  }
+});
+
+// ── 공통 드로우 (video / image / slideshow 모두 재사용) ──
+function drawFrame(target,size,overrideImg){
   if(target.width!==size||target.height!==size){target.width=size;target.height=size;}
   const cx=target.getContext('2d');cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';
-  const src=sourceType==='video'?videoEl:imageEl;
-  const sw=sourceType==='video'?videoEl.videoWidth:imageEl.naturalWidth;
-  const sh=sourceType==='video'?videoEl.videoHeight:imageEl.naturalHeight;
+  let src, sw, sh;
+  if(overrideImg){
+    src=overrideImg; sw=overrideImg.naturalWidth; sh=overrideImg.naturalHeight;
+  } else {
+    src=sourceType==='video'?videoEl:imageEl;
+    sw=sourceType==='video'?videoEl.videoWidth:imageEl.naturalWidth;
+    sh=sourceType==='video'?videoEl.videoHeight:imageEl.naturalHeight;
+  }
   if(!sw||!sh)return;
   const crop=Math.min(sw,sh),drawSz=size*mediaScale;
   const bx=(size-drawSz)/2+mediaOffsetX,by=(size-drawSz)/2+mediaOffsetY;
@@ -1075,8 +947,15 @@ function drawFrame(target,size){
   cx.fillText(ctxt,cx2,cy2-(ch-cfs*1.2)/2);cx.restore();
 }
 function rr(cx,x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
-function renderPreview(){drawFrame(canvas,canvas.width);}
+function renderPreview(){
+  if(sourceType==='slideshow' && slideshowPhotos.length){
+    drawFrame(canvas, canvas.width, slideshowPhotos[previewSlideIndex].img);
+  } else {
+    drawFrame(canvas, canvas.width);
+  }
+}
 
+// ── 영상 구간 프레임 추출 (기존 그대로) ──
 async function extractFramesInRange(count,size){
   const frames=[],off=document.createElement('canvas');off.width=size;off.height=size;
   const rangeDur=trimEnd-trimStart;
@@ -1088,6 +967,41 @@ async function extractFramesInRange(count,size){
     snap.getContext('2d').drawImage(off,0,0);frames.push(snap);
   }
   return frames;
+}
+
+// ── ★ [신규] 슬라이드쇼 프레임 추출: 사진별 설정 길이 비율대로 프레임 배분 ──
+function buildSlideshowCounts(totalFrames){
+  const n=slideshowPhotos.length;
+  if(n===0) return [];
+  const totalWeight=slideshowPhotos.reduce((s,p)=>s+p.duration,0)||1;
+  let counts=slideshowPhotos.map(p=>Math.max(1,Math.round(totalFrames*(p.duration/totalWeight))));
+  let diff=totalFrames-counts.reduce((a,b)=>a+b,0);
+  let idx=0;
+  while(diff>0){ counts[idx%n]++; diff--; idx++; }
+  while(diff<0){
+    let maxIdx=counts.indexOf(Math.max(...counts));
+    if(counts[maxIdx]>1){ counts[maxIdx]--; diff++; } else break;
+  }
+  return counts;
+}
+async function extractFramesSlideshow(totalFrameCount,size){
+  const counts=buildSlideshowCounts(totalFrameCount);
+  const frames=[];
+  for(let i=0;i<slideshowPhotos.length;i++){
+    const off=document.createElement('canvas'); off.width=size; off.height=size;
+    drawFrame(off,size,slideshowPhotos[i].img);
+    for(let k=0;k<counts[i];k++){
+      const snap=document.createElement('canvas'); snap.width=size; snap.height=size;
+      snap.getContext('2d').drawImage(off,0,0);
+      frames.push(snap);
+    }
+  }
+  return frames;
+}
+// 소스 타입에 따라 올바른 추출기로 라우팅 (video 경로는 원본 그대로 호출됨)
+function extractFrames(count,size){
+  if(sourceType==='slideshow') return extractFramesSlideshow(count,size);
+  return extractFramesInRange(count,size);
 }
 
 function encodeGif(frames,size,quality,delay,onProgress){
@@ -1121,17 +1035,26 @@ genBtn.addEventListener('click',async()=>{
   try{
     const frameDelay=Math.round(1000/TARGET_FPS);
     let finalBlob,finalFrameCount,finalDuration,iterCount=0;
+
     if(sourceType==='image'){
+      // ── 단일 사진 (기존 그대로) ──
       progressText.textContent='이미지 인코딩 중...';
       const off=document.createElement('canvas');off.width=TARGET_SIZE;off.height=TARGET_SIZE;drawFrame(off,TARGET_SIZE);
       finalBlob=await encodeGif([off],TARGET_SIZE,TARGET_QUALITY,500,p=>{progressFill.style.width=(p*100)+'%';progressText.textContent='인코딩 중... '+Math.round(p*100)+'%';});
       finalFrameCount=1;finalDuration=0;iterCount=1;
-    }else{
-      const rangeDur=trimEnd-trimStart;
-      const maxVF=Math.floor(rangeDur*TARGET_FPS);
+
+    } else {
+      // ── 영상 또는 슬라이드쇼: 동일한 20MB 밀착 반복 로직, extractFrames()로 소스만 분기 ──
+      let maxVF;
+      if(sourceType==='video'){
+        const rangeDur=trimEnd-trimStart;
+        maxVF=Math.floor(rangeDur*TARGET_FPS);
+      } else {
+        maxVF=slideshowPhotos.reduce((s,p)=>s+Math.max(1,Math.round(p.duration*TARGET_FPS)),0);
+      }
       progressText.textContent='📏 화질 측정 중... (프로브)';
       const pc=Math.min(PROBE_FRAMES,maxVF);
-      const pf=await extractFramesInRange(pc,PROBE_SIZE);
+      const pf=await extractFrames(pc,PROBE_SIZE);
       progressFill.style.width='5%';
       const probeBlob=await encodeGif(pf,PROBE_SIZE,PROBE_QUALITY,frameDelay,p=>{progressFill.style.width=(5+p*10)+'%';});
       const bpf=probeBlob.size/pc;
@@ -1144,7 +1067,7 @@ genBtn.addEventListener('click',async()=>{
         const sp=20+it*60/MAX_TOTAL_ITER,ep=20+(it+1)*60/MAX_TOTAL_ITER;
         progressText.textContent='🎬 ['+(it+1)+'회차] 프레임 추출... ('+curFC+'프레임)';
         progressFill.style.width=sp+'%';
-        const fr=await extractFramesInRange(curFC,TARGET_SIZE);
+        const fr=await extractFrames(curFC,TARGET_SIZE);
         curBlob=await encodeGif(fr,TARGET_SIZE,TARGET_QUALITY,frameDelay,p=>{progressFill.style.width=(sp+(ep-sp)*p)+'%';progressText.textContent='🎨 ['+(it+1)+'회차] 인코딩 중... '+Math.round(p*100)+'%';});
         if(curBlob.size>=MIN_ACCEPTABLE&&curBlob.size<=MAX_BYTES)break;
         if(it===MAX_TOTAL_ITER-1)break;
@@ -1152,12 +1075,16 @@ genBtn.addEventListener('click',async()=>{
         if(curBlob.size>MAX_BYTES){const nf=Math.max(10,Math.floor((19.7*1024*1024-GIF_OVERHEAD)/aBPF));curFC=nf>=curFC?Math.max(10,curFC-5):nf;}
         else{const add=Math.max(1,Math.floor((19.8*1024*1024-curBlob.size)/aBPF*0.9));const nf=Math.min(maxVF,curFC+add);if(nf===curFC)break;curFC=nf;}
       }
-      finalBlob=curBlob;finalFrameCount=curFC;finalDuration=trimEnd-trimStart;
+      finalBlob=curBlob;finalFrameCount=curFC;
+      finalDuration = sourceType==='video' ? (trimEnd-trimStart) : (curFC/TARGET_FPS);
     }
+
     generatedBlob=finalBlob;
     const mb=(finalBlob.size/(1024*1024)).toFixed(2);
     document.getElementById('filesize').textContent=mb+' MB / 20 MB';
-    document.getElementById('duration-used').textContent=finalDuration.toFixed(2)+'초 ('+trimStart.toFixed(2)+'s ~ '+trimEnd.toFixed(2)+'s)';
+    document.getElementById('duration-used').textContent = sourceType==='video'
+      ? finalDuration.toFixed(2)+'초 ('+trimStart.toFixed(2)+'s ~ '+trimEnd.toFixed(2)+'s)'
+      : (sourceType==='slideshow' ? finalDuration.toFixed(2)+'초 (사진 '+slideshowPhotos.length+'장)' : '-');
     document.getElementById('framecount').textContent=finalFrameCount+' 개 @ '+TARGET_FPS+'fps';
     document.getElementById('iterations').textContent=iterCount+' 회';
     resultInfo.style.display='block';downloadBtn.disabled=false;
