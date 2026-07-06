@@ -126,7 +126,7 @@
         <div id="slideshow-list" style="max-height:260px; overflow-y:auto;"></div>
         <div class="trim-duration" id="slideshow-total-disp" style="margin-top:8px;">총 길이: 0.0초</div>
         <p class="hint-warn" id="slideshow-warning">⏱️ 전체 길이가 깁니다. 처리 시간이 오래 걸릴 수 있어요 — 사진당 길이를 줄이는 걸 추천해요.</p>
-        <p class="hint" style="margin-top:6px;">🖱️ 썸네일을 클릭하면 오른쪽 프리뷰에서 그 사진을 볼 수 있어요</p>
+        <p class="hint" style="margin-top:6px;">🖱️ 썸네일을 클릭하면 오른쪽 프리뷰에서 그 사진을 볼 수 있고 개별 조절이 가능해요</p>
       </div>
 
       <div class="divider"></div>
@@ -538,6 +538,7 @@ const LOGO_X_OVERFLOW=15;
 const badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
 let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
 
+// ★ 각 사진별로 상태(배율, 위치)를 따로 저장하도록 변경
 let slideshowPhotos=[];
 let previewSlideIndex=0;
 
@@ -655,8 +656,27 @@ async function generateThumbnails(n=12){
   renderPreview();
 }
 
-mediaScaleSlider.addEventListener('input',()=>{mediaScale=parseInt(mediaScaleSlider.value)/100;mediaScaleVal.textContent=mediaScaleSlider.value+'%';if(sourceLoaded)renderPreview();});
-document.getElementById('reset-media').addEventListener('click',()=>{mediaScale=1;mediaOffsetX=0;mediaOffsetY=0;mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';if(sourceLoaded)renderPreview();});
+// ★ 슬라이더 조정 시 현재 사진 객체에도 값 저장
+mediaScaleSlider.addEventListener('input',()=>{
+  mediaScale=parseInt(mediaScaleSlider.value)/100;
+  mediaScaleVal.textContent=mediaScaleSlider.value+'%';
+  if (sourceType === 'slideshow' && slideshowPhotos[previewSlideIndex]) {
+    slideshowPhotos[previewSlideIndex].scale = mediaScale;
+  }
+  if(sourceLoaded)renderPreview();
+});
+
+// ★ 초기화 시 현재 사진 객체 값도 리셋
+document.getElementById('reset-media').addEventListener('click',()=>{
+  mediaScale=1;mediaOffsetX=0;mediaOffsetY=0;
+  mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';
+  if (sourceType === 'slideshow' && slideshowPhotos[previewSlideIndex]) {
+    slideshowPhotos[previewSlideIndex].scale = 1;
+    slideshowPhotos[previewSlideIndex].offsetX = 0;
+    slideshowPhotos[previewSlideIndex].offsetY = 0;
+  }
+  if(sourceLoaded)renderPreview();
+});
 
 function getPoint(e){
   const rect=previewWrapper.getBoundingClientRect();
@@ -685,6 +705,8 @@ function onPreviewDown(e){
   previewWrapper.classList.add('dragging');
   e.preventDefault();
 }
+
+// ★ 드래그 이동 시 현재 사진 객체에도 값 저장
 function onPreviewMove(e){
   if(!dragMode) return;
   const rect=previewWrapper.getBoundingClientRect();
@@ -697,6 +719,10 @@ function onPreviewMove(e){
   if(dragMode==='media'){
     mediaOffsetX=dragStart.startX+dxpix;
     mediaOffsetY=dragStart.startY+dypix;
+    if (sourceType === 'slideshow' && slideshowPhotos[previewSlideIndex]) {
+      slideshowPhotos[previewSlideIndex].offsetX = mediaOffsetX;
+      slideshowPhotos[previewSlideIndex].offsetY = mediaOffsetY;
+    }
   } else if(dragMode==='logo'){
     let nx=dragStart.startX+dxpix/size, ny=dragStart.startY+dypix/size;
     const minX=-LOGO_X_OVERFLOW/100, maxX=(1-logoSizePct)+LOGO_X_OVERFLOW/100;
@@ -799,7 +825,18 @@ function renderSlideshowList(){
     img.className='slide-thumb';
     img.src=p.thumbUrl;
     img.style.border = (i===previewSlideIndex) ? '2px solid #ffb347' : '2px solid transparent';
-    img.addEventListener('click',()=>{ previewSlideIndex=i; renderSlideshowList(); renderPreview(); });
+    
+    // ★ 썸네일 클릭 시, 해당 사진에 저장된 설정값을 불러옴
+    img.addEventListener('click',()=>{ 
+      previewSlideIndex=i; 
+      mediaScale = p.scale;
+      mediaOffsetX = p.offsetX;
+      mediaOffsetY = p.offsetY;
+      mediaScaleSlider.value = Math.round(mediaScale * 100);
+      mediaScaleVal.textContent = mediaScaleSlider.value + '%';
+      renderSlideshowList(); 
+      renderPreview(); 
+    });
 
     const rangeWrap=document.createElement('div'); rangeWrap.style.flex='1';
     const range=document.createElement('input');
@@ -820,6 +857,16 @@ function renderSlideshowList(){
     removeBtn.addEventListener('click',()=>{
       slideshowPhotos.splice(i,1);
       if(previewSlideIndex>=slideshowPhotos.length) previewSlideIndex=Math.max(0,slideshowPhotos.length-1);
+      
+      // 삭제 후 남은 사진이 있으면 슬라이더 UI 갱신
+      if (slideshowPhotos.length > 0) {
+        mediaScale = slideshowPhotos[previewSlideIndex].scale;
+        mediaOffsetX = slideshowPhotos[previewSlideIndex].offsetX;
+        mediaOffsetY = slideshowPhotos[previewSlideIndex].offsetY;
+        mediaScaleSlider.value = Math.round(mediaScale * 100);
+        mediaScaleVal.textContent = mediaScaleSlider.value + '%';
+      }
+
       renderSlideshowList();
       updateSlideshowSummary();
       if(slideshowPhotos.length===0){
@@ -852,7 +899,8 @@ document.getElementById('slideshow-input').addEventListener('change', async (e)=
     const img=new Image();
     try{
       await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error('사진 로드 실패')); img.src=url; });
-      slideshowPhotos.push({img, thumbUrl:url, duration:1.0});
+      // ★ 객체에 개별 scale, offsetX, offsetY 초기값 추가
+      slideshowPhotos.push({img, thumbUrl:url, duration:1.0, scale:1, offsetX:0, offsetY:0});
     }catch(err){ console.warn(err); }
   }
   if(!slideshowPhotos.length) return;
@@ -862,8 +910,14 @@ document.getElementById('slideshow-input').addEventListener('change', async (e)=
   previewSlideIndex=0;
   trimBox.classList.remove('visible');
   slideshowBox.style.display='block';
-  mediaOffsetX=0; mediaOffsetY=0; mediaScale=1;
-  mediaScaleSlider.value=100; mediaScaleVal.textContent='100%';
+  
+  // ★ 첫 번째 사진의 설정값을 UI에 반영
+  mediaScale=slideshowPhotos[0].scale;
+  mediaOffsetX=slideshowPhotos[0].offsetX;
+  mediaOffsetY=slideshowPhotos[0].offsetY;
+  mediaScaleSlider.value=Math.round(mediaScale*100);
+  mediaScaleVal.textContent=mediaScaleSlider.value+'%';
+
   overlayInfo.classList.add('hidden');
   document.getElementById('media-controls').style.display='block';
   document.getElementById('drag-hint').classList.add('visible');
@@ -968,20 +1022,42 @@ function buildSlideshowCounts(totalFrames){
   }
   return counts;
 }
+
+// ★ GIF 추출 시 개별 사진의 저장된 값을 전역 변수에 잠시 대입해 렌더링
 async function extractFramesSlideshow(totalFrameCount,size){
   const counts=buildSlideshowCounts(totalFrameCount);
   const frames=[];
+  
+  // 기존에 선택된 화면의 상태값을 백업
+  const backupScale = mediaScale;
+  const backupOx = mediaOffsetX;
+  const backupOy = mediaOffsetY;
+
   for(let i=0;i<slideshowPhotos.length;i++){
     const off=document.createElement('canvas'); off.width=size; off.height=size;
+    
+    // 이 사진을 그릴 때만 해당 사진의 설정값으로 세팅
+    mediaScale = slideshowPhotos[i].scale;
+    mediaOffsetX = slideshowPhotos[i].offsetX;
+    mediaOffsetY = slideshowPhotos[i].offsetY;
+
     drawFrame(off,size,slideshowPhotos[i].img);
+    
     for(let k=0;k<counts[i];k++){
       const snap=document.createElement('canvas'); snap.width=size; snap.height=size;
       snap.getContext('2d').drawImage(off,0,0);
       frames.push(snap);
     }
   }
+  
+  // 원래 상태로 복원
+  mediaScale = backupScale;
+  mediaOffsetX = backupOx;
+  mediaOffsetY = backupOy;
+  
   return frames;
 }
+
 function extractFrames(count,size){
   if(sourceType==='slideshow') return extractFramesSlideshow(count,size);
   return extractFramesInRange(count,size);
@@ -1025,11 +1101,6 @@ genBtn.addEventListener('click',async()=>{
       finalFrameCount=1;finalDuration=0;iterCount=1;
 
     } else {
-      // ── 영상 또는 슬라이드쇼 ──
-      // ★ [핵심 수정] 프레임 딜레이를 "총 재생시간 ÷ 실제 프레임 수"로 동적 계산.
-      //   기존에는 딜레이가 33ms로 고정돼서, 20MB에 맞추려고 프레임 수를 줄이면
-      //   재생시간 자체가 짧아지는 버그가 있었음 (설정한 초 수와 실제 재생시간 불일치).
-      //   이제는 프레임을 줄여도 딜레이가 늘어나서 항상 설정한 실제 초 수만큼 재생됨.
       let maxVF, totalDurationMs;
       if(sourceType==='video'){
         const rangeDur=trimEnd-trimStart;
@@ -1061,45 +1132,39 @@ genBtn.addEventListener('click',async()=>{
         if(curBlob.size>=MIN_ACCEPTABLE&&curBlob.size<=MAX_BYTES)break;
         if(it===MAX_TOTAL_ITER-1)break;
         const aBPF=(curBlob.size-GIF_OVERHEAD)/curFC;estBPF=aBPF;
-        if(curBlob.size>MAX_BYTES){const nf=Math.max(10,Math.floor((19.7*1024*1024-GIF_OVERHEAD)/aBPF));curFC=nf>=curFC?Math.max(10,curFC-5):nf;}
-        else{const add=Math.max(1,Math.floor((19.8*1024*1024-curBlob.size)/aBPF*0.9));const nf=Math.min(maxVF,curFC+add);if(nf===curFC)break;curFC=nf;}
+        if(curBlob.size>MAX_BYTES){const nf=Math.max(10,Math.floor((FIRST_TARGET-GIF_OVERHEAD)/estBPF));curFC=nf;}
+        else{curFC=Math.min(maxVF,Math.floor((FIRST_TARGET-GIF_OVERHEAD)/estBPF));}
       }
-      finalBlob=curBlob;finalFrameCount=curFC;
-      finalDuration = totalDurationMs/1000; // 딜레이 보정 덕분에 항상 원래 설정한 길이와 일치
+      finalBlob=curBlob;finalFrameCount=curFC;finalDuration=totalDurationMs/1000;
     }
 
+    progressText.textContent='✅ 완료!';
+    progressFill.style.width='100%';
+    setTimeout(()=>{progressEl.style.display='none';},1000);
     generatedBlob=finalBlob;
-    const mb=(finalBlob.size/(1024*1024)).toFixed(2);
-    document.getElementById('filesize').textContent=mb+' MB / 20 MB';
-    document.getElementById('duration-used').textContent = sourceType==='video'
-      ? finalDuration.toFixed(2)+'초 ('+trimStart.toFixed(2)+'s ~ '+trimEnd.toFixed(2)+'s)'
-      : (sourceType==='slideshow' ? finalDuration.toFixed(2)+'초 (사진 '+slideshowPhotos.length+'장)' : '-');
-    document.getElementById('framecount').textContent=finalFrameCount+' 개 @ '+TARGET_FPS+'fps';
-    document.getElementById('iterations').textContent=iterCount+' 회';
-    resultInfo.style.display='block';downloadBtn.disabled=false;
-    progressFill.style.width='100%';progressText.textContent='✅ 완료! ('+mb+' MB)';
-
-    const previewUrl=URL.createObjectURL(finalBlob);
-    gifPreviewImg.src=previewUrl;
+    document.getElementById('filesize').textContent=(finalBlob.size/(1024*1024)).toFixed(2)+' MB';
+    document.getElementById('duration-used').textContent=finalDuration>0?finalDuration.toFixed(1)+'초':'-';
+    document.getElementById('framecount').textContent=finalFrameCount;
+    document.getElementById('iterations').textContent=iterCount+'회';
+    resultInfo.style.display='block';
+    gifPreviewImg.src=URL.createObjectURL(finalBlob);
     gifPreviewWrap.style.display='block';
+    downloadBtn.disabled=false;
   }catch(err){
-    progressText.textContent='❌ 오류 발생';
-    showError(err.message || String(err));
-    console.error(err);
-  }finally{genBtn.disabled=false;}
+    progressEl.style.display='none';
+    showError(err.message);
+  }finally{
+    genBtn.disabled=false;
+  }
 });
 
 downloadBtn.addEventListener('click',()=>{
   if(!generatedBlob)return;
-  const name=document.getElementById('name').value||'profile';
-  const age=document.getElementById('age').value.replace(/[^0-9]/g,'')||'00';
-  const url=URL.createObjectURL(generatedBlob);
-  const a=document.createElement('a');a.href=url;a.download=age+'_'+name+'.gif';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(generatedBlob);
+  a.download='profile_'+Date.now()+'.gif';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),100);
 });
-
-ctx.fillStyle='#111';ctx.fillRect(0,0,canvas.width,canvas.height);
 </script>
 </body>
 </html>
