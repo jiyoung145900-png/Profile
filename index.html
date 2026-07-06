@@ -121,14 +121,6 @@
         <p class="hint" style="margin-top:4px;">🖱️ 프리뷰의 빈 영역을 드래그하면 위치 이동</p>
       </div>
 
-      <div class="controls-box" id="badge-controls" style="display:none; margin-top:14px;">
-        <label style="margin-bottom:8px;">📛 이름 배지 위치/크기 <button class="reset-btn" id="reset-badge">초기화</button></label>
-        <div class="slider-row"><span class="slider-label">크기</span><input type="range" id="badge-scale" min="60" max="150" value="100" step="1"><span class="slider-val" id="badge-scale-val">100%</span></div>
-        <div class="slider-row"><span class="slider-label">X축</span><input type="range" id="badge-x" min="0" max="70" value="3" step="1"><span class="slider-val" id="badge-x-val">3%</span></div>
-        <div class="slider-row"><span class="slider-label">Y축</span><input type="range" id="badge-y" min="0" max="88" value="80" step="1"><span class="slider-val" id="badge-y-val">80%</span></div>
-        <p class="hint" style="margin-top:4px;">🖱️ 프리뷰에서 이름 배지를 직접 드래그해도 이동돼요</p>
-      </div>
-
       <div class="field" style="margin-top:14px;">
         <label>2️⃣ 로고 (선택)</label>
         <input type="file" accept="image/*" id="logo-input">
@@ -163,7 +155,7 @@
     </section>
 
     <section>
-      <p class="drag-hint" id="drag-hint">🖱️ 로고/이름배지는 직접 드래그, 빈 곳 드래그는 영상 위치 이동</p>
+      <p class="drag-hint" id="drag-hint">🖱️ 로고는 직접 드래그, 빈 곳 드래그는 영상 위치 이동</p>
       <div class="preview-wrapper" id="preview-wrapper">
         <canvas id="canvas" width="720" height="720"></canvas>
         <div class="overlay" id="overlay-info">👈 영상을 업로드하세요</div>
@@ -224,10 +216,12 @@ function showError(msg) {
 let sourceType=null,sourceLoaded=false,logoImage=null,generatedBlob=null;
 let mediaScale=1.0,mediaOffsetX=0,mediaOffsetY=0;
 let logoSizePct=0.28,logoPosX=0.035,logoPosY=0.025;
-let badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
+const LOGO_X_OVERFLOW=15; // ★ [수정] 로고를 좌우로 더 여유있게 움직일 수 있도록 여백(%) 추가
+// 이름 배지는 위치/크기 고정값 사용 (조절 UI 제거됨)
+const badgeScale=1.0,badgePosXPct=0.035,badgePosYPct=0.80;
 let trimStart=0,trimEnd=0,videoDuration=0,draggingHandle=null;
 
-// 통합 드래그 상태 (미디어 / 로고 / 배지)
+// 통합 드래그 상태 (미디어 / 로고)
 let dragMode=null, dragStart=null;
 
 const videoEl=document.getElementById('hidden-video');
@@ -256,12 +250,6 @@ const logoYSlider=document.getElementById('logo-y');
 const logoXVal=document.getElementById('logo-x-val');
 const logoYVal=document.getElementById('logo-y-val');
 const logoSizeSlider=document.getElementById('logo-size');
-const badgeScaleSlider=document.getElementById('badge-scale');
-const badgeXSlider=document.getElementById('badge-x');
-const badgeYSlider=document.getElementById('badge-y');
-const badgeScaleVal=document.getElementById('badge-scale-val');
-const badgeXVal=document.getElementById('badge-x-val');
-const badgeYVal=document.getElementById('badge-y-val');
 const lengthWarning=document.getElementById('length-warning');
 const gifPreviewWrap=document.getElementById('gif-preview-wrap');
 const gifPreviewImg=document.getElementById('gif-preview-img');
@@ -270,22 +258,17 @@ function updateLogoBounds(){
   if(!logoImage) return;
   const wRatio = logoSizePct;
   const hRatio = logoSizePct * (logoImage.height / logoImage.width);
-  const maxXPct = Math.max(0, Math.round((1 - wRatio) * 100));
+  // ★ [수정] X축(좌우)은 여백을 더 줘서 화면 가장자리를 살짝 넘어서도 이동 가능하게 함
+  const minXPct = -LOGO_X_OVERFLOW;
+  const maxXPct = Math.round((1 - wRatio) * 100) + LOGO_X_OVERFLOW;
+  // Y축(상하)은 기존처럼 캔버스 안에 딱 맞게 제한
   const maxYPct = Math.max(0, Math.round((1 - hRatio) * 100));
+  logoXSlider.min = minXPct;
   logoXSlider.max = maxXPct;
   logoYSlider.max = maxYPct;
   if(parseFloat(logoXSlider.value) > maxXPct){ logoXSlider.value = maxXPct; logoPosX = maxXPct/100; logoXVal.textContent = maxXPct+'%'; }
+  if(parseFloat(logoXSlider.value) < minXPct){ logoXSlider.value = minXPct; logoPosX = minXPct/100; logoXVal.textContent = minXPct+'%'; }
   if(parseFloat(logoYSlider.value) > maxYPct){ logoYSlider.value = maxYPct; logoPosY = maxYPct/100; logoYVal.textContent = maxYPct+'%'; }
-}
-function badgeMaxX(){ return Math.max(0, 1 - 0.60*badgeScale); }
-function badgeMaxY(){ return Math.max(0, 1 - 0.115*badgeScale - 0.02); }
-function updateBadgeBounds(){
-  const maxXPct = Math.round(badgeMaxX()*100);
-  const maxYPct = Math.round(badgeMaxY()*100);
-  badgeXSlider.max = maxXPct;
-  badgeYSlider.max = maxYPct;
-  if(parseFloat(badgeXSlider.value) > maxXPct){ badgeXSlider.value=maxXPct; badgePosXPct=maxXPct/100; badgeXVal.textContent=maxXPct+'%'; }
-  if(parseFloat(badgeYSlider.value) > maxYPct){ badgeYSlider.value=maxYPct; badgePosYPct=maxYPct/100; badgeYVal.textContent=maxYPct+'%'; }
 }
 
 function updateTimeline(){
@@ -366,22 +349,12 @@ function hitTestLogo(px,py){
   const lx=size*logoPosX, ly=size*logoPosY;
   return px>=lx && px<=lx+lw && py>=ly && py<=ly+lh;
 }
-function hitTestBadge(px,py){
-  const size=canvas.width;
-  const bw=size*0.30*badgeScale, bh=size*0.115*badgeScale;
-  const bx2=size*badgePosXPct, by2=size*badgePosYPct;
-  const extRight = bw + size*0.30*badgeScale; // 스탯 텍스트 영역까지 포함해서 여유있게 히트박스 지정
-  return px>=bx2-4 && px<=bx2+extRight && py>=by2-6 && py<=by2+bh+6;
-}
 function onPreviewDown(e){
   if(!sourceLoaded) return;
   const p=getPoint(e);
   if(hitTestLogo(p.x,p.y)){
     dragMode='logo';
     dragStart={clientX:p.clientX, clientY:p.clientY, startX:logoPosX, startY:logoPosY};
-  } else if(hitTestBadge(p.x,p.y)){
-    dragMode='badge';
-    dragStart={clientX:p.clientX, clientY:p.clientY, startX:badgePosXPct, startY:badgePosYPct};
   } else {
     dragMode='media';
     dragStart={clientX:p.clientX, clientY:p.clientY, startX:mediaOffsetX, startY:mediaOffsetY};
@@ -404,18 +377,13 @@ function onPreviewMove(e){
     mediaOffsetY=dragStart.startY+dypix;
   } else if(dragMode==='logo'){
     let nx=dragStart.startX+dxpix/size, ny=dragStart.startY+dypix/size;
-    const maxX=1-logoSizePct, maxY=1-logoSizePct*(logoImage.height/logoImage.width);
-    nx=Math.max(0,Math.min(nx,maxX)); ny=Math.max(0,Math.min(ny,maxY));
+    // ★ [수정] 좌우(X)는 오버플로우 여백까지, 상하(Y)는 캔버스 안으로 제한
+    const minX=-LOGO_X_OVERFLOW/100, maxX=(1-logoSizePct)+LOGO_X_OVERFLOW/100;
+    const maxY=1-logoSizePct*(logoImage.height/logoImage.width);
+    nx=Math.max(minX,Math.min(nx,maxX)); ny=Math.max(0,Math.min(ny,maxY));
     logoPosX=nx; logoPosY=ny;
     logoXSlider.value=Math.round(nx*100); logoXVal.textContent=Math.round(nx*100)+'%';
     logoYSlider.value=Math.round(ny*100); logoYVal.textContent=Math.round(ny*100)+'%';
-  } else if(dragMode==='badge'){
-    let nx=dragStart.startX+dxpix/size, ny=dragStart.startY+dypix/size;
-    const maxX=badgeMaxX(), maxY=badgeMaxY();
-    nx=Math.max(0,Math.min(nx,maxX)); ny=Math.max(0,Math.min(ny,maxY));
-    badgePosXPct=nx; badgePosYPct=ny;
-    badgeXSlider.value=Math.round(nx*100); badgeXVal.textContent=Math.round(nx*100)+'%';
-    badgeYSlider.value=Math.round(ny*100); badgeYVal.textContent=Math.round(ny*100)+'%';
   }
   renderPreview();
   e.preventDefault();
@@ -441,8 +409,10 @@ logoYSlider.addEventListener('input',()=>{logoPosY=logoYSlider.value/100;logoYVa
 document.querySelectorAll('.corner-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const c=btn.dataset.corner;
-    const maxX=parseFloat(logoXSlider.max), maxY=parseFloat(logoYSlider.max);
-    const x=(c==='tl'||c==='bl')?0:maxX, y=(c==='tl'||c==='tr')?0:maxY;
+    // ★ [수정] 코너 스냅은 오버플로우 없이 정확히 캔버스 안쪽 꼭짓점에 붙도록 별도 계산
+    const fitMaxX = Math.round((1-logoSizePct)*100);
+    const fitMaxY = parseFloat(logoYSlider.max);
+    const x=(c==='tl'||c==='bl')?0:fitMaxX, y=(c==='tl'||c==='tr')?0:fitMaxY;
     logoXSlider.value=x; logoYSlider.value=y;
     logoPosX=x/100; logoPosY=y/100;
     logoXVal.textContent=x+'%'; logoYVal.textContent=y+'%';
@@ -456,24 +426,6 @@ document.getElementById('reset-logo').addEventListener('click',()=>{
   logoPosX=0.035;logoPosY=0.025;
   logoXSlider.value=3;logoXVal.textContent='3%';
   logoYSlider.value=2;logoYVal.textContent='2%';
-  if(sourceLoaded)renderPreview();
-});
-
-// ── 배지 슬라이더 ──
-badgeScaleSlider.addEventListener('input',()=>{
-  badgeScale=badgeScaleSlider.value/100;
-  badgeScaleVal.textContent=badgeScaleSlider.value+'%';
-  updateBadgeBounds();
-  if(sourceLoaded)renderPreview();
-});
-badgeXSlider.addEventListener('input',()=>{badgePosXPct=badgeXSlider.value/100;badgeXVal.textContent=badgeXSlider.value+'%';if(sourceLoaded)renderPreview();});
-badgeYSlider.addEventListener('input',()=>{badgePosYPct=badgeYSlider.value/100;badgeYVal.textContent=badgeYSlider.value+'%';if(sourceLoaded)renderPreview();});
-document.getElementById('reset-badge').addEventListener('click',()=>{
-  badgeScale=1; badgeScaleSlider.value=100; badgeScaleVal.textContent='100%';
-  updateBadgeBounds();
-  badgePosXPct=0.035; badgePosYPct=0.80;
-  badgeXSlider.value=3; badgeXVal.textContent='3%';
-  badgeYSlider.value=80; badgeYVal.textContent='80%';
   if(sourceLoaded)renderPreview();
 });
 
@@ -512,7 +464,6 @@ document.getElementById('video-input').addEventListener('change',async(e)=>{
     mediaScaleSlider.value=100;mediaScaleVal.textContent='100%';
     overlayInfo.classList.add('hidden');
     document.getElementById('media-controls').style.display='block';
-    document.getElementById('badge-controls').style.display='block';
     document.getElementById('drag-hint').classList.add('visible');
     genBtn.disabled=false;downloadBtn.disabled=true;generatedBlob=null;resultInfo.style.display='none';
     renderPreview();
