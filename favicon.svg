@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- 부드러운 핑크-하늘색 파스텔 그라데이션 배경 -->
+    <linearGradient id="pastelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFDEE9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B5FFFC;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 배경 원 -->
+  <circle cx="32" cy="32" r="30" fill="url(#pastelGrad)" />
+  
+  <!-- 동글동글하고 귀여운 눈 -->
+  <circle cx="22" cy="28" r="3.5" fill="#4A4A4A" />
+  <circle cx="42" cy="28" r="3.5" fill="#4A4A4A" />
+  
+  <!-- 발그레한 볼터치 -->
+  <circle cx="17" cy="34" r="4.5" fill="#FF9E9E" opacity="0.7" />
+  <circle cx="47" cy="34" r="4.5" fill="#FF9E9E" opacity="0.7" />
+  
+  <!-- 미소 -->
+  <path d="M 26 36 Q 32 42 38 36" stroke="#4A4A4A" stroke-width="3" stroke-linecap="round" fill="none" />
+  
+  <!-- 우측 상단 반짝이 효과 (포인트!) -->
+  <path d="M 48 12 Q 50 16 54 18 Q 50 20 48 24 Q 46 20 42 18 Q 46 16 48 12 Z" fill="#FFFFFF" />
+</svg>
